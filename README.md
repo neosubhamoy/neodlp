@@ -59,9 +59,9 @@ Want to be part of this? Feel free to contribute...!! Pull Requests are always w
 npm run tauri dev      # for development
 npm run tauri build      # for production build
 
-# use these commands instead if you are using apple silicon macs
-npm run tauri dev --config "./src-tauri/tauri.macos-aarch64.conf.json"
-npm run tauri build --config "./src-tauri/tauri.macos-aarch64.conf.json"
+# must use --config flag with the commands if you are on macOS
+--config "./src-tauri/tauri.macos-aarch64.conf.json"     # for apple silicon macs
+--config "./src-tauri/tauri.macos-x86_64.conf.json"     # for intel x86 macs
 ```
 5. Do the changes, Send a Pull Request with proper Description (NOTE: Pull Requests Without Proper Description will be Rejected)
 
