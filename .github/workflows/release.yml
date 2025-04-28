@@ -1,7 +1,7 @@
 on:
   push:
     tags:
-      - 'v*.*.*' # Matches version tags like v1.0.0 etc.
+      - 'v*.*.*'
   
 name: 🚀 Release on GitHub
 jobs:
