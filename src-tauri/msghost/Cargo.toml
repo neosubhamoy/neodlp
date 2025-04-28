@@ -1,0 +1,17 @@
+[package]
+name = "neodlp-msghost"
+version = "0.1.0"
+description = "NeoDLP Native Messaging Host"
+authors = ["neosubhamoy <hey@neosubhamoy.com>"]
+edition = "2021"
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+tokio-tungstenite = "*"
+futures-util = "0.3"
+directories = "5.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"

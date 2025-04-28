@@ -1,0 +1,52 @@
+{
+    "identifier": "com.neosubhamoy.neodlp",
+    "build": {
+        "beforeDevCommand": "[[ -n \"$TARGET_ARCH\" ]] && ARCH=\"$TARGET_ARCH\" || ARCH=\"$(uname -m | sed 's/^arm64$/aarch64/')-apple-darwin\" && cargo build --target=$ARCH --manifest-path=./src-tauri/msghost/Cargo.toml && node makeFilesExecutable.js && npm run dev",
+        "beforeBuildCommand": "[[ -n \"$TARGET_ARCH\" ]] && ARCH=\"$TARGET_ARCH\" || ARCH=\"$(uname -m | sed 's/^arm64$/aarch64/')-apple-darwin\" && cargo build --release --target=$ARCH --manifest-path=./src-tauri/msghost/Cargo.toml && node makeFilesExecutable.js && npm run build",
+        "devUrl": "http://localhost:1420",
+        "frontendDist": "../dist"
+    },
+    "app": {
+        "windows": [
+            {
+                "title": "NeoDLP",
+                "width": 1067,
+                "height": 600,
+                "visible": false
+            }
+        ],
+        "security": {
+            "csp": null,
+            "capabilities": [
+                "default",
+                "shell-scope"
+            ]
+        }
+    },
+    "bundle": {
+        "active": true,
+        "targets": ["app", "dmg"],
+        "createUpdaterArtifacts": true,
+        "licenseFile": "../LICENSE",
+        "icon": [
+            "icons/32x32.png",
+            "icons/128x128.png",
+            "icons/128x128@2x.png",
+            "icons/icon.icns",
+            "icons/icon.ico"
+        ],
+        "externalBin": [
+            "binaries/yt-dlp"
+        ],
+        "resources": {
+            "target/x86_64-apple-darwin/release/neodlp-msghost": "neodlp-msghost",
+            "resources/binaries/ffmpeg-x86_64-apple-darwin": "binaries/ffmpeg-x86_64",
+            "resources/msghost-manifest/macos/chrome.json": "neodlp-msghost.json",
+            "resources/msghost-manifest/macos/firefox.json": "neodlp-msghost-moz.json",
+            "resources/autostart/macos/autostart.plist": "neodlp-autostart.plist"
+        },
+        "macOS": {
+            "providerShortName": "neosubhamoy"
+        }
+    }
+}

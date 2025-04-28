@@ -1,0 +1,57 @@
+{
+    "identifier": "com.neosubhamoy.neodlp",
+    "build": {
+        "beforeDevCommand": "cargo build --manifest-path=./src-tauri/msghost/Cargo.toml && npm run dev",
+        "beforeBuildCommand": "cargo build --release --manifest-path=./src-tauri/msghost/Cargo.toml && npm run build",
+        "devUrl": "http://localhost:1420",
+        "frontendDist": "../dist"
+    },
+    "app": {
+        "windows": [
+            {
+                "title": "NeoDLP",
+                "width": 1067,
+                "height": 600,
+                "visible": false
+            }
+        ],
+        "security": {
+            "csp": null,
+            "capabilities": [
+                "default",
+                "shell-scope"
+            ]
+        }
+    },
+    "bundle": {
+        "active": true,
+        "targets": ["msi", "nsis"],
+        "createUpdaterArtifacts": true,
+        "licenseFile": "../LICENSE",
+        "icon": [
+            "icons/32x32.png",
+            "icons/128x128.png",
+            "icons/128x128@2x.png",
+            "icons/icon.icns",
+            "icons/icon.ico"
+        ],
+        "externalBin": [
+            "binaries/yt-dlp"
+        ],
+        "resources": {
+            "resources/binaries/ffmpeg-x86_64-pc-windows-msvc.exe": "binaries/ffmpeg-x86_64.exe",
+            "target/release/neodlp-msghost.exe": "neodlp-msghost.exe",
+            "resources/msghost-manifest/windows/chrome.json": "neodlp-msghost.json",
+            "resources/msghost-manifest/windows/firefox.json": "neodlp-msghost-moz.json"
+        },
+        "windows": {
+            "wix": {
+                "fragmentPaths": ["installer/windows/wix/reg-fragment.wxs"],
+                "componentRefs": ["NeoDlpRegEntriesFragment"]
+            },
+            "nsis": {
+                "installerHooks": "installer/windows/nsis/hooks.nsi"
+            }
+        }
+    }
+}

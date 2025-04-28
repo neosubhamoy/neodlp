@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=neodlp
+Icon=neodlp
+Comment=NeoDLP Autostart
+Exec=/usr/bin/neodlp --hidden
+StartupNotify=false
+Terminal=false

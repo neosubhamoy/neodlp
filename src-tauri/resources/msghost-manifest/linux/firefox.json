@@ -1,0 +1,7 @@
+{
+    "name": "com.neosubhamoy.neodlp",
+    "description": "NeoDLP MsgHost",
+    "path": "/usr/bin/neodlp-msghost",
+    "type": "stdio",
+    "allowed_extensions": ["neodlp@neosubhamoy.com"]
+}

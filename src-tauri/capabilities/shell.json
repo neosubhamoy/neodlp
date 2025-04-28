@@ -1,0 +1,41 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "shell-scope",
+  "description": "allowed shell scopes",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "shell:allow-kill",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "binaries/yt-dlp",
+          "args": true,
+          "sidecar": true
+        },
+        {
+          "name": "pkexec",
+          "cmd": "pkexec",
+          "args": true
+        }
+      ]
+    },
+    {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        {
+          "name": "binaries/yt-dlp",
+          "args": true,
+          "sidecar": true
+        }
+      ]
+    }
+  ],
+  "platforms": [
+    "windows",
+    "macOS",
+    "linux"
+  ]
+}

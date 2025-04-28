@@ -1,0 +1,7 @@
+{
+    "name": "com.neosubhamoy.neodlp",
+    "description": "NeoDLP MsgHost",
+    "path": "/Applications/NeoDLP.app/Contents/Resources/neodlp-msghost",
+    "type": "stdio",
+    "allowed_origins": ["chrome-extension://agkddibgemhefmdhlnooiakfnhihhbdb/"]
+}
