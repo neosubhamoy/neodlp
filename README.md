@@ -1,6 +1,6 @@
 # NeoDLP - (Neo Downloader Plus)
 
-Crossplatform Video/Audio Downloader Desktop App with Modern UI and Browser Integration
+Cross-platform Video/Audio Downloader Desktop App with Modern UI and Browser Integration
 
 [![status](https://img.shields.io/badge/status-active-brightgreen.svg?style=flat)](https://github.com/neosubhamoy/neodlp)
 [![github tag](https://img.shields.io/github/v/tag/neosubhamoy/neodlp?color=yellow)](https://github.com/neosubhamoy/neodlp)
@@ -34,6 +34,7 @@ Crossplatform Video/Audio Downloader Desktop App with Modern UI and Browser Inte
 | Platform (OS) | Distribution Channel | Installation Command / Instruction |
 | :---- | :---- | :---- |
 | Windows x86_64 | WinGet | `winget install neodlp` |
+| MacOS Universal | Curl-Bash Installer | `curl -sSL https://neodlp.neosubhamoy.com/neodlp_macos_installer.sh \| bash` |
 | Linux x86_64 (Arch Linux) | AUR | `yay -S neodlp` |
 
 ### ⚡ Technologies Used
@@ -48,20 +49,24 @@ Crossplatform Video/Audio Downloader Desktop App with Modern UI and Browser Inte
 
 Want to be part of this? Feel free to contribute...!! Pull Requests are always welcome...!! (^_^) Follow these simple steps to start building:
 
-* Make sure to install Rust, Node.js and Git before proceeding.
-* Install Tauri [Prerequisites](https://v2.tauri.app/start/prerequisites/) for your OS / platform
+* Make sure to install [Rust](https://www.rust-lang.org/tools/install), [Node.js](https://nodejs.org/en), [Git](https://git-scm.com/downloads) and [Git-LFS](https://git-lfs.com/) before proceeding.
+* Install [Tauri Prerequisites](https://v2.tauri.app/start/prerequisites/) for your OS / platform
 1. Fork this repo in your github account.
 2. Git clone the forked repo in your local machine.
 3. Install Node.js dependencies: `npm install`
 4. Run development / build process
 > ⚠️ Make sure to run the build command once before running the dev command for the first time to avoid build time errors
 ```code
+# for windows and linux users
 npm run tauri dev      # for development
 npm run tauri build      # for production build
 
-# must use --config flag with the commands if you are on macOS
---config "./src-tauri/tauri.macos-aarch64.conf.json"     # for apple silicon macs
---config "./src-tauri/tauri.macos-x86_64.conf.json"     # for intel x86 macs
+# for macOS users (based on cpu architecture)
+npm run tauri dev -- --config "./src-tauri/tauri.macos-aarch64.conf.json"     # for apple silicon macs, development
+npm run tauri build -- --config "./src-tauri/tauri.macos-aarch64.conf.json"     # for apple silicon macs, production build
+
+npm run tauri dev -- --config "./src-tauri/tauri.macos-x86_64.conf.json"     # for intel x86 macs, development
+npm run tauri build -- --config "./src-tauri/tauri.macos-x86_64.conf.json"     # for intel x86 macs, production build
 ```
 5. Do the changes, Send a Pull Request with proper Description (NOTE: Pull Requests Without Proper Description will be Rejected)
 
