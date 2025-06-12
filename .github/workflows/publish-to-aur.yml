@@ -1,0 +1,111 @@
+on:
+  release:
+    types: [published]
+
+name: 🚀 Publish to AUR
+jobs:
+  update-aur:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:base-devel
+      options: --privileged
+    steps:
+    - name: 🚚 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 📦 Install dependencies
+      run: |
+        # Install base packages needed
+        pacman -Syu --noconfirm --needed git openssh jq curl
+
+    - name: 🔍 Fetch release information
+      id: release_info
+      run: |
+        # Get latest release version and tag
+        RELEASE_TAG="${{ github.event.release.tag_name }}"
+        if [ -z "$RELEASE_TAG" ]; then
+          # If manually triggered, fetch latest release
+          RELEASE_TAG=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r '.tag_name')
+        fi
+        
+        # Extract version number from tag
+        VERSION=$(echo "$RELEASE_TAG" | sed -E 's/^v([0-9]+\.[0-9]+\.[0-9]+)(-.*)?$/\1/')
+        SUFFIX=$(echo "$RELEASE_TAG" | sed -E 's/^v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$/\1/')
+        
+        echo "release_tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "suffix=$SUFFIX" >> $GITHUB_OUTPUT
+
+    - name: 🔑 Setup SSH for AUR
+      run: |
+        mkdir -p ~/.ssh
+        
+        # Write key with proper newline handling
+        echo "${{ secrets.AUR_SSH_PRIVATE_KEY }}" | sed 's/\\n/\n/g' > ~/.ssh/id_rsa
+        
+        # Set proper permissions
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan aur.archlinux.org >> ~/.ssh/known_hosts
+        chmod 600 ~/.ssh/known_hosts
+        
+        # Create SSH config file
+        cat > ~/.ssh/config << EOF
+        Host aur.archlinux.org
+          IdentityFile ~/.ssh/id_rsa
+          User aur
+          StrictHostKeyChecking accept-new
+        EOF
+        chmod 600 ~/.ssh/config
+
+    - name: 🔄 Update AUR Package
+      env:
+        VERSION: ${{ steps.release_info.outputs.version }}
+        SUFFIX: ${{ steps.release_info.outputs.suffix }}
+      run: |
+        # Configure Git
+        git config --global user.name "${{ secrets.AUR_USER }}"
+        git config --global user.email "${{ secrets.AUR_EMAIL }}"
+        git config --global --add safe.directory '*'
+        
+        # Clone AUR repository
+        GIT_SSH_COMMAND="ssh -v -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new" \
+          git clone "ssh://aur@aur.archlinux.org/neodlp.git" aur-repo
+        cd aur-repo
+
+        # Mark this specific repository as safe too
+        git config --global --add safe.directory "$(pwd)"
+
+        # Update PKGBUILD version
+        sed -i "s/pkgver=.*/pkgver=${VERSION}/" PKGBUILD
+        
+        # Create non-root user for makepkg (which refuses to run as root)
+        useradd -m builder
+        chown -R builder:builder .
+        
+        # Generate .SRCINFO using makepkg
+        su builder -c "makepkg --printsrcinfo" > .SRCINFO
+        
+        # Debug output
+        echo "PKGBUILD:"
+        cat PKGBUILD
+        
+        echo ".SRCINFO:"
+        cat .SRCINFO
+        
+        # Check if there are any changes to commit
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "Changes detected, committing and pushing..."
+          # Commit and push changes
+          git add PKGBUILD .SRCINFO
+          git commit -m "Update to version v${VERSION}${SUFFIX}"
+          git push
+          echo "Successfully pushed updates to AUR"
+        else
+          echo "No changes detected in PKGBUILD or .SRCINFO, skipping commit"
+          echo "Package is already up to date at version v${VERSION}${SUFFIX}"
+        fi
+
+    - name: 🔍 Verify update
+      run: |
+        echo "Successfully updated AUR package to version ${{ steps.release_info.outputs.version }}${{ steps.release_info.outputs.suffix }}"
+        echo "View the updated package at: https://aur.archlinux.org/packages/neodlp"

@@ -1,0 +1,23 @@
+on:
+  release:
+    types: [released]
+
+name: 🚀 Publish to WinGet
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      - name: 🛠️ Get release version
+        id: get-version
+        run: |
+          $VERSION="${{ github.event.release.tag_name }}" -replace '^v|[^0-9.]'
+          "version=$VERSION" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+        
+      - name: 🚀 Send PR to winget-pkgs repo
+        uses: vedantmgoyal9/winget-releaser@main
+        with:
+          identifier: neosubhamoy.neodlp
+          version: ${{ steps.get-version.outputs.version }}
+          installers-regex: '\.exe$'
+          token: ${{ secrets.WINGET_TOKEN }}
