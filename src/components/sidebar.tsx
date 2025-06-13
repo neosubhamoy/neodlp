@@ -124,7 +124,7 @@ export function AppSidebar() {
                         <item.icon />
                         <span>{item.title}</span>
                         {item.title === "Library" && ongoingDownloads.length > 0 && showBadge && (
-                          <Badge className="absolute right-2 inset-y-auto rounded-full font-bold bg-foreground/80">{ongoingDownloads.length}</Badge>
+                          <Badge className="absolute right-2 inset-y-auto h-5 min-w-5 rounded-full px-1 font-mono tabular-nums">{ongoingDownloads.length}</Badge>
                         )}
                       </Link>
                     </SidebarMenuButton>

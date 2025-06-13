@@ -9,10 +9,10 @@ import { useToast } from "@/hooks/use-toast";
 import { useAppContext } from "@/providers/appContextProvider";
 import { useCurrentVideoMetadataStore, useDownloaderPageStatesStore } from "@/services/store";
 import { determineFileType, fileFormatFilter, formatBitrate, formatDurationString, formatFileSize, formatReleaseDate, formatYtStyleCount, isObjEmpty, sortByBitrate } from "@/utils";
-import { Calendar, Clock, DownloadCloud, Eye, Info, Loader2, Music, ThumbsUp, Video, File, ListVideo } from "lucide-react";
+import { Calendar, Clock, DownloadCloud, Eye, Info, Loader2, Music, ThumbsUp, Video, File, ListVideo, PackageSearch } from "lucide-react";
 import { FormatSelectionGroup, FormatSelectionGroupItem } from "@/components/custom/formatSelectionGroup";
 import { useEffect, useRef } from "react";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/custom/legacyToggleGroup";
 import { VideoFormat } from "@/types/video";
 // import { PlaylistToggleGroup, PlaylistToggleGroupItem } from "@/components/custom/playlistToggleGroup";
 import { PlaylistSelectionGroup, PlaylistSelectionGroupItem } from "@/components/custom/playlistSelectionGroup";
@@ -223,9 +223,9 @@ export default function DownloaderPage() {
 
     return (
         <div className="container mx-auto p-4 space-y-4 relative" ref={containerRef}>
-            <Card>
+            <Card className="gap-4">
                 <CardHeader>
-                    <CardTitle>{config.appName} Search</CardTitle>
+                    <CardTitle className="flex items-center"><PackageSearch className="size-5 mr-3" />{config.appName} Search</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Form {...searchForm}>
@@ -239,7 +239,7 @@ export default function DownloaderPage() {
                                         <FormControl>
                                             <Input
                                             className="focus-visible:ring-0"
-                                            placeholder="Enter URL to search..."
+                                            placeholder="Enter Video URL to Search"
                                             {...field}
                                             />
                                         </FormControl>
@@ -352,7 +352,7 @@ export default function DownloaderPage() {
                             }
                         }}
                         >
-                            <p className="text-xs">Suggested (Best)</p>
+                            <p className="text-xs">Suggested</p>
                             <div className="">
                                 <FormatSelectionGroupItem
                                 key="best"

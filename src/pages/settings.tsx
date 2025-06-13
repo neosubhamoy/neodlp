@@ -24,13 +24,15 @@ import { invoke } from "@tauri-apps/api/core";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const websocketPortSchema = z.object({
-    port: z.string().min(1, { message: "Websocket port is required" })
-    .regex(/^\d+$/, { message: "Websocket port must be a number" })
-    .transform((val) => parseInt(val, 10))
-    .refine((port) => port >= 50000 && port <= 60000, {
-        message: "Websocket port must be between 50000 and 60000",
-    })
-});
+    port: z.coerce.number({
+        required_error: "Websocket Port is required",
+        invalid_type_error: "Websocket Port must be a valid number",
+    }).min(50000, {
+        message: "Websocket Port must be at least 50000"
+    }).max(60000, {
+        message: "Websocket Port must be at most 60000"
+    }),
+})
 
 const proxyUrlSchema = z.object({
     url: z.string().min(1, { message: "Proxy URL is required" }).url({ message: "Invalid URL format" })
@@ -163,7 +165,7 @@ export default function SettingsPage() {
                     <Card className="p-4 space-y-4 my-4">
                         <div className="w-full flex gap-4 items-center justify-between">
                             <div className="flex gap-4 items-center">
-                                <div className="imgwrapper w-10 h-10 flex items-center justify-center bg-gradient-to-r from-[#4444FF] to-[#FF43D0] rounded-md overflow-hidden border border-border">
+                                <div className="imgwrapper w-10 h-10 flex items-center justify-center bg-linear-65 from-[#FF43D0] to-[#4444FF] rounded-md overflow-hidden border border-border">
                                     <Terminal className="size-5 text-white" />
                                 </div>
                                 <div className="flex flex-col">
@@ -276,7 +278,7 @@ export default function SettingsPage() {
                             <p className="text-sm text-muted-foreground mb-3">Set maximum number of allowed parallel downloads</p>
                             <Slider
                             id="max-parallel-downloads"
-                            className="w-[350px]"
+                            className="w-[350px] mb-2"
                             value={[maxParallelDownloads]}
                             min={1}
                             max={5}
@@ -341,7 +343,7 @@ export default function SettingsPage() {
                     <Card className="p-4 space-y-4 my-4">
                         <div className="w-full flex gap-4 items-center justify-between">
                             <div className="flex gap-4 items-center">
-                                <div className="imgwrapper w-10 h-10 flex items-center justify-center bg-gradient-to-r from-[#4444FF] to-[#FF43D0] rounded-md overflow-hidden border border-border">
+                                <div className="imgwrapper w-10 h-10 flex items-center justify-center bg-linear-65 from-[#FF43D0] to-[#4444FF] rounded-md overflow-hidden border border-border">
                                     <Radio className="size-5 text-white" />
                                 </div>
                                 <div className="flex flex-col">

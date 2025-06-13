@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAppContext } from "@/providers/appContextProvider";
 import { useDownloadActionStatesStore, useDownloadStatesStore } from "@/services/store";
 import { formatBitrate, formatCodec, formatDurationString, formatFileSize, formatSecToTimeString, formatSpeed } from "@/utils";
-import { AudioLines, CircleArrowDown, CircleCheck, Clock, File, FileAudio2, FileQuestion, FileVideo2, FolderInput, ListVideo, Loader2, Music, Pause, Play, Trash2, Video, X } from "lucide-react";
+import { AudioLines, Clock, CloudDownload, File, FileAudio2, FileQuestion, FileVideo2, FolderInput, ListVideo, Loader2, Music, PackageCheck, Pause, Play, Trash2, Video, X } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import * as fs from "@tauri-apps/plugin-fs";
 import { DownloadState } from "@/types/download";
@@ -100,8 +100,8 @@ export default function LibraryPage() {
         <div className="container mx-auto p-4 space-y-4">
             <Heading title="Library" description="Manage all your downloads in one place" />
             <div className="w-full fle flex-col">
-                <div className="flex w-full items-center gap-2 mb-2">
-                    <CircleArrowDown className="size-4" />
+                <div className="flex w-full items-center gap-3 mb-2">
+                    <CloudDownload className="size-5" />
                     <h3 className="text-nowrap font-semibold">Incomplete Downloads</h3>
                 </div>
                 <Separator orientation="horizontal" className="" />
@@ -279,8 +279,8 @@ export default function LibraryPage() {
                 )}
             </div>
             <div className="w-full fle flex-col">
-                <div className="flex w-full items-center gap-2 mb-2">
-                    <CircleCheck className="size-4" />
+                <div className="flex w-full items-center gap-3 mb-2">
+                    <PackageCheck className="size-5" />
                     <h3 className="text-nowrap font-semibold">Completed Downloads</h3>
                 </div>
                 <Separator orientation="horizontal" className="" />
