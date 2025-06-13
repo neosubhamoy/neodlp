@@ -25,7 +25,7 @@ const IndeterminateProgress = React.forwardRef<
     <ProgressPrimitive.Indicator
       className={cn(
         "h-full w-full flex-1 bg-primary transition-all",
-        indeterminate && "animate-indeterminate-progress origin-left"
+        indeterminate && "animate-[indeterminate-progress_1s_infinite_linear] origin-left"
       )}
       style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
     />
