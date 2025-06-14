@@ -1,6 +1,10 @@
 ### ✨ Changelog
 
-- Initial MVP release (v0.1.0)
+- Migrated to React 19, TailwindCSS 4 and ShadcnUI 2.6
+- Added new 'Extension' tab
+- Fixed: Default download directory not updating
+- Fixed: MacOS large dock icon (#1)
+- Other minor fixes and improvements
 
 ### 📝 Notes
 
@@ -19,4 +23,4 @@
 
 > ⬆️ icon indicates this packaging format supports in-built app-updater
 
-> ⚠️ ARM64 binaries are experimental and may not work properly on Apple Silicon Macs (You might see 'Damaged File' warning) it's because the binaries are not signed and Apple Silicon Macs don't allow unsigned apps (downloaded from internet) to be installed on the system (also I'm not planning to sign it soon as it costs 99$/year, which I can't afford RN!). If you want to use NeoDLP in your Apple Silicon Macs then you have to [compile it from source](https://github.com/neosubhamoy/neodlp?tab=readme-ov-file#%EF%B8%8F-contributing--building-from-source) in your Mac
+> ⚠️ MacOS ARM64 binary downloads are experimental and may not open on Apple Silicon Macs if downloaded from browser (You will get 'Damaged File' error) it's because the binaries are not signed (signing MacOS binaries requires 99$/year Apple Developer Account subscription, which I can't afford RN!) and Apple Silicon Macs don't allow unsigned apps (downloaded from browser) to be installed on the system. If you want to use NeoDLP on your Apple Silicon Macs, you can simply use the command line [Curl-Bash Installer](https://neodlp.neosubhamoy.com/download) (Recommended) -OR- [compile it from source](https://github.com/neosubhamoy/neodlp?tab=readme-ov-file#%EF%B8%8F-contributing--building-from-source) in your Mac
