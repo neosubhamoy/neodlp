@@ -510,7 +510,7 @@ export default function DownloaderPage() {
                                 }
                             }}
                             >
-                                <p className="text-xs">Suggested (Best)</p>
+                                <p className="text-xs">Suggested</p>
                                 <div className="">
                                     <FormatSelectionGroupItem
                                     key="best"
