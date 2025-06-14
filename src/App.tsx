@@ -637,7 +637,7 @@ export default function App({ children }: { children: React.ReactNode }) {
       }
     };
     initPaths();
-  }, [setPath]);
+  }, [DOWNLOAD_DIR, setPath]);
 
   // Fetch app version
   useEffect(() => {
