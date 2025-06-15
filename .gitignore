@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+.github/workflows/.secrets
 
 # Editor directories and files
 .vscode/*

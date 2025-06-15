@@ -31,15 +31,16 @@ export default function useAppUpdater() {
             switch (event.event) {
             case 'Started':
                 contentLength = event.data.contentLength;
-                console.log(`started downloading ${event.data.contentLength} bytes`);
+                console.log(`started downloading app update of ${event.data.contentLength} bytes`);
                 break;
             case 'Progress':
                 downloaded += event.data.chunkLength;
-                setDownloadProgress(downloaded / (contentLength || 0));
-                console.log(`downloaded ${downloaded} from ${contentLength}`);
+                const progress = (downloaded / (contentLength || 1)) * 100;
+                setDownloadProgress(Math.round(progress * 10) / 10);
+                console.log(`downloaded ${downloaded} bytes from ${contentLength} bytes of app update`);
                 break;
             case 'Finished':
-                console.log('download finished');
+                console.log('app update download finished');
                 setIsUpdating(false);
                 break;
             }

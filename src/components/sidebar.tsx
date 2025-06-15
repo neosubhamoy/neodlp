@@ -29,6 +29,7 @@ export function AppSidebar() {
   const { open } = useSidebar();
   const { downloadAndInstallAppUpdate } = useAppUpdater();
   const [showBadge, setShowBadge] = useState(false);
+  const [showUpdateCard, setShowUpdateCard] = useState(false);
 
   const topItems: Array<RoutesObj> = [
     {
@@ -61,9 +62,11 @@ export function AppSidebar() {
     if (open) {
       timeout = setTimeout(() => {
         setShowBadge(true);
+        setShowUpdateCard(true);
       }, 300);
     } else {
       setShowBadge(false);
+      setShowUpdateCard(false);
     }
     
     return () => {
@@ -153,13 +156,14 @@ export function AppSidebar() {
             </TooltipContent>
           </Tooltip>
         )}
-        {appUpdate && open && (
-          <Card>
+        {appUpdate && open && showUpdateCard && (
+          <Card className="gap-4 py-0">
             <CardHeader className="p-4 pb-0">
               <CardTitle className="text-sm">Update Available (v{appUpdate.version})</CardTitle>
               <CardDescription>
-                A new version of {config.appName} is available. Please update to the latest version for the best experience.
+                A newer version of {config.appName} is available. Please update to the latest version for the best experience.
               </CardDescription>
+              <a className="text-xs font-semibold cursor-pointer mt-1" href={`https://github.com/neosubhamoy/neodlp/releases/tag/v${appUpdate.version}`} target="_blank">✨ Read Changelog</a>
             </CardHeader>
             <CardContent className="grid gap-2.5 p-4">
               <AlertDialog>
