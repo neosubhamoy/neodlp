@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ExternalLink, FolderOpen, Loader2, LucideIcon, Monitor, Moon, Radio, RotateCcw, RotateCw, Sun, Terminal } from "lucide-react";
+import { ExternalLink, Folder, FolderOpen, Loader2, LucideIcon, Monitor, Moon, Radio, RotateCcw, RotateCw, Sun, Terminal, WandSparkles, Wifi, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { useTheme } from "@/providers/themeProvider";
@@ -157,11 +157,40 @@ export default function SettingsPage() {
         <div className="container mx-auto p-4 space-y-4 min-h-screen">
             <Heading title="Settings" description="Manage your preferences and app settings" />
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList>
-                    <TabsTrigger value="general">General</TabsTrigger>
-                    <TabsTrigger value="extension">Extension</TabsTrigger>
-                </TabsList>
-                <TabsContent value="general">
+                <div className="w-full flex items-center justify-between">
+                    <TabsList>
+                        <TabsTrigger value="app">Application</TabsTrigger>
+                        <TabsTrigger value="extension">Extension</TabsTrigger>
+                    </TabsList>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                            className="w-fit"
+                            variant="destructive"
+                            size="sm"
+                            disabled={isUsingDefaultSettings}
+                            >
+                                <RotateCcw className="h-4 w-4" />
+                                Reset
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Reset settings to default?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Are you sure you want to reset all settings to their default values? This action cannot be undone!
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={
+                                    () => resetSettings()
+                                }>Reset</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
+                <TabsContent value="app">
                     <Card className="p-4 space-y-4 my-4">
                         <div className="w-full flex gap-4 items-center justify-between">
                             <div className="flex gap-4 items-center">
@@ -220,124 +249,160 @@ export default function SettingsPage() {
                             </div>
                         </div>
                     </Card>
-                    <div className="flex flex-col w-[50%] gap-4">
-                        <div className="app-theme">
-                            <h3 className="font-semibold">Theme</h3>
-                            <p className="text-sm text-muted-foreground mb-3">Choose app interface theme</p>
-                            <div className={cn('inline-flex gap-1 rounded-lg p-1 bg-muted')}>
-                                {themeOptions.map(({ value, icon: Icon, label }) => (
-                                    <button
-                                        key={value}
-                                        onClick={() => saveSettingsKey('theme', value)}
-                                        className={cn(
-                                            'flex items-center rounded-md px-3.5 py-1.5 transition-colors',
-                                            appTheme === value
-                                                ? 'bg-white shadow-xs dark:bg-neutral-700 dark:text-neutral-100'
-                                                : 'text-neutral-500 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-700/60',
-                                        )}
-                                    >
-                                        <Icon className="-ml-1 h-4 w-4" />
-                                        <span className="ml-1.5 text-sm">{label}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="download-dir">
-                            <h3 className="font-semibold">Download Directory</h3>
-                            <p className="text-sm text-muted-foreground mb-3">Set default download directory</p>
-                            <div className="flex items-center gap-4">
-                                <Input className="focus-visible:ring-0" type="text" placeholder="Select download directory" value={downloadDirPath ?? 'Unknown'} readOnly/>
-                                <Button
-                                variant="outline"
-                                onClick={async () => {
-                                    try {
-                                        const folder = await open({
-                                            multiple: false,
-                                            directory: true,
-                                        });
-                                        if (folder) {
-                                            saveSettingsKey('download_dir', folder);
-                                            setPath('downloadDirPath', folder);
-                                        }
-                                    } catch (error) {
-                                        console.error("Error selecting folder:", error);
-                                        toast({
-                                            title: "Failed to select folder",
-                                            description: "Please try again.",
-                                            variant: "destructive",
-                                        });
-                                    }
-                                }}
-                                >
-                                    <FolderOpen className="w-4 h-4" /> Browse
-                                </Button>
-                            </div>
-                        </div>
-                        <div className="max-parallel-downloads">
-                            <h3 className="font-semibold">Max Parallel Downloads</h3>
-                            <p className="text-sm text-muted-foreground mb-3">Set maximum number of allowed parallel downloads</p>
-                            <Slider
-                            id="max-parallel-downloads"
-                            className="w-[350px] mb-2"
-                            value={[maxParallelDownloads]}
-                            min={1}
-                            max={5}
-                            onValueChange={(value) => saveSettingsKey('max_parallel_downloads', value[0])}
-                            />
-                            <Label htmlFor="max-parallel-downloads" className="text-xs text-muted-foreground">(Current: {maxParallelDownloads}) (Default: 2, Maximum: 5)</Label>
-                        </div>
-                        <div className="prefer-video-over-playlist">
-                            <h3 className="font-semibold">Prefer Video Over Playlist</h3>
-                            <p className="text-sm text-muted-foreground mb-3">Prefer only the video, if the URL refers to a video and a playlist</p>
-                            <Switch
-                            id="prefer-video-over-playlist"
-                            checked={preferVideoOverPlaylist}
-                            onCheckedChange={(checked) => saveSettingsKey('prefer_video_over_playlist', checked)}
-                            />
-                        </div>
-                        <div className="proxy">
-                            <h3 className="font-semibold">Proxy</h3>
-                            <p className="text-sm text-muted-foreground mb-3">Use proxy for downloads, Unblocks blocked sites in your region (Download speed may affect, Some sites may not work)</p>
-                            <div className="flex items-center space-x-2 mb-4">
-                                <Switch
-                                id="use-proxy"
-                                checked={useProxy}
-                                onCheckedChange={(checked) => saveSettingsKey('use_proxy', checked)}
-                                />
-                                <Label htmlFor="use-proxy">Use Proxy</Label>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <Form {...proxyUrlForm}>
-                                    <form onSubmit={proxyUrlForm.handleSubmit(handleProxyUrlSubmit)} className="flex gap-4 w-full" autoComplete="off">
-                                        <FormField
-                                            control={proxyUrlForm.control}
-                                            name="url"
-                                            disabled={!useProxy}
-                                            render={({ field }) => (
-                                                <FormItem className="w-full">
-                                                    <FormControl>
-                                                        <Input
-                                                        className="focus-visible:ring-0"
-                                                        placeholder="Enter proxy URL"
-                                                        {...field}
-                                                        />
-                                                    </FormControl>
-                                                    <Label htmlFor="url" className="text-xs text-muted-foreground">(Configured: {proxyUrl ? 'Yes' : 'No'}, Status: {useProxy ? 'Enabled' : 'Disabled'})</Label>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
+                    <Tabs
+                    orientation="vertical"
+                    defaultValue="general"
+                    className="w-full flex flex-row items-start gap-4 mt-10"
+                    >
+                        <TabsList className="shrink-0 grid grid-cols-1 gap-1 p-0 bg-background min-w-45">
+                            <TabsTrigger
+                                key="general"
+                                value="general"
+                                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
+                            ><Wrench className="size-4" /> General</TabsTrigger>
+                            <TabsTrigger
+                                key="appearance"
+                                value="appearance"
+                                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
+                            ><WandSparkles className="size-4" /> Appearance</TabsTrigger>
+                            <TabsTrigger
+                                key="folders"
+                                value="folders"
+                                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
+                            ><Folder className="size-4" /> Folders</TabsTrigger>
+                            <TabsTrigger
+                                key="network"
+                                value="network"
+                                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
+                            ><Wifi className="size-4" /> Network</TabsTrigger>
+                        </TabsList>
+                        <div className="min-h-full flex flex-col max-w-[55%] w-full border-l border-border pl-4">
+                            <TabsContent key="general" value="general" className="flex flex-col gap-4 min-h-[150px]">
+                                <div className="max-parallel-downloads">
+                                    <h3 className="font-semibold">Max Parallel Downloads</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Set maximum number of allowed parallel downloads</p>
+                                    <Slider
+                                    id="max-parallel-downloads"
+                                    className="w-[350px] mb-2"
+                                    value={[maxParallelDownloads]}
+                                    min={1}
+                                    max={5}
+                                    onValueChange={(value) => saveSettingsKey('max_parallel_downloads', value[0])}
+                                    />
+                                    <Label htmlFor="max-parallel-downloads" className="text-xs text-muted-foreground">(Current: {maxParallelDownloads}) (Default: 2, Maximum: 5)</Label>
+                                </div>
+                                <div className="prefer-video-over-playlist">
+                                    <h3 className="font-semibold">Prefer Video Over Playlist</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Prefer only the video, if the URL refers to a video and a playlist</p>
+                                    <Switch
+                                    id="prefer-video-over-playlist"
+                                    checked={preferVideoOverPlaylist}
+                                    onCheckedChange={(checked) => saveSettingsKey('prefer_video_over_playlist', checked)}
+                                    />
+                                </div>
+                            </TabsContent>
+                            <TabsContent key="appearance" value="appearance" className="flex flex-col gap-4 min-h-[150px]">
+                                <div className="app-theme">
+                                    <h3 className="font-semibold">Theme</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Choose app interface theme</p>
+                                    <div className={cn('inline-flex gap-1 rounded-lg p-1 bg-muted')}>
+                                        {themeOptions.map(({ value, icon: Icon, label }) => (
+                                            <button
+                                                key={value}
+                                                onClick={() => saveSettingsKey('theme', value)}
+                                                className={cn(
+                                                    'flex items-center rounded-md px-3.5 py-1.5 transition-colors',
+                                                    appTheme === value
+                                                        ? 'bg-white shadow-xs dark:bg-neutral-700 dark:text-neutral-100'
+                                                        : 'text-neutral-500 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-700/60',
+                                                )}
+                                            >
+                                                <Icon className="-ml-1 h-4 w-4" />
+                                                <span className="ml-1.5 text-sm">{label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </TabsContent>
+                            <TabsContent key="folders" value="folders" className="flex flex-col gap-4 min-h-[150px]">
+                                <div className="download-dir">
+                                    <h3 className="font-semibold">Download Folder</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Set default download folder (directory)</p>
+                                    <div className="flex items-center gap-4">
+                                        <Input className="focus-visible:ring-0" type="text" placeholder="Select download directory" value={downloadDirPath ?? 'Unknown'} readOnly/>
                                         <Button
-                                            type="submit"
-                                            disabled={!watchedProxyUrl || watchedProxyUrl === proxyUrl || Object.keys(proxyUrlFormErrors).length > 0 || !useProxy}
+                                        variant="outline"
+                                        onClick={async () => {
+                                            try {
+                                                const folder = await open({
+                                                    multiple: false,
+                                                    directory: true,
+                                                });
+                                                if (folder) {
+                                                    saveSettingsKey('download_dir', folder);
+                                                    setPath('downloadDirPath', folder);
+                                                }
+                                            } catch (error) {
+                                                console.error("Error selecting folder:", error);
+                                                toast({
+                                                    title: "Failed to select folder",
+                                                    description: "Please try again.",
+                                                    variant: "destructive",
+                                                });
+                                            }
+                                        }}
                                         >
-                                            Save
+                                            <FolderOpen className="w-4 h-4" /> Browse
                                         </Button>
-                                    </form>
-                                </Form>
-                            </div>
+                                    </div>
+                                </div>
+                            </TabsContent>
+                            <TabsContent key="network" value="network" className="flex flex-col gap-4 min-h-[150px]">
+                                <div className="proxy">
+                                    <h3 className="font-semibold">Proxy</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Use proxy for downloads, Unblocks blocked sites in your region (Download speed may affect, Some sites may not work)</p>
+                                    <div className="flex items-center space-x-2 mb-4">
+                                        <Switch
+                                        id="use-proxy"
+                                        checked={useProxy}
+                                        onCheckedChange={(checked) => saveSettingsKey('use_proxy', checked)}
+                                        />
+                                        <Label htmlFor="use-proxy">Use Proxy</Label>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <Form {...proxyUrlForm}>
+                                            <form onSubmit={proxyUrlForm.handleSubmit(handleProxyUrlSubmit)} className="flex gap-4 w-full" autoComplete="off">
+                                                <FormField
+                                                    control={proxyUrlForm.control}
+                                                    name="url"
+                                                    disabled={!useProxy}
+                                                    render={({ field }) => (
+                                                        <FormItem className="w-full">
+                                                            <FormControl>
+                                                                <Input
+                                                                className="focus-visible:ring-0"
+                                                                placeholder="Enter proxy URL"
+                                                                {...field}
+                                                                />
+                                                            </FormControl>
+                                                            <Label htmlFor="url" className="text-xs text-muted-foreground">(Configured: {proxyUrl ? 'Yes' : 'No'}, Status: {useProxy ? 'Enabled' : 'Disabled'})</Label>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <Button
+                                                    type="submit"
+                                                    disabled={!watchedProxyUrl || watchedProxyUrl === proxyUrl || Object.keys(proxyUrlFormErrors).length > 0 || !useProxy}
+                                                >
+                                                    Save
+                                                </Button>
+                                            </form>
+                                        </Form>
+                                    </div>
+                                </div>
+                            </TabsContent>
                         </div>
-                    </div>
+                    </Tabs>
                 </TabsContent>
                 <TabsContent value="extension">
                     <Card className="p-4 space-y-4 my-4">
@@ -389,81 +454,66 @@ export default function SettingsPage() {
                             </div>
                         </div>
                     </Card>
-                    <div className="flex flex-col w-[50%] gap-4">
-                        <div className="websocket-port">
-                            <h3 className="font-semibold">Websocket Port</h3>
-                            <p className="text-sm text-muted-foreground mb-3">Change extension websocket server port</p>
-                            <div className="flex items-center gap-4">
-                                <Form {...websocketPortForm}>
-                                    <form onSubmit={websocketPortForm.handleSubmit(handleWebsocketPortSubmit)} className="flex gap-4 w-full" autoComplete="off">
-                                        <FormField
-                                            control={websocketPortForm.control}
-                                            name="port"
-                                            disabled={isChangingWebSocketPort}
-                                            render={({ field }) => (
-                                                <FormItem className="w-full">
-                                                    <FormControl>
-                                                        <Input
-                                                        className="focus-visible:ring-0"
-                                                        placeholder="Enter port number"
-                                                        {...field}
-                                                        />
-                                                    </FormControl>
-                                                    <Label htmlFor="port" className="text-xs text-muted-foreground">(Current: {websocketPort}) (Default: 53511, Range: 50000-60000)</Label>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <Button
-                                            type="submit"
-                                            disabled={!watchedPort || Number(watchedPort) === websocketPort || Object.keys(websocketPortFormErrors).length > 0 || isChangingWebSocketPort || isRestartingWebSocketServer}
-                                        >
-                                            {isChangingWebSocketPort ? (
-                                                <>
-                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                                Changing
-                                                </>
-                                            ) : (
-                                                'Change'
-                                            )}
-                                        </Button>
-                                    </form>
-                                </Form>
-                            </div>
+                    <Tabs
+                    orientation="vertical"
+                    defaultValue="general"
+                    className="w-full flex flex-row items-start gap-4 mt-10"
+                    >
+                        <TabsList className="shrink-0 grid grid-cols-1 gap-1 p-0 bg-background min-w-45">
+                            <TabsTrigger
+                                key="general"
+                                value="general"
+                                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
+                            ><Wrench className="size-4" /> General</TabsTrigger>
+                        </TabsList>
+                        <div className="min-h-full flex flex-col max-w-[55%] w-full border-l border-border pl-4">
+                            <TabsContent key="general" value="general" className="flex flex-col gap-4 min-h-[150px]">
+                                <div className="websocket-port">
+                                    <h3 className="font-semibold">Websocket Port</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Change extension websocket server port</p>
+                                    <div className="flex items-center gap-4">
+                                        <Form {...websocketPortForm}>
+                                            <form onSubmit={websocketPortForm.handleSubmit(handleWebsocketPortSubmit)} className="flex gap-4 w-full" autoComplete="off">
+                                                <FormField
+                                                    control={websocketPortForm.control}
+                                                    name="port"
+                                                    disabled={isChangingWebSocketPort}
+                                                    render={({ field }) => (
+                                                        <FormItem className="w-full">
+                                                            <FormControl>
+                                                                <Input
+                                                                className="focus-visible:ring-0"
+                                                                placeholder="Enter port number"
+                                                                {...field}
+                                                                />
+                                                            </FormControl>
+                                                            <Label htmlFor="port" className="text-xs text-muted-foreground">(Current: {websocketPort}) (Default: 53511, Range: 50000-60000)</Label>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <Button
+                                                    type="submit"
+                                                    disabled={!watchedPort || Number(watchedPort) === websocketPort || Object.keys(websocketPortFormErrors).length > 0 || isChangingWebSocketPort || isRestartingWebSocketServer}
+                                                >
+                                                    {isChangingWebSocketPort ? (
+                                                        <>
+                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                        Changing
+                                                        </>
+                                                    ) : (
+                                                        'Change'
+                                                    )}
+                                                </Button>
+                                            </form>
+                                        </Form>
+                                    </div>
+                                </div>
+                            </TabsContent>
                         </div>
-                    </div>
+                    </Tabs>
                 </TabsContent>
             </Tabs>
-            <div className="flex flex-col">
-                <h3 className="font-semibold">Reset Settings</h3>
-                <p className="text-sm text-muted-foreground mb-3">Reset all setting to default</p>
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button
-                        className="w-fit"
-                        variant="destructive"
-                        disabled={isUsingDefaultSettings}
-                        >
-                            <RotateCcw className="h-4 w-4" />
-                            Reset Default
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                This action cannot be undone! it will permanently reset all settings to default.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={
-                                () => resetSettings()
-                            }>Reset</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-            </div>
         </div>
     )
 }
