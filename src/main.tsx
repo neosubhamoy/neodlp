@@ -8,7 +8,6 @@ import RootLayout from "@/pages/layout/root";
 import DownloaderPage from "@/pages/downloader";
 import LibraryPage from "@/pages/library";
 import SettingsPage from "@/pages/settings";
-import ExtensionPage from "@/pages/extension";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
@@ -19,7 +18,6 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             <Route path="/" element={<RootLayout />}>
               <Route index element={<DownloaderPage />} />
               <Route path="/library" element={<LibraryPage />} />
-              <Route path="/extension" element={<ExtensionPage />} />
               <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Routes>

@@ -1,4 +1,4 @@
-import { Download, Puzzle, Settings, SquarePlay } from "lucide-react";
+import { Download, Settings, SquarePlay } from "lucide-react";
 import { RoutesObj } from "@/types/route";
 
 export const AllRoutes: Array<RoutesObj> = [
@@ -11,11 +11,6 @@ export const AllRoutes: Array<RoutesObj> = [
         title: "Library",
         url: "/library",
         icon: SquarePlay,
-    },
-    {
-        title: "Extension",
-        url: "/extension",
-        icon: Puzzle,
     },
     {
         title: "Settings",

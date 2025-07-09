@@ -93,7 +93,7 @@ export const useDownloadActionStatesStore = create<DownloadActionStatesStore>((s
 }));
 
 export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) => ({
-    activeTab: 'general',
+    activeTab: 'app',
     appVersion: null,
     isFetchingAppVersion: false,
     ytDlpVersion: null,

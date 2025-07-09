@@ -1,7 +1,7 @@
 import { config } from "@/config";
 import { Link, useLocation } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
-import { CircleArrowUp, Download, Puzzle, Settings, SquarePlay, } from "lucide-react";
+import { CircleArrowUp, Download, Settings, SquarePlay, } from "lucide-react";
 import { isActive as isActiveSidebarItem } from "@/utils";
 import { RoutesObj } from "@/types/route";
 import { useDownloadStatesStore, useSettingsPageStatesStore } from "@/services/store";
@@ -41,11 +41,6 @@ export function AppSidebar() {
       title: "Library",
       url: "/library",
       icon: SquarePlay,
-    },
-    {
-      title: "Extension",
-      url: "/extension",
-      icon: Puzzle,
     }
   ];
 
