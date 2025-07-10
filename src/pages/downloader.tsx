@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAppContext } from "@/providers/appContextProvider";
-import { useCurrentVideoMetadataStore, useDownloaderPageStatesStore } from "@/services/store";
+import { useCurrentVideoMetadataStore, useDownloaderPageStatesStore, useSettingsPageStatesStore } from "@/services/store";
 import { determineFileType, fileFormatFilter, formatBitrate, formatDurationString, formatFileSize, formatReleaseDate, formatYtStyleCount, isObjEmpty, sortByBitrate } from "@/utils";
 import { Calendar, Clock, DownloadCloud, Eye, Info, Loader2, Music, ThumbsUp, Video, File, ListVideo, PackageSearch } from "lucide-react";
 import { FormatSelectionGroup, FormatSelectionGroupItem } from "@/components/custom/formatSelectionGroup";
@@ -50,6 +50,9 @@ export default function DownloaderPage() {
     const setSelctedDownloadFormat = useDownloaderPageStatesStore((state) => state.setSelctedDownloadFormat);
     const setSelectedSubtitles = useDownloaderPageStatesStore((state) => state.setSelectedSubtitles);
     const setSelectedPlaylistVideoIndex = useDownloaderPageStatesStore((state) => state.setSelectedPlaylistVideoIndex);
+
+    const videoFormat = useSettingsPageStatesStore(state => state.settings.video_format);
+    const audioFormat = useSettingsPageStatesStore(state => state.settings.audio_format);
     
     const audioOnlyFormats = videoMetadata?._type === 'video' ? sortByBitrate(videoMetadata?.formats.filter(fileFormatFilter('audio'))) : videoMetadata?._type === 'playlist' ? sortByBitrate(videoMetadata?.entries[Number(selectedPlaylistVideoIndex) - 1].formats.filter(fileFormatFilter('audio'))) : [];
     const videoOnlyFormats = videoMetadata?._type === 'video' ? sortByBitrate(videoMetadata?.formats.filter(fileFormatFilter('video'))) : videoMetadata?._type === 'playlist' ? sortByBitrate(videoMetadata?.entries[Number(selectedPlaylistVideoIndex) - 1].formats.filter(fileFormatFilter('video'))) : [];
@@ -104,6 +107,17 @@ export default function DownloaderPage() {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const bottomBarRef = useRef<HTMLDivElement>(null);
+
+    let selectedFormatExtensionMsg = 'Auto - unknown';
+    if (selectedFormat?.ext) {
+        if ((selectedFormatFileType === 'video+audio' || selectedFormatFileType === 'video') && videoFormat !== 'auto') {
+            selectedFormatExtensionMsg = `Forced - ${videoFormat.toUpperCase()}`;
+        } else if (selectedFormatFileType === 'audio' && audioFormat !== 'auto') {
+            selectedFormatExtensionMsg = `Forced - ${audioFormat.toUpperCase()}`;
+        } else {
+            selectedFormatExtensionMsg = `Auto - ${selectedFormat.ext.toUpperCase()}`;
+        }
+    }
 
     const searchForm = useForm<z.infer<typeof searchFormSchema>>({
         resolver: zodResolver(searchFormSchema),
@@ -596,7 +610,7 @@ export default function DownloaderPage() {
                         </div>
                         <div className="flex flex-col gap-1">
                             <span className="text-sm text-nowrap max-w-[30rem] xl:max-w-[50rem] overflow-hidden text-ellipsis">{videoMetadata._type === 'video' ? videoMetadata.title : videoMetadata._type === 'playlist' ? videoMetadata.entries[Number(selectedPlaylistVideoIndex) - 1].title : 'Unknown' }</span>
-                            <span className="text-xs text-muted-foreground">{selectedFormat?.ext ? selectedFormat.ext.toUpperCase() : 'unknown'} ({selectedFormat?.resolution ? selectedFormat.resolution : 'unknown'}) {selectedFormat?.dynamic_range && selectedFormat.dynamic_range !== 'SDR' ? selectedFormat.dynamic_range : null } {selectedSubtitles.length > 0 ? `• ESUB` : null} • {selectedFormat?.filesize_approx ? formatFileSize(selectedFormat?.filesize_approx) : 'unknown filesize'}</span>
+                            <span className="text-xs text-muted-foreground">{selectedFormatExtensionMsg} ({selectedFormat?.resolution ? selectedFormat.resolution : 'unknown'}) {selectedFormat?.dynamic_range && selectedFormat.dynamic_range !== 'SDR' ? selectedFormat.dynamic_range : null } {selectedSubtitles.length > 0 ? `• ESUB` : null} • {selectedFormat?.filesize_approx ? formatFileSize(selectedFormat?.filesize_approx) : 'unknown filesize'}</span>
                         </div>
                     </div>
                     <Button

@@ -57,6 +57,8 @@ export default function App({ children }: { children: React.ReactNode }) {
   const PREFER_VIDEO_OVER_PLAYLIST = useSettingsPageStatesStore(state => state.settings.prefer_video_over_playlist);
   const USE_PROXY = useSettingsPageStatesStore(state => state.settings.use_proxy);
   const PROXY_URL = useSettingsPageStatesStore(state => state.settings.proxy_url);
+  const VIDEO_FORMAT = useSettingsPageStatesStore(state => state.settings.video_format);
+  const AUDIO_FORMAT = useSettingsPageStatesStore(state => state.settings.audio_format);
 
   const appWindow = getCurrentWebviewWindow()
   const navigate = useNavigate();
@@ -144,6 +146,13 @@ export default function App({ children }: { children: React.ReactNode }) {
     console.log('Video Metadata:', videoMetadata);
     videoMetadata = isPlaylist ? videoMetadata.entries[0] : videoMetadata;
 
+    const fileType = determineFileType(videoMetadata.vcodec, videoMetadata.acodec);
+
+    if (fileType !== 'unknown' && (VIDEO_FORMAT !== 'auto' || AUDIO_FORMAT !== 'auto')) {
+      if (VIDEO_FORMAT !== 'auto' && (fileType === 'video+audio' || fileType === 'video')) videoMetadata.ext = VIDEO_FORMAT;
+      if (AUDIO_FORMAT !== 'auto' && fileType === 'audio') videoMetadata.ext = AUDIO_FORMAT;
+    }
+
     const videoId = resumeState?.video_id || generateVideoId(videoMetadata.id, videoMetadata.webpage_url_domain);
     const playlistId = isPlaylist ? (resumeState?.playlist_id || generateVideoId(videoMetadata.playlist_id, videoMetadata.webpage_url_domain)) : null;
     const downloadId = resumeState?.download_id || generateDownloadId(videoMetadata.id, videoMetadata.webpage_url_domain);
@@ -171,6 +180,18 @@ export default function App({ children }: { children: React.ReactNode }) {
 
     if (isPlaylist && playlistIndex && typeof playlistIndex === 'string') {
       args.push('--playlist-items', playlistIndex);
+    }
+
+    if (fileType !== 'unknown' && (VIDEO_FORMAT !== 'auto' || AUDIO_FORMAT !== 'auto')) {
+      if (VIDEO_FORMAT !== 'auto' && fileType === 'video+audio') {
+        args.push('--merge-output-format', VIDEO_FORMAT);
+      }
+      if (VIDEO_FORMAT !== 'auto' && fileType === 'video') {
+        args.push('--remux-video', VIDEO_FORMAT);
+      }
+      if (AUDIO_FORMAT !== 'auto' && fileType === 'audio') {
+        args.push('--extract-audio', '--audio-format', AUDIO_FORMAT);
+      }
     }
 
     if (resumeState) {

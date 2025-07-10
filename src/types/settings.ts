@@ -12,5 +12,8 @@ export interface Settings {
     prefer_video_over_playlist: boolean;
     use_proxy: boolean;
     proxy_url: string;
+    video_format: string;
+    audio_format: string;
+    // extension settings
     websocket_port: number;
 }

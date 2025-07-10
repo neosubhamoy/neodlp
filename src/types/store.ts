@@ -58,6 +58,8 @@ export interface DownloadActionStatesStore {
 
 export interface SettingsPageStatesStore {
     activeTab: string;
+    activeSubAppTab: string;
+    activeSubExtTab: string;
     appVersion: string | null;
     isFetchingAppVersion: boolean;
     ytDlpVersion: string | null;
@@ -72,6 +74,8 @@ export interface SettingsPageStatesStore {
     isUpdatingApp: boolean;
     appUpdateDownloadProgress: number;
     setActiveTab: (tab: string) => void;
+    setActiveSubAppTab: (tab: string) => void;
+    setActiveSubExtTab: (tab: string) => void;
     setAppVersion: (version: string | null) => void;
     setIsFetchingAppVersion: (isFetching: boolean) => void;
     setYtDlpVersion: (version: string | null) => void;

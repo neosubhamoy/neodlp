@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowDownToLine, ArrowRight, EthernetPort, ExternalLink, Folder, FolderOpen, Loader2, LucideIcon, Monitor, Moon, Radio, RotateCcw, RotateCw, Sun, Terminal, WandSparkles, Wifi, Wrench } from "lucide-react";
+import { ArrowDownToLine, ArrowRight, EthernetPort, ExternalLink, FileVideo, Folder, FolderOpen, Loader2, LucideIcon, Monitor, Moon, Radio, RotateCcw, RotateCw, Sun, Terminal, WandSparkles, Wifi, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { useTheme } from "@/providers/themeProvider";
@@ -23,6 +23,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { invoke } from "@tauri-apps/api/core";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { SlidingButton } from "@/components/custom/slidingButton";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const websocketPortSchema = z.object({
     port: z.coerce.number({
@@ -44,7 +45,11 @@ export default function SettingsPage() {
     const { setTheme } = useTheme();
 
     const activeTab = useSettingsPageStatesStore(state => state.activeTab);
+    const activeSubAppTab = useSettingsPageStatesStore(state => state.activeSubAppTab);
+    const activeSubExtTab = useSettingsPageStatesStore(state => state.activeSubExtTab);
     const setActiveTab = useSettingsPageStatesStore(state => state.setActiveTab);
+    const setActiveSubAppTab = useSettingsPageStatesStore(state => state.setActiveSubAppTab);
+    const setActiveSubExtTab = useSettingsPageStatesStore(state => state.setActiveSubExtTab);
 
     const isUsingDefaultSettings = useSettingsPageStatesStore(state => state.isUsingDefaultSettings);
     const ytDlpVersion = useSettingsPageStatesStore(state => state.ytDlpVersion);
@@ -57,6 +62,8 @@ export default function SettingsPage() {
     const preferVideoOverPlaylist = useSettingsPageStatesStore(state => state.settings.prefer_video_over_playlist);
     const useProxy = useSettingsPageStatesStore(state => state.settings.use_proxy);
     const proxyUrl = useSettingsPageStatesStore(state => state.settings.proxy_url);
+    const videoFormat = useSettingsPageStatesStore(state => state.settings.video_format);
+    const audioFormat = useSettingsPageStatesStore(state => state.settings.audio_format);
     const websocketPort = useSettingsPageStatesStore(state => state.settings.websocket_port);
     const isChangingWebSocketPort = useSettingsPageStatesStore(state => state.isChangingWebSocketPort);
     const setIsChangingWebSocketPort = useSettingsPageStatesStore(state => state.setIsChangingWebSocketPort);
@@ -269,9 +276,10 @@ export default function SettingsPage() {
                         </div>
                     </Card>
                     <Tabs
-                    orientation="vertical"
-                    defaultValue="general"
                     className="w-full flex flex-row items-start gap-4 mt-10"
+                    orientation="vertical"
+                    value={activeSubAppTab}
+                    onValueChange={setActiveSubAppTab}
                     >
                         <TabsList className="shrink-0 grid grid-cols-1 gap-1 p-0 bg-background min-w-45">
                             <TabsTrigger
@@ -290,13 +298,18 @@ export default function SettingsPage() {
                                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
                             ><Folder className="size-4" /> Folders</TabsTrigger>
                             <TabsTrigger
+                                key="formats"
+                                value="formats"
+                                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
+                            ><FileVideo className="size-4" /> Formats</TabsTrigger>
+                            <TabsTrigger
                                 key="network"
                                 value="network"
                                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
                             ><Wifi className="size-4" /> Network</TabsTrigger>
                         </TabsList>
                         <div className="min-h-full flex flex-col max-w-[55%] w-full border-l border-border pl-4">
-                            <TabsContent key="general" value="general" className="flex flex-col gap-4 min-h-[150px]">
+                            <TabsContent key="general" value="general" className="flex flex-col gap-4 min-h-[190px]">
                                 <div className="max-parallel-downloads">
                                     <h3 className="font-semibold">Max Parallel Downloads</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Set maximum number of allowed parallel downloads</p>
@@ -320,7 +333,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                             </TabsContent>
-                            <TabsContent key="appearance" value="appearance" className="flex flex-col gap-4 min-h-[150px]">
+                            <TabsContent key="appearance" value="appearance" className="flex flex-col gap-4 min-h-[190px]">
                                 <div className="app-theme">
                                     <h3 className="font-semibold">Theme</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Choose app interface theme</p>
@@ -343,7 +356,7 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="folders" value="folders" className="flex flex-col gap-4 min-h-[150px]">
+                            <TabsContent key="folders" value="folders" className="flex flex-col gap-4 min-h-[190px]">
                                 <div className="download-dir">
                                     <h3 className="font-semibold">Download Folder</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Set default download folder (directory)</p>
@@ -376,7 +389,63 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="network" value="network" className="flex flex-col gap-4 min-h-[150px]">
+                            <TabsContent key="formats" value="formats" className="flex flex-col gap-4 min-h-[190px]">
+                                <div className="video-format">
+                                    <h3 className="font-semibold">Video Format</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Choose in which format the final video file will be saved</p>
+                                    <RadioGroup
+                                    orientation="horizontal"
+                                    className="flex items-center gap-4"
+                                    value={videoFormat}
+                                    onValueChange={(value) => saveSettingsKey('video_format', value)}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <RadioGroupItem value="auto" id="v-auto" />
+                                            <Label htmlFor="v-auto">Auto (Default)</Label>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <RadioGroupItem value="mp4" id="v-mp4" />
+                                            <Label htmlFor="v-mp4">MP4</Label>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <RadioGroupItem value="webm" id="v-webm" />
+                                            <Label htmlFor="v-webm">WEBM</Label>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <RadioGroupItem value="mkv" id="v-mkv" />
+                                            <Label htmlFor="v-mkv">MKV</Label>
+                                        </div>
+                                    </RadioGroup>
+                                </div>
+                                <div className="audio-format">
+                                    <h3 className="font-semibold">Audio Format</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Choose in which format the final audio file will be saved</p>
+                                    <RadioGroup
+                                    orientation="horizontal"
+                                    className="flex items-center gap-4"
+                                    value={audioFormat}
+                                    onValueChange={(value) => saveSettingsKey('audio_format', value)}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <RadioGroupItem value="auto" id="a-auto" />
+                                            <Label htmlFor="a-auto">Auto (Default)</Label>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <RadioGroupItem value="m4a" id="a-m4a" />
+                                            <Label htmlFor="a-m4a">M4A</Label>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <RadioGroupItem value="opus" id="a-opus" />
+                                            <Label htmlFor="a-opus">OPUS</Label>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <RadioGroupItem value="mp3" id="a-mp3" />
+                                            <Label htmlFor="a-mp3">MP3</Label>
+                                        </div>
+                                    </RadioGroup>
+                                </div>
+                            </TabsContent>
+                            <TabsContent key="network" value="network" className="flex flex-col gap-4 min-h-[190px]">
                                 <div className="proxy">
                                     <h3 className="font-semibold">Proxy</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Use proxy for downloads, Unblocks blocked sites in your region (Download speed may affect, Some sites may not work)</p>
@@ -474,9 +543,10 @@ export default function SettingsPage() {
                         </div>
                     </Card>
                     <Tabs
-                    orientation="vertical"
-                    defaultValue="install"
                     className="w-full flex flex-row items-start gap-4 mt-10"
+                    orientation="vertical"
+                    value={activeSubExtTab}
+                    onValueChange={setActiveSubExtTab}
                     >
                         <TabsList className="shrink-0 grid grid-cols-1 gap-1 p-0 bg-background min-w-45">
                             <TabsTrigger

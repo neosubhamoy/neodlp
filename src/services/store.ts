@@ -94,6 +94,8 @@ export const useDownloadActionStatesStore = create<DownloadActionStatesStore>((s
 
 export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) => ({
     activeTab: 'app',
+    activeSubAppTab: 'general',
+    activeSubExtTab: 'install',
     appVersion: null,
     isFetchingAppVersion: false,
     ytDlpVersion: null,
@@ -108,6 +110,8 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         max_parallel_downloads: 2,
         use_proxy: false,
         proxy_url: '',
+        video_format: 'auto',
+        audio_format: 'auto',
         websocket_port: 53511
     },
     isUsingDefaultSettings: true,
@@ -118,6 +122,8 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
     isUpdatingApp: false,
     appUpdateDownloadProgress: 0,
     setActiveTab: (tab) => set(() => ({ activeTab: tab })),
+    setActiveSubAppTab: (tab) => set(() => ({ activeSubAppTab: tab })),
+    setActiveSubExtTab: (tab) => set(() => ({ activeSubExtTab: tab })),
     setAppVersion: (version) => set(() => ({ appVersion: version })),
     setIsFetchingAppVersion: (isFetching) => set(() => ({ isFetchingAppVersion: isFetching })),
     setYtDlpVersion: (version) => set(() => ({ ytDlpVersion: version })),
@@ -140,6 +146,8 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             max_parallel_downloads: 2,
             use_proxy: false,
             proxy_url: '',
+            video_format: 'auto',
+            audio_format: 'auto',
             websocket_port: 53511
         },
         isUsingDefaultSettings: true
