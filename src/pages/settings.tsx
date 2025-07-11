@@ -60,6 +60,7 @@ export default function SettingsPage() {
     const appTheme = useSettingsPageStatesStore(state => state.settings.theme);
     const maxParallelDownloads = useSettingsPageStatesStore(state => state.settings.max_parallel_downloads);
     const preferVideoOverPlaylist = useSettingsPageStatesStore(state => state.settings.prefer_video_over_playlist);
+    const showDownloadableStreamsOnly = useSettingsPageStatesStore(state => state.settings.show_downloadable_streams_only);
     const useProxy = useSettingsPageStatesStore(state => state.settings.use_proxy);
     const proxyUrl = useSettingsPageStatesStore(state => state.settings.proxy_url);
     const videoFormat = useSettingsPageStatesStore(state => state.settings.video_format);
@@ -339,6 +340,15 @@ export default function SettingsPage() {
                                     id="prefer-video-over-playlist"
                                     checked={preferVideoOverPlaylist}
                                     onCheckedChange={(checked) => saveSettingsKey('prefer_video_over_playlist', checked)}
+                                    />
+                                </div>
+                                <div className="show-downloadable-streams-only">
+                                    <h3 className="font-semibold">Show Downloadable Streams Only (Strict)</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Check, filter-out and show the streams that are actualy downloadable (high quality results, takes longer time to search, start a download)</p>
+                                    <Switch
+                                    id="show-downloadable-streams-only"
+                                    checked={showDownloadableStreamsOnly}
+                                    onCheckedChange={(checked) => saveSettingsKey('show_downloadable_streams_only', checked)}
                                     />
                                 </div>
                             </TabsContent>
