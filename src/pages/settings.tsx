@@ -64,6 +64,7 @@ export default function SettingsPage() {
     const proxyUrl = useSettingsPageStatesStore(state => state.settings.proxy_url);
     const videoFormat = useSettingsPageStatesStore(state => state.settings.video_format);
     const audioFormat = useSettingsPageStatesStore(state => state.settings.audio_format);
+    const alwaysReencodeVideo = useSettingsPageStatesStore(state => state.settings.always_reencode_video);
     const embedVideoMetadata = useSettingsPageStatesStore(state => state.settings.embed_video_metadata);
     const embedAudioMetadata = useSettingsPageStatesStore(state => state.settings.embed_audio_metadata);
     const embedAudioThumbnail = useSettingsPageStatesStore(state => state.settings.embed_audio_thumbnail);
@@ -451,6 +452,15 @@ export default function SettingsPage() {
                                             <Label htmlFor="a-mp3">MP3</Label>
                                         </div>
                                     </RadioGroup>
+                                </div>
+                                <div className="always-reencode-video">
+                                    <h3 className="font-semibold">Always Re-Encode Video</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Instead of remuxing (simple container change) always re-encode the video to the target format with best compatible codecs (better compatibility, takes longer processing time)</p>
+                                    <Switch
+                                    id="always-reencode-video"
+                                    checked={alwaysReencodeVideo}
+                                    onCheckedChange={(checked) => saveSettingsKey('always_reencode_video', checked)}
+                                    />
                                 </div>
                             </TabsContent>
                             <TabsContent key="metadata" value="metadata" className="flex flex-col gap-4 min-h-[235px]">

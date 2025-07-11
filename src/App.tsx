@@ -59,6 +59,7 @@ export default function App({ children }: { children: React.ReactNode }) {
   const PROXY_URL = useSettingsPageStatesStore(state => state.settings.proxy_url);
   const VIDEO_FORMAT = useSettingsPageStatesStore(state => state.settings.video_format);
   const AUDIO_FORMAT = useSettingsPageStatesStore(state => state.settings.audio_format);
+  const ALWAYS_REENCODE_VIDEO = useSettingsPageStatesStore(state => state.settings.always_reencode_video);
   const EMBED_VIDEO_METADATA = useSettingsPageStatesStore(state => state.settings.embed_video_metadata);
   const EMBED_AUDIO_METADATA = useSettingsPageStatesStore(state => state.settings.embed_audio_metadata);
   const EMBED_AUDIO_THUMBNAIL = useSettingsPageStatesStore(state => state.settings.embed_audio_thumbnail);
@@ -187,10 +188,18 @@ export default function App({ children }: { children: React.ReactNode }) {
 
     if (fileType !== 'unknown' && (VIDEO_FORMAT !== 'auto' || AUDIO_FORMAT !== 'auto')) {
       if (VIDEO_FORMAT !== 'auto' && fileType === 'video+audio') {
-        args.push('--merge-output-format', VIDEO_FORMAT);
+        if (ALWAYS_REENCODE_VIDEO) {
+          args.push('--recode-video', VIDEO_FORMAT);
+        } else {
+          args.push('--merge-output-format', VIDEO_FORMAT);
+        }
       }
       if (VIDEO_FORMAT !== 'auto' && fileType === 'video') {
+        if (ALWAYS_REENCODE_VIDEO) {
+          args.push('--recode-video', VIDEO_FORMAT);
+        } else {
         args.push('--remux-video', VIDEO_FORMAT);
+        }
       }
       if (AUDIO_FORMAT !== 'auto' && fileType === 'audio') {
         args.push('--extract-audio', '--audio-format', AUDIO_FORMAT);
