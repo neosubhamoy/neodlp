@@ -112,6 +112,9 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         proxy_url: '',
         video_format: 'auto',
         audio_format: 'auto',
+        embed_video_metadata: false,
+        embed_audio_metadata: true,
+        embed_audio_thumbnail: true,
         websocket_port: 53511
     },
     isUsingDefaultSettings: true,
@@ -148,6 +151,9 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             proxy_url: '',
             video_format: 'auto',
             audio_format: 'auto',
+            embed_video_metadata: false,
+            embed_audio_metadata: true,
+            embed_audio_thumbnail: true,
             websocket_port: 53511
         },
         isUsingDefaultSettings: true

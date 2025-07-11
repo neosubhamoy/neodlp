@@ -14,6 +14,9 @@ export interface Settings {
     proxy_url: string;
     video_format: string;
     audio_format: string;
+    embed_video_metadata: boolean;
+    embed_audio_metadata: boolean;
+    embed_audio_thumbnail: boolean;
     // extension settings
     websocket_port: number;
 }

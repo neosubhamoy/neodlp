@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowDownToLine, ArrowRight, EthernetPort, ExternalLink, FileVideo, Folder, FolderOpen, Loader2, LucideIcon, Monitor, Moon, Radio, RotateCcw, RotateCw, Sun, Terminal, WandSparkles, Wifi, Wrench } from "lucide-react";
+import { ArrowDownToLine, ArrowRight, EthernetPort, ExternalLink, FileVideo, Folder, FolderOpen, Info, Loader2, LucideIcon, Monitor, Moon, Radio, RotateCcw, RotateCw, Sun, Terminal, WandSparkles, Wifi, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { useTheme } from "@/providers/themeProvider";
@@ -64,6 +64,9 @@ export default function SettingsPage() {
     const proxyUrl = useSettingsPageStatesStore(state => state.settings.proxy_url);
     const videoFormat = useSettingsPageStatesStore(state => state.settings.video_format);
     const audioFormat = useSettingsPageStatesStore(state => state.settings.audio_format);
+    const embedVideoMetadata = useSettingsPageStatesStore(state => state.settings.embed_video_metadata);
+    const embedAudioMetadata = useSettingsPageStatesStore(state => state.settings.embed_audio_metadata);
+    const embedAudioThumbnail = useSettingsPageStatesStore(state => state.settings.embed_audio_thumbnail);
     const websocketPort = useSettingsPageStatesStore(state => state.settings.websocket_port);
     const isChangingWebSocketPort = useSettingsPageStatesStore(state => state.isChangingWebSocketPort);
     const setIsChangingWebSocketPort = useSettingsPageStatesStore(state => state.setIsChangingWebSocketPort);
@@ -303,13 +306,18 @@ export default function SettingsPage() {
                                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
                             ><FileVideo className="size-4" /> Formats</TabsTrigger>
                             <TabsTrigger
+                                key="metadata"
+                                value="metadata"
+                                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
+                            ><Info className="size-4" /> Metadata</TabsTrigger>
+                            <TabsTrigger
                                 key="network"
                                 value="network"
                                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
                             ><Wifi className="size-4" /> Network</TabsTrigger>
                         </TabsList>
                         <div className="min-h-full flex flex-col max-w-[55%] w-full border-l border-border pl-4">
-                            <TabsContent key="general" value="general" className="flex flex-col gap-4 min-h-[190px]">
+                            <TabsContent key="general" value="general" className="flex flex-col gap-4 min-h-[235px]">
                                 <div className="max-parallel-downloads">
                                     <h3 className="font-semibold">Max Parallel Downloads</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Set maximum number of allowed parallel downloads</p>
@@ -333,7 +341,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                             </TabsContent>
-                            <TabsContent key="appearance" value="appearance" className="flex flex-col gap-4 min-h-[190px]">
+                            <TabsContent key="appearance" value="appearance" className="flex flex-col gap-4 min-h-[235px]">
                                 <div className="app-theme">
                                     <h3 className="font-semibold">Theme</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Choose app interface theme</p>
@@ -356,7 +364,7 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="folders" value="folders" className="flex flex-col gap-4 min-h-[190px]">
+                            <TabsContent key="folders" value="folders" className="flex flex-col gap-4 min-h-[235px]">
                                 <div className="download-dir">
                                     <h3 className="font-semibold">Download Folder</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Set default download folder (directory)</p>
@@ -389,7 +397,7 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="formats" value="formats" className="flex flex-col gap-4 min-h-[190px]">
+                            <TabsContent key="formats" value="formats" className="flex flex-col gap-4 min-h-[235px]">
                                 <div className="video-format">
                                     <h3 className="font-semibold">Video Format</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Choose in which format the final video file will be saved</p>
@@ -445,7 +453,38 @@ export default function SettingsPage() {
                                     </RadioGroup>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="network" value="network" className="flex flex-col gap-4 min-h-[190px]">
+                            <TabsContent key="metadata" value="metadata" className="flex flex-col gap-4 min-h-[235px]">
+                                <div className="embed-video-metadata">
+                                    <h3 className="font-semibold">Embed Metadata</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Wheather to embed metadata in video/audio files (info, chapters)</p>
+                                    <div className="flex items-center space-x-2 mb-3">
+                                        <Switch
+                                        id="embed-video-metadata"
+                                        checked={embedVideoMetadata}
+                                        onCheckedChange={(checked) => saveSettingsKey('embed_video_metadata', checked)}
+                                        />
+                                        <Label htmlFor="embed-video-metadata">Video</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <Switch
+                                        id="embed-audio-metadata"
+                                        checked={embedAudioMetadata}
+                                        onCheckedChange={(checked) => saveSettingsKey('embed_audio_metadata', checked)}
+                                        />
+                                        <Label htmlFor="embed-audio-metadata">Audio</Label>
+                                    </div>
+                                </div>
+                                <div className="embed-audio-thumbnail">
+                                    <h3 className="font-semibold">Embed Thumbnail in Audio</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Wheather to embed thumbnail in audio files (as cover art)</p>
+                                    <Switch
+                                    id="embed-audio-thumbnail"
+                                    checked={embedAudioThumbnail}
+                                    onCheckedChange={(checked) => saveSettingsKey('embed_audio_thumbnail', checked)}
+                                    />
+                                </div>
+                            </TabsContent>
+                            <TabsContent key="network" value="network" className="flex flex-col gap-4 min-h-[235px]">
                                 <div className="proxy">
                                     <h3 className="font-semibold">Proxy</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Use proxy for downloads, Unblocks blocked sites in your region (Download speed may affect, Some sites may not work)</p>

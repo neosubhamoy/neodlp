@@ -59,6 +59,9 @@ export default function App({ children }: { children: React.ReactNode }) {
   const PROXY_URL = useSettingsPageStatesStore(state => state.settings.proxy_url);
   const VIDEO_FORMAT = useSettingsPageStatesStore(state => state.settings.video_format);
   const AUDIO_FORMAT = useSettingsPageStatesStore(state => state.settings.audio_format);
+  const EMBED_VIDEO_METADATA = useSettingsPageStatesStore(state => state.settings.embed_video_metadata);
+  const EMBED_AUDIO_METADATA = useSettingsPageStatesStore(state => state.settings.embed_audio_metadata);
+  const EMBED_AUDIO_THUMBNAIL = useSettingsPageStatesStore(state => state.settings.embed_audio_thumbnail);
 
   const appWindow = getCurrentWebviewWindow()
   const navigate = useNavigate();
@@ -192,6 +195,19 @@ export default function App({ children }: { children: React.ReactNode }) {
       if (AUDIO_FORMAT !== 'auto' && fileType === 'audio') {
         args.push('--extract-audio', '--audio-format', AUDIO_FORMAT);
       }
+    }
+
+    if (fileType !== 'unknown' && (EMBED_VIDEO_METADATA || EMBED_AUDIO_METADATA)) {
+      if (EMBED_VIDEO_METADATA && (fileType === 'video+audio' || fileType === 'video')) {
+        args.push('--embed-metadata');
+      }
+      if (EMBED_AUDIO_METADATA && fileType === 'audio') {
+        args.push('--embed-metadata');
+      }
+    }
+
+    if (EMBED_AUDIO_THUMBNAIL && fileType === 'audio') {
+      args.push('--embed-thumbnail');
     }
 
     if (resumeState) {
