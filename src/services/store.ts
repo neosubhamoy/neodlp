@@ -42,12 +42,18 @@ export const useCurrentVideoMetadataStore = create<CurrentVideoMetadataStore>((s
 }));
 
 export const useDownloaderPageStatesStore = create<DownloaderPageStatesStore>((set) => ({
+    activeDownloadModeTab: 'selective',
     isStartingDownload: false,
-    selctedDownloadFormat: 'best',
+    selectedDownloadFormat: 'best',
+    selectedCombinableVideoFormat: '',
+    selectedCombinableAudioFormat: '',
     selectedSubtitles: [],
     selectedPlaylistVideoIndex: '1',
+    setActiveDownloadModeTab: (tab) => set(() => ({ activeDownloadModeTab: tab })),
     setIsStartingDownload: (isStarting) => set(() => ({ isStartingDownload: isStarting })),
-    setSelctedDownloadFormat: (format) => set(() => ({ selctedDownloadFormat: format })),
+    setSelectedDownloadFormat: (format) => set(() => ({ selectedDownloadFormat: format })),
+    setSelectedCombinableVideoFormat: (format) => set(() => ({ selectedCombinableVideoFormat: format })),
+    setSelectedCombinableAudioFormat: (format) => set(() => ({ selectedCombinableAudioFormat: format })),
     setSelectedSubtitles: (subtitles) => set(() => ({ selectedSubtitles: subtitles })),
     setSelectedPlaylistVideoIndex: (index) => set(() => ({ selectedPlaylistVideoIndex: index }))
 }));
@@ -107,7 +113,7 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         theme: 'system',
         download_dir: '',
         prefer_video_over_playlist: true,
-        show_downloadable_streams_only: false,
+        strict_downloadablity_check: false,
         max_parallel_downloads: 2,
         use_proxy: false,
         proxy_url: '',
@@ -148,7 +154,7 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             theme: 'system',
             download_dir: '',
             prefer_video_over_playlist: true,
-            show_downloadable_streams_only: false,
+            strict_downloadablity_check: false,
             max_parallel_downloads: 2,
             use_proxy: false,
             proxy_url: '',

@@ -55,7 +55,7 @@ export default function App({ children }: { children: React.ReactNode }) {
   const MAX_PARALLEL_DOWNLOADS = useSettingsPageStatesStore(state => state.settings.max_parallel_downloads);
   const DOWNLOAD_DIR = useSettingsPageStatesStore(state => state.settings.download_dir);
   const PREFER_VIDEO_OVER_PLAYLIST = useSettingsPageStatesStore(state => state.settings.prefer_video_over_playlist);
-  const SHOW_DOWNLOADABLE_STREAMS_ONLY = useSettingsPageStatesStore(state => state.settings.show_downloadable_streams_only);
+  const STRICT_DOWNLOADABILITY_CHECK = useSettingsPageStatesStore(state => state.settings.strict_downloadablity_check);
   const USE_PROXY = useSettingsPageStatesStore(state => state.settings.use_proxy);
   const PROXY_URL = useSettingsPageStatesStore(state => state.settings.proxy_url);
   const VIDEO_FORMAT = useSettingsPageStatesStore(state => state.settings.video_format);
@@ -92,11 +92,12 @@ export default function App({ children }: { children: React.ReactNode }) {
   
   const fetchVideoMetadata = async (url: string, formatId?: string, playlistIndex?: string): Promise<RawVideoInfo | null> => {
     try {
-      const args = [url, '--dump-single-json'];
+      const args = [url, '--dump-single-json', '--no-warnings'];
       if (formatId) args.push('-f', formatId);
       if (playlistIndex) args.push('--playlist-items', playlistIndex);
       if (PREFER_VIDEO_OVER_PLAYLIST) args.push('--no-playlist');
-      if (SHOW_DOWNLOADABLE_STREAMS_ONLY) args.push('--check-all-formats');
+      if (STRICT_DOWNLOADABILITY_CHECK && !formatId) args.push('--check-all-formats');
+      if (STRICT_DOWNLOADABILITY_CHECK && formatId) args.push('--check-formats');
       if (USE_PROXY && PROXY_URL) args.push('--proxy', PROXY_URL);
       const command = Command.sidecar('binaries/yt-dlp', args);
 
@@ -178,6 +179,7 @@ export default function App({ children }: { children: React.ReactNode }) {
       '-f',
       selectedFormat,
       '--no-mtime',
+      '--no-warnings',
     ];
 
     if (selectedSubtitles) {

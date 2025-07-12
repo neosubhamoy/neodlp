@@ -10,7 +10,7 @@ export interface Settings {
     download_dir: string;
     max_parallel_downloads: number;
     prefer_video_over_playlist: boolean;
-    show_downloadable_streams_only: boolean;
+    strict_downloadablity_check: boolean;
     use_proxy: boolean;
     proxy_url: string;
     video_format: string;

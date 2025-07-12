@@ -31,12 +31,18 @@ export interface CurrentVideoMetadataStore {
 }
 
 export interface DownloaderPageStatesStore {
+    activeDownloadModeTab: string;
     isStartingDownload: boolean;
-    selctedDownloadFormat: string;
+    selectedDownloadFormat: string;
+    selectedCombinableVideoFormat: string;
+    selectedCombinableAudioFormat: string;
     selectedSubtitles: string[];
     selectedPlaylistVideoIndex: string;
+    setActiveDownloadModeTab: (tab: string) => void;
     setIsStartingDownload: (isStarting: boolean) => void;
-    setSelctedDownloadFormat: (format: string) => void;
+    setSelectedDownloadFormat: (format: string) => void;
+    setSelectedCombinableVideoFormat: (format: string) => void;
+    setSelectedCombinableAudioFormat: (format: string) => void;
     setSelectedSubtitles: (subtitles: string[]) => void;
     setSelectedPlaylistVideoIndex: (index: string) => void;
 }

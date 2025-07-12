@@ -60,7 +60,7 @@ export default function SettingsPage() {
     const appTheme = useSettingsPageStatesStore(state => state.settings.theme);
     const maxParallelDownloads = useSettingsPageStatesStore(state => state.settings.max_parallel_downloads);
     const preferVideoOverPlaylist = useSettingsPageStatesStore(state => state.settings.prefer_video_over_playlist);
-    const showDownloadableStreamsOnly = useSettingsPageStatesStore(state => state.settings.show_downloadable_streams_only);
+    const strictDownloadabilityCheck = useSettingsPageStatesStore(state => state.settings.strict_downloadablity_check);
     const useProxy = useSettingsPageStatesStore(state => state.settings.use_proxy);
     const proxyUrl = useSettingsPageStatesStore(state => state.settings.proxy_url);
     const videoFormat = useSettingsPageStatesStore(state => state.settings.video_format);
@@ -281,7 +281,7 @@ export default function SettingsPage() {
                         </div>
                     </Card>
                     <Tabs
-                    className="w-full flex flex-row items-start gap-4 mt-10"
+                    className="w-full flex flex-row items-start gap-4 mt-7"
                     orientation="vertical"
                     value={activeSubAppTab}
                     onValueChange={setActiveSubAppTab}
@@ -342,13 +342,13 @@ export default function SettingsPage() {
                                     onCheckedChange={(checked) => saveSettingsKey('prefer_video_over_playlist', checked)}
                                     />
                                 </div>
-                                <div className="show-downloadable-streams-only">
-                                    <h3 className="font-semibold">Show Downloadable Streams Only (Strict)</h3>
-                                    <p className="text-xs text-muted-foreground mb-3">Check, filter-out and show the streams that are actualy downloadable (high quality results, takes longer time to search, start a download)</p>
+                                <div className="strict-downloadability-check">
+                                    <h3 className="font-semibold">Strict Downloadablity Check</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Only show streams that are actualy downloadable, also check formats before downloading (high quality results, takes longer time to search)</p>
                                     <Switch
-                                    id="show-downloadable-streams-only"
-                                    checked={showDownloadableStreamsOnly}
-                                    onCheckedChange={(checked) => saveSettingsKey('show_downloadable_streams_only', checked)}
+                                    id="strict-downloadablity-check"
+                                    checked={strictDownloadabilityCheck}
+                                    onCheckedChange={(checked) => saveSettingsKey('strict_downloadablity_check', checked)}
                                     />
                                 </div>
                             </TabsContent>
@@ -507,7 +507,7 @@ export default function SettingsPage() {
                             <TabsContent key="network" value="network" className="flex flex-col gap-4 min-h-[235px]">
                                 <div className="proxy">
                                     <h3 className="font-semibold">Proxy</h3>
-                                    <p className="text-xs text-muted-foreground mb-3">Use proxy for downloads, Unblocks blocked sites in your region (Download speed may affect, Some sites may not work)</p>
+                                    <p className="text-xs text-muted-foreground mb-3">Use proxy for downloads, Unblocks blocked sites in your region (download speed may affect, some sites may not work)</p>
                                     <div className="flex items-center space-x-2 mb-4">
                                         <Switch
                                         id="use-proxy"
@@ -602,7 +602,7 @@ export default function SettingsPage() {
                         </div>
                     </Card>
                     <Tabs
-                    className="w-full flex flex-row items-start gap-4 mt-10"
+                    className="w-full flex flex-row items-start gap-4 mt-7"
                     orientation="vertical"
                     value={activeSubExtTab}
                     onValueChange={setActiveSubExtTab}
@@ -667,7 +667,7 @@ export default function SettingsPage() {
                                         <Button variant="outline" onClick={() => openLink('https://chromewebstore.google.com/detail/neo-downloader-plus/mehopeailfjmiloiiohgicphlcgpompf', 'arc')}>Arc</Button>
                                         <Button variant="outline" onClick={() => openLink('https://addons.mozilla.org/en-US/firefox/addon/neo-downloader-plus', 'zen')}>Zen</Button>
                                     </div>
-                                    <p className="text-xs text-muted-foreground mb-2">* These links opens with coresponding browsers only. Make sure the browser is installed befor clicking the link</p>
+                                    <p className="text-xs text-muted-foreground mb-2">* These links opens with coresponding browsers only. Make sure the browser is installed before clicking the link</p>
                                 </div>
                             </TabsContent>
                             <TabsContent key="port" value="port" className="flex flex-col gap-4 min-h-[150px] max-w-[70%]">
