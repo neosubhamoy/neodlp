@@ -560,7 +560,13 @@ export default function SettingsPage() {
                                 </div>
                                 <div className="flex flex-col">
                                     <h3 className="">Extension Websocket Server</h3>
-                                    <p className="text-xs text-muted-foreground">{isChangingWebSocketPort || isRestartingWebSocketServer ? 'Restarting...' : 'Running' }</p>
+                                    <div className="text-xs flex items-center">
+                                        {isChangingWebSocketPort || isRestartingWebSocketServer ? (
+                                            <><div className="h-1.5 w-1.5 rounded-full bg-amber-600 dark:bg-amber-500 mr-1.5 mt-0.5" /><span className="text-amber-600 dark:text-amber-500">Restarting...</span></>
+                                        ) : (
+                                            <><div className="h-1.5 w-1.5 rounded-full bg-emerald-600 dark:bg-emerald-500 mr-1.5 mt-0.5" /><span className="text-emerald-600 dark:text-emerald-500">Running</span></>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex gap-4 items-center">

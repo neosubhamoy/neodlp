@@ -47,6 +47,11 @@ export interface DownloaderPageStatesStore {
     setSelectedPlaylistVideoIndex: (index: string) => void;
 }
 
+export interface LibraryPageStatesStore {
+    activeTab: string;
+    setActiveTab: (tab: string) => void;
+}
+
 export interface DownloadActionStatesStore {
     downloadActions: {
         [download_id: string]: {

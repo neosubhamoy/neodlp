@@ -1,4 +1,4 @@
-import { BasePathsStore, CurrentVideoMetadataStore, DownloadActionStatesStore, DownloaderPageStatesStore, DownloadStatesStore, KvPairsStatesStore, SettingsPageStatesStore } from '@/types/store';
+import { BasePathsStore, CurrentVideoMetadataStore, DownloadActionStatesStore, DownloaderPageStatesStore, DownloadStatesStore, KvPairsStatesStore, LibraryPageStatesStore, SettingsPageStatesStore } from '@/types/store';
 import { create } from 'zustand';
 
 export const useBasePathsStore = create<BasePathsStore>((set) => ({
@@ -56,6 +56,11 @@ export const useDownloaderPageStatesStore = create<DownloaderPageStatesStore>((s
     setSelectedCombinableAudioFormat: (format) => set(() => ({ selectedCombinableAudioFormat: format })),
     setSelectedSubtitles: (subtitles) => set(() => ({ selectedSubtitles: subtitles })),
     setSelectedPlaylistVideoIndex: (index) => set(() => ({ selectedPlaylistVideoIndex: index }))
+}));
+
+export const useLibraryPageStatesStore = create<LibraryPageStatesStore>((set) => ({
+    activeTab: 'completed',
+    setActiveTab: (tab) => set(() => ({ activeTab: tab }))
 }));
 
 export const useDownloadActionStatesStore = create<DownloadActionStatesStore>((set) => ({
