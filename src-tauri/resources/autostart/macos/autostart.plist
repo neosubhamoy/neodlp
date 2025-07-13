@@ -6,7 +6,7 @@
         <string>com.neosubhamoy.neodlp</string>
         <key>ProgramArguments</key>
         <array>
-            <string>/Applications/neodlp.app/Contents/MacOS/neodlp</string>
+            <string>/Applications/NeoDLP.app/Contents/MacOS/neodlp</string>
             <string>--hidden</string>
         </array>
         <key>RunAtLoad</key>

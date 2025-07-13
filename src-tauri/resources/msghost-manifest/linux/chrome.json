@@ -3,5 +3,5 @@
     "description": "NeoDLP MsgHost",
     "path": "/usr/bin/neodlp-msghost",
     "type": "stdio",
-    "allowed_origins": ["chrome-extension://mehopeailfjmiloiiohgicphlcgpompf/", "chrome-extension://agkddibgemhefmdhlnooiakfnhihhbdb/"]
+    "allowed_origins": ["chrome-extension://mehopeailfjmiloiiohgicphlcgpompf/"]
 }

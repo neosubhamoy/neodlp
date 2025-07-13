@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowDownToLine, ArrowRight, EthernetPort, ExternalLink, FileVideo, Folder, FolderOpen, Info, Loader2, LucideIcon, Monitor, Moon, Radio, RotateCcw, RotateCw, Sun, Terminal, WandSparkles, Wifi, Wrench } from "lucide-react";
+import { ArrowDownToLine, ArrowRight, BrushCleaning, EthernetPort, ExternalLink, FileVideo, Folder, FolderOpen, Info, Loader2, LucideIcon, Monitor, Moon, Radio, RotateCcw, RotateCw, Sun, Terminal, WandSparkles, Wifi, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { useTheme } from "@/providers/themeProvider";
@@ -24,6 +24,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { SlidingButton } from "@/components/custom/slidingButton";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import * as fs from "@tauri-apps/plugin-fs";
+import { join } from "@tauri-apps/api/path";
 
 const websocketPortSchema = z.object({
     port: z.coerce.number({
@@ -81,6 +83,7 @@ export default function SettingsPage() {
     );
 
     const downloadDirPath = useBasePathsStore((state) => state.downloadDirPath);
+    const tempDownloadDirPath = useBasePathsStore((state) => state.tempDownloadDirPath);
     const setPath = useBasePathsStore((state) => state.setPath);
     const { saveSettingsKey, resetSettings } = useSettings();
     const { updateYtDlp } = useYtDlpUpdater();
@@ -107,6 +110,35 @@ export default function SettingsPage() {
                 description: 'An error occurred while trying to open the link.',
                 variant: "destructive"
             })
+        }
+    }
+
+    const cleanTemporaryDownloads = async () => {
+        const tempFiles = await fs.readDir(tempDownloadDirPath ?? '');
+        if (tempFiles.length > 0) {
+            try {
+                for (const file of tempFiles) {
+                    if (file.isFile) {
+                        const filePath = await join(tempDownloadDirPath ?? '', file.name);
+                        await fs.remove(filePath);
+                    }
+                }
+                toast({
+                    title: "Temporary Downloads Cleaned",
+                    description: "All temporary downloads have been successfully cleaned up.",
+                });
+            } catch (e) {
+                toast({
+                    title: "Temporary Downloads Cleanup Failed",
+                    description: "An error occurred while trying to clean up temporary downloads. Please try again.",
+                    variant: "destructive",
+                });
+            }
+        } else {
+            toast({
+                title: "No Temporary Downloads",
+                description: "There are no temporary downloads to clean up.",
+            });
         }
     }
 
@@ -405,6 +437,35 @@ export default function SettingsPage() {
                                         >
                                             <FolderOpen className="w-4 h-4" /> Browse
                                         </Button>
+                                    </div>
+                                </div>
+                                <div className="temporary-download-dir">
+                                    <h3 className="font-semibold">Temporary Download Folder</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Clean up temporary downloads (broken, cancelled, paused downloads)</p>
+                                    <div className="flex items-center gap-4">
+                                        <Input className="focus-visible:ring-0" type="text" placeholder="Temporary download directory" value={tempDownloadDirPath ?? 'Unknown'} readOnly/>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button
+                                                variant="destructive"
+                                                disabled={ongoingDownloads.length > 0}
+                                                >
+                                                    <BrushCleaning className="size-4" /> Clean
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Clean up all temporary downloads?</AlertDialogTitle>
+                                                    <AlertDialogDescription>Are you sure you want to clean up all temporary downloads? This will remove all broken, cancelled and paused downloads from the temporary folder. Paused downloads will re-start from the begining. This action cannot be undone!</AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction
+                                                    onClick={() => cleanTemporaryDownloads()}
+                                                    >Clean</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                     </div>
                                 </div>
                             </TabsContent>
