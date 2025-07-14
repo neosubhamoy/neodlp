@@ -9,6 +9,7 @@ export interface Settings {
     theme: 'dark' | 'light' | 'system';
     download_dir: string;
     max_parallel_downloads: number;
+    max_retries: number;
     prefer_video_over_playlist: boolean;
     strict_downloadablity_check: boolean;
     use_proxy: boolean;

@@ -73,6 +73,7 @@ export default function SettingsPage() {
     const ytDlpAutoUpdate = useSettingsPageStatesStore(state => state.settings.ytdlp_auto_update);
     const appTheme = useSettingsPageStatesStore(state => state.settings.theme);
     const maxParallelDownloads = useSettingsPageStatesStore(state => state.settings.max_parallel_downloads);
+    const maxRetries = useSettingsPageStatesStore(state => state.settings.max_retries);
     const preferVideoOverPlaylist = useSettingsPageStatesStore(state => state.settings.prefer_video_over_playlist);
     const strictDownloadabilityCheck = useSettingsPageStatesStore(state => state.settings.strict_downloadablity_check);
     const useProxy = useSettingsPageStatesStore(state => state.settings.use_proxy);
@@ -423,6 +424,19 @@ export default function SettingsPage() {
                                     checked={strictDownloadabilityCheck}
                                     onCheckedChange={(checked) => saveSettingsKey('strict_downloadablity_check', checked)}
                                     />
+                                </div>
+                                <div className="max-retries">
+                                    <h3 className="font-semibold">Max Retries</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Set maximum number of retries for a download before giving up</p>
+                                    <Slider
+                                    id="max-retries"
+                                    className="w-[350px] mb-2"
+                                    value={[maxRetries]}
+                                    min={1}
+                                    max={100}
+                                    onValueChange={(value) => saveSettingsKey('max_retries', value[0])}
+                                    />
+                                    <Label htmlFor="max-retries" className="text-xs text-muted-foreground">(Current: {maxRetries}) (Default: 5, Maximum: 100)</Label>
                                 </div>
                             </TabsContent>
                             <TabsContent key="appearance" value="appearance" className="flex flex-col gap-4 min-h-[235px]">

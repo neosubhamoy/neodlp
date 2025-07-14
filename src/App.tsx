@@ -56,6 +56,7 @@ export default function App({ children }: { children: React.ReactNode }) {
   const YTDLP_UPDATE_CHANNEL = useSettingsPageStatesStore(state => state.settings.ytdlp_update_channel);
   const APP_THEME = useSettingsPageStatesStore(state => state.settings.theme);
   const MAX_PARALLEL_DOWNLOADS = useSettingsPageStatesStore(state => state.settings.max_parallel_downloads);
+  const MAX_RETRIES = useSettingsPageStatesStore(state => state.settings.max_retries);
   const DOWNLOAD_DIR = useSettingsPageStatesStore(state => state.settings.download_dir);
   const PREFER_VIDEO_OVER_PLAYLIST = useSettingsPageStatesStore(state => state.settings.prefer_video_over_playlist);
   const STRICT_DOWNLOADABILITY_CHECK = useSettingsPageStatesStore(state => state.settings.strict_downloadablity_check);
@@ -202,6 +203,8 @@ export default function App({ children }: { children: React.ReactNode }) {
       selectedFormat,
       '--no-mtime',
       '--no-warnings',
+      '--retries',
+      MAX_RETRIES.toString(),
     ];
 
     if (selectedSubtitles) {
@@ -864,11 +867,13 @@ export default function App({ children }: { children: React.ReactNode }) {
     }
   }, [isErrored, isErrorExpected, erroredDownloadId, setIsErrored, setIsErrorExpected, setErroredDownloadId]);
 
-  // auto reset isErrorExpected state after 3 seconds
+  // auto reset error states after 3 seconds of expecting an error
   useEffect(() => {
     if (isErrorExpected) {
       const timeoutId = setTimeout(() => {
+        setIsErrored(false);
         setIsErrorExpected(false);
+        setErroredDownloadId(null);
       }, 3000);
       return () => clearTimeout(timeoutId);
     }
