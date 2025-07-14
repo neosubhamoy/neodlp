@@ -38,6 +38,9 @@ export interface DownloaderPageStatesStore {
     selectedCombinableAudioFormat: string;
     selectedSubtitles: string[];
     selectedPlaylistVideoIndex: string;
+    isErrored: boolean;
+    isErrorExpected: boolean;
+    erroredDownloadId: string | null;
     setActiveDownloadModeTab: (tab: string) => void;
     setIsStartingDownload: (isStarting: boolean) => void;
     setSelectedDownloadFormat: (format: string) => void;
@@ -45,6 +48,9 @@ export interface DownloaderPageStatesStore {
     setSelectedCombinableAudioFormat: (format: string) => void;
     setSelectedSubtitles: (subtitles: string[]) => void;
     setSelectedPlaylistVideoIndex: (index: string) => void;
+    setIsErrored: (isErrored: boolean) => void;
+    setIsErrorExpected: (isErrorExpected: boolean) => void;
+    setErroredDownloadId: (downloadId: string | null) => void;
 }
 
 export interface LibraryPageStatesStore {

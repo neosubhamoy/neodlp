@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAppContext } from "@/providers/appContextProvider";
-import { useDownloadActionStatesStore, useDownloadStatesStore, useLibraryPageStatesStore } from "@/services/store";
+import { useDownloadActionStatesStore, useDownloaderPageStatesStore, useDownloadStatesStore, useLibraryPageStatesStore } from "@/services/store";
 import { formatBitrate, formatCodec, formatDurationString, formatFileSize, formatSecToTimeString, formatSpeed } from "@/utils";
 import { AudioLines, Clock, File, FileAudio2, FileQuestion, FileVideo2, FolderInput, ListVideo, Loader2, Music, Pause, Play, Square, Trash2, Video, X } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
@@ -32,6 +32,8 @@ export default function LibraryPage() {
     const setIsPausingDownload = useDownloadActionStatesStore(state => state.setIsPausingDownload);
     const setIsCancelingDownload = useDownloadActionStatesStore(state => state.setIsCancelingDownload);
     const setIsDeleteFileChecked = useDownloadActionStatesStore(state => state.setIsDeleteFileChecked);
+
+    const setIsErrorExpected = useDownloaderPageStatesStore((state) => state.setIsErrorExpected);
 
     const { pauseDownload, resumeDownload, cancelDownload } = useAppContext()
     const { toast } = useToast();
@@ -106,6 +108,7 @@ export default function LibraryPage() {
 
     const stopOngoingDownloads = async () => {
         if (ongoingDownloads.length > 0) {
+            setIsErrorExpected(true); // Set error expected to true to handle UI state
             try {
                 await invoke('pause_ongoing_downloads').then(() => {
                     queryClient.invalidateQueries({ queryKey: ['download-states'] });
@@ -275,9 +278,9 @@ export default function LibraryPage() {
                                                     </AlertDialogTrigger>
                                                     <AlertDialogContent>
                                                         <AlertDialogHeader>
-                                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                            <AlertDialogTitle>Remove from library?</AlertDialogTitle>
                                                             <AlertDialogDescription>
-                                                                This action cannot be undone! it will permanently remove this from downloads.
+                                                                Are you sure you want to remove this download from the library? You can also delete the downloaded file by cheking the box below. This action cannot be undone.
                                                             </AlertDialogDescription>
                                                             <div className="flex items-center space-x-2">
                                                                 <Checkbox id="delete-file" checked={itemActionStates.isDeleteFileChecked} onCheckedChange={() => {setIsDeleteFileChecked(state.download_id, !itemActionStates.isDeleteFileChecked)}} />

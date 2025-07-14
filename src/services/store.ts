@@ -49,13 +49,19 @@ export const useDownloaderPageStatesStore = create<DownloaderPageStatesStore>((s
     selectedCombinableAudioFormat: '',
     selectedSubtitles: [],
     selectedPlaylistVideoIndex: '1',
+    isErrored: false,
+    isErrorExpected: false,
+    erroredDownloadId: null,
     setActiveDownloadModeTab: (tab) => set(() => ({ activeDownloadModeTab: tab })),
     setIsStartingDownload: (isStarting) => set(() => ({ isStartingDownload: isStarting })),
     setSelectedDownloadFormat: (format) => set(() => ({ selectedDownloadFormat: format })),
     setSelectedCombinableVideoFormat: (format) => set(() => ({ selectedCombinableVideoFormat: format })),
     setSelectedCombinableAudioFormat: (format) => set(() => ({ selectedCombinableAudioFormat: format })),
     setSelectedSubtitles: (subtitles) => set(() => ({ selectedSubtitles: subtitles })),
-    setSelectedPlaylistVideoIndex: (index) => set(() => ({ selectedPlaylistVideoIndex: index }))
+    setSelectedPlaylistVideoIndex: (index) => set(() => ({ selectedPlaylistVideoIndex: index })),
+    setIsErrored: (isErrored) => set(() => ({ isErrored: isErrored })),
+    setIsErrorExpected: (isErrorExpected) => set(() => ({ isErrorExpected: isErrorExpected })),
+    setErroredDownloadId: (downloadId) => set(() => ({ erroredDownloadId: downloadId })),
 }));
 
 export const useLibraryPageStatesStore = create<LibraryPageStatesStore>((set) => ({
@@ -122,6 +128,8 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         max_parallel_downloads: 2,
         use_proxy: false,
         proxy_url: '',
+        use_rate_limit: false,
+        rate_limit: 1048576, // 1 MB/s
         video_format: 'auto',
         audio_format: 'auto',
         always_reencode_video: false,
@@ -163,6 +171,8 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             max_parallel_downloads: 2,
             use_proxy: false,
             proxy_url: '',
+            use_rate_limit: false,
+            rate_limit: 1048576, // 1 MB/s
             video_format: 'auto',
             audio_format: 'auto',
             always_reencode_video: false,

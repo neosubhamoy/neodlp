@@ -7,7 +7,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { arch, exeExtension } from "@tauri-apps/plugin-os";
 import { downloadDir, join, resourceDir, tempDir } from "@tauri-apps/api/path";
-import { useBasePathsStore, useCurrentVideoMetadataStore, useDownloadStatesStore, useKvPairsStatesStore, useSettingsPageStatesStore } from "@/services/store";
+import { useBasePathsStore, useCurrentVideoMetadataStore, useDownloaderPageStatesStore, useDownloadStatesStore, useKvPairsStatesStore, useSettingsPageStatesStore } from "@/services/store";
 import { determineFileType, generateDownloadId, generateSafeFilePath, generateVideoId, isObjEmpty, parseProgressLine, sanitizeFilename } from "@/utils";
 import { Command } from "@tauri-apps/plugin-shell";
 import { RawVideoInfo } from "@/types/video";
@@ -25,8 +25,11 @@ import { useNavigate } from "react-router-dom";
 import { platform } from "@tauri-apps/plugin-os";
 import { useMacOsRegisterer } from "@/helpers/use-macos-registerer";
 import useAppUpdater from "@/helpers/use-app-updater";
+import { useToast } from "@/hooks/use-toast";
 
 export default function App({ children }: { children: React.ReactNode }) {
+  const { toast } = useToast();
+  
   const { data: downloadStates, isSuccess: isSuccessFetchingDownloadStates } = useFetchAllDownloadStates();
   const { data: settings, isSuccess: isSuccessFetchingSettings } = useFetchAllSettings();
   const { data: kvPairs, isSuccess: isSuccessFetchingKvPairs } = useFetchAllkVPairs();
@@ -58,12 +61,21 @@ export default function App({ children }: { children: React.ReactNode }) {
   const STRICT_DOWNLOADABILITY_CHECK = useSettingsPageStatesStore(state => state.settings.strict_downloadablity_check);
   const USE_PROXY = useSettingsPageStatesStore(state => state.settings.use_proxy);
   const PROXY_URL = useSettingsPageStatesStore(state => state.settings.proxy_url);
+  const USE_RATE_LIMIT = useSettingsPageStatesStore(state => state.settings.use_rate_limit);
+  const RATE_LIMIT = useSettingsPageStatesStore(state => state.settings.rate_limit);
   const VIDEO_FORMAT = useSettingsPageStatesStore(state => state.settings.video_format);
   const AUDIO_FORMAT = useSettingsPageStatesStore(state => state.settings.audio_format);
   const ALWAYS_REENCODE_VIDEO = useSettingsPageStatesStore(state => state.settings.always_reencode_video);
   const EMBED_VIDEO_METADATA = useSettingsPageStatesStore(state => state.settings.embed_video_metadata);
   const EMBED_AUDIO_METADATA = useSettingsPageStatesStore(state => state.settings.embed_audio_metadata);
   const EMBED_AUDIO_THUMBNAIL = useSettingsPageStatesStore(state => state.settings.embed_audio_thumbnail);
+
+  const isErrored = useDownloaderPageStatesStore((state) => state.isErrored);
+  const isErrorExpected = useDownloaderPageStatesStore((state) => state.isErrorExpected);
+  const erroredDownloadId = useDownloaderPageStatesStore((state) => state.erroredDownloadId);
+  const setIsErrored = useDownloaderPageStatesStore((state) => state.setIsErrored);
+  const setIsErrorExpected = useDownloaderPageStatesStore((state) => state.setIsErrorExpected);
+  const setErroredDownloadId = useDownloaderPageStatesStore((state) => state.setErroredDownloadId);
 
   const appWindow = getCurrentWebviewWindow()
   const navigate = useNavigate();
@@ -136,6 +148,11 @@ export default function App({ children }: { children: React.ReactNode }) {
   };
   
   const startDownload = async (url: string, selectedFormat: string, selectedSubtitles?: string | null, resumeState?: DownloadState, playlistItems?: string) => {
+    // set error states to default
+    setIsErrored(false);
+    setIsErrorExpected(false);
+    setErroredDownloadId(null);
+
     console.log('Starting download:', { url, selectedFormat, selectedSubtitles, resumeState, playlistItems });
     if (!ffmpegPath || !tempDownloadDirPath || !downloadDirPath) {
       console.error('FFmpeg or download paths not found');
@@ -147,6 +164,11 @@ export default function App({ children }: { children: React.ReactNode }) {
     let videoMetadata = await fetchVideoMetadata(url, selectedFormat, isPlaylist && playlistIndex && typeof playlistIndex === 'string' ? playlistIndex : undefined);
     if (!videoMetadata) {
       console.error('Failed to fetch video metadata');
+      toast({
+        title: 'Download Failed',
+        description: 'yt-dlp failed to fetch video metadata. Please try again later.',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -233,12 +255,20 @@ export default function App({ children }: { children: React.ReactNode }) {
       args.push('--proxy', PROXY_URL);
     }
 
+    if (USE_RATE_LIMIT && RATE_LIMIT) {
+      args.push('--limit-rate', `${RATE_LIMIT}`);
+    }
+
     console.log('Starting download with args:', args);
     const command = Command.sidecar('binaries/yt-dlp', args);
 
     command.on('close', async data => {
       if (data.code !== 0) {
         console.error(`Download failed with code ${data.code}`);
+        if (!isErrorExpected) {
+          setIsErrored(true);
+          setErroredDownloadId(downloadId);
+        }
       } else {
         downloadStatusUpdater.mutate({ download_id: downloadId, download_status: 'completed' }, {
           onSuccess: (data) => {
@@ -430,6 +460,7 @@ export default function App({ children }: { children: React.ReactNode }) {
   
   const pauseDownload = async (downloadState: DownloadState) => {
     try {
+      setIsErrorExpected(true);  // Set error expected to true to handle UI state
       console.log("Killing process with PID:", downloadState.process_id);
       await invoke('kill_all_process', { pid: downloadState.process_id });
       downloadStatusUpdater.mutate({ download_id: downloadState.download_id, download_status: 'paused' }, {
@@ -474,6 +505,7 @@ export default function App({ children }: { children: React.ReactNode }) {
   const cancelDownload = async (downloadState: DownloadState) => {
     try {
       if ((downloadState.download_status === 'downloading' && downloadState.process_id) || (downloadState.download_status === 'starting' && downloadState.process_id)) {
+        setIsErrorExpected(true); // Set error expected to true to handle UI state
         console.log("Killing process with PID:", downloadState.process_id);
         await invoke('kill_all_process', { pid: downloadState.process_id });
       }
@@ -806,6 +838,41 @@ export default function App({ children }: { children: React.ReactNode }) {
     // Cleanup timeout if component unmounts or dependencies change
     return () => clearTimeout(timeoutId);
   }, [processQueuedDownloads, ongoingDownloads, queuedDownloads]);
+
+  // show a toast and pause the download when yt-dlp exits unexpectedly
+  useEffect(() => {
+    if (isErrored && !isErrorExpected) {
+      toast({
+        title: "Download Failed",
+        description: "yt-dlp exited unexpectedly. Please try again later",
+        variant: "destructive",
+      });
+      if (erroredDownloadId) {
+        downloadStatusUpdater.mutate({ download_id: erroredDownloadId, download_status: 'paused' }, {
+          onSuccess: (data) => {
+            console.log("Download status updated successfully:", data);
+            queryClient.invalidateQueries({ queryKey: ['download-states'] });
+          },
+          onError: (error) => {
+            console.error("Failed to update download status:", error);
+          }
+        })
+        setErroredDownloadId(null);
+      }
+      setIsErrored(false);
+      setIsErrorExpected(false);
+    }
+  }, [isErrored, isErrorExpected, erroredDownloadId, setIsErrored, setIsErrorExpected, setErroredDownloadId]);
+
+  // auto reset isErrorExpected state after 3 seconds
+  useEffect(() => {
+    if (isErrorExpected) {
+      const timeoutId = setTimeout(() => {
+        setIsErrorExpected(false);
+      }, 3000);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isErrorExpected, setIsErrorExpected]);
 
   return (
     <AppContext.Provider value={{ fetchVideoMetadata, startDownload, pauseDownload, resumeDownload, cancelDownload }}>

@@ -26,6 +26,7 @@ import { SlidingButton } from "@/components/custom/slidingButton";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import * as fs from "@tauri-apps/plugin-fs";
 import { join } from "@tauri-apps/api/path";
+import { formatSpeed } from "@/utils";
 
 const websocketPortSchema = z.object({
     port: z.coerce.number({
@@ -40,6 +41,17 @@ const websocketPortSchema = z.object({
 
 const proxyUrlSchema = z.object({
     url: z.string().min(1, { message: "Proxy URL is required" }).url({ message: "Invalid URL format" })
+});
+
+const rateLimitSchema = z.object({
+    rate_limit: z.coerce.number({
+        required_error: "Rate Limit is required",
+        invalid_type_error: "Rate Limit must be a valid number",
+    }).min(1024, {
+        message: "Rate Limit must be at least 1024 bytes/s (1 KB/s)"
+    }).max(104857600, {
+        message: "Rate Limit must be at most 104857600 bytes/s (100 MB/s)"
+    }),
 });
 
 export default function SettingsPage() {
@@ -65,6 +77,8 @@ export default function SettingsPage() {
     const strictDownloadabilityCheck = useSettingsPageStatesStore(state => state.settings.strict_downloadablity_check);
     const useProxy = useSettingsPageStatesStore(state => state.settings.use_proxy);
     const proxyUrl = useSettingsPageStatesStore(state => state.settings.proxy_url);
+    const useRateLimit = useSettingsPageStatesStore(state => state.settings.use_rate_limit);
+    const rateLimit = useSettingsPageStatesStore(state => state.settings.rate_limit);
     const videoFormat = useSettingsPageStatesStore(state => state.settings.video_format);
     const audioFormat = useSettingsPageStatesStore(state => state.settings.audio_format);
     const alwaysReencodeVideo = useSettingsPageStatesStore(state => state.settings.always_reencode_video);
@@ -163,6 +177,33 @@ export default function SettingsPage() {
             console.error("Error changing proxy URL:", error);
             toast({
                 title: "Failed to change proxy URL",
+                description: "Please try again.",
+                variant: "destructive",
+            });
+        }
+    }
+
+    const rateLimitForm = useForm<z.infer<typeof rateLimitSchema>>({
+        resolver: zodResolver(rateLimitSchema),
+        defaultValues: {
+            rate_limit: rateLimit,
+        },
+        mode: "onChange",
+    });
+    const watchedRateLimit = rateLimitForm.watch("rate_limit");
+    const { errors: rateLimitFormErrors } = rateLimitForm.formState;
+
+    function handleRateLimitSubmit(values: z.infer<typeof rateLimitSchema>) {
+        try {
+            saveSettingsKey('rate_limit', values.rate_limit);
+            toast({
+                title: "Rate Limit updated",
+                description: `Rate Limit changed to ${values.rate_limit} bytes/s`,
+            });
+        } catch (error) {
+            console.error("Error changing rate limit:", error);
+            toast({
+                title: "Failed to change rate limit",
                 description: "Please try again.",
                 variant: "destructive",
             });
@@ -577,36 +618,74 @@ export default function SettingsPage() {
                                         />
                                         <Label htmlFor="use-proxy">Use Proxy</Label>
                                     </div>
-                                    <div className="flex items-center gap-4">
-                                        <Form {...proxyUrlForm}>
-                                            <form onSubmit={proxyUrlForm.handleSubmit(handleProxyUrlSubmit)} className="flex gap-4 w-full" autoComplete="off">
-                                                <FormField
-                                                    control={proxyUrlForm.control}
-                                                    name="url"
-                                                    disabled={!useProxy}
-                                                    render={({ field }) => (
-                                                        <FormItem className="w-full">
-                                                            <FormControl>
-                                                                <Input
-                                                                className="focus-visible:ring-0"
-                                                                placeholder="Enter proxy URL"
-                                                                {...field}
-                                                                />
-                                                            </FormControl>
-                                                            <Label htmlFor="url" className="text-xs text-muted-foreground">(Configured: {proxyUrl ? 'Yes' : 'No'}, Status: {useProxy ? 'Enabled' : 'Disabled'})</Label>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                                <Button
-                                                    type="submit"
-                                                    disabled={!watchedProxyUrl || watchedProxyUrl === proxyUrl || Object.keys(proxyUrlFormErrors).length > 0 || !useProxy}
-                                                >
-                                                    Save
-                                                </Button>
-                                            </form>
-                                        </Form>
+                                    <Form {...proxyUrlForm}>
+                                        <form onSubmit={proxyUrlForm.handleSubmit(handleProxyUrlSubmit)} className="flex gap-4 w-full" autoComplete="off">
+                                            <FormField
+                                                control={proxyUrlForm.control}
+                                                name="url"
+                                                disabled={!useProxy}
+                                                render={({ field }) => (
+                                                    <FormItem className="w-full">
+                                                        <FormControl>
+                                                            <Input
+                                                            className="focus-visible:ring-0"
+                                                            placeholder="Enter proxy URL"
+                                                            {...field}
+                                                            />
+                                                        </FormControl>
+                                                        <Label htmlFor="url" className="text-xs text-muted-foreground">(Configured: {proxyUrl ? 'Yes' : 'No'}, Status: {useProxy ? 'Enabled' : 'Disabled'})</Label>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <Button
+                                                type="submit"
+                                                disabled={!watchedProxyUrl || watchedProxyUrl === proxyUrl || Object.keys(proxyUrlFormErrors).length > 0 || !useProxy}
+                                            >
+                                                Save
+                                            </Button>
+                                        </form>
+                                    </Form>
+                                </div>
+                                <div className="rate-limit">
+                                    <h3 className="font-semibold">Rate Limit</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Limit download speed to prevent network congestion. Rate limit is applied per-download basis (not in the whole app)</p>
+                                    <div className="flex items-center space-x-2 mb-4">
+                                        <Switch
+                                        id="use-rate-limit"
+                                        checked={useRateLimit}
+                                        onCheckedChange={(checked) => saveSettingsKey('use_rate_limit', checked)}
+                                        />
+                                        <Label htmlFor="use-rate-limit">Use Rate Limit</Label>
                                     </div>
+                                    <Form {...rateLimitForm}>
+                                        <form onSubmit={rateLimitForm.handleSubmit(handleRateLimitSubmit)} className="flex gap-4 w-full" autoComplete="off">
+                                            <FormField
+                                                control={rateLimitForm.control}
+                                                name="rate_limit"
+                                                disabled={!useRateLimit}
+                                                render={({ field }) => (
+                                                    <FormItem className="w-full">
+                                                        <FormControl>
+                                                            <Input
+                                                            className="focus-visible:ring-0"
+                                                            placeholder="Enter rate limit in bytes/s"
+                                                            {...field}
+                                                            />
+                                                        </FormControl>
+                                                        <Label htmlFor="rate_limit" className="text-xs text-muted-foreground">(Configured: {rateLimit ? `${rateLimit} = ${formatSpeed(rateLimit)}` : 'No'}, Status: {useRateLimit ? 'Enabled' : 'Disabled'}) (Default: 1048576, Range: 1024-104857600)</Label>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <Button
+                                                type="submit"
+                                                disabled={!watchedRateLimit || Number(watchedRateLimit) === rateLimit || Object.keys(rateLimitFormErrors).length > 0 || !useRateLimit}
+                                            >
+                                                Save
+                                            </Button>
+                                        </form>
+                                    </Form>
                                 </div>
                             </TabsContent>
                         </div>

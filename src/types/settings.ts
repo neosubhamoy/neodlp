@@ -13,6 +13,8 @@ export interface Settings {
     strict_downloadablity_check: boolean;
     use_proxy: boolean;
     proxy_url: string;
+    use_rate_limit: boolean;
+    rate_limit: number;
     video_format: string;
     audio_format: string;
     always_reencode_video: boolean;
