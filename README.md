@@ -1,3 +1,5 @@
+![NeoDLP](./.github/banner.svg)
+
 # NeoDLP - (Neo Downloader Plus)
 
 Cross-platform Video/Audio Downloader Desktop App with Modern UI and Browser Integration
@@ -8,23 +10,47 @@ Cross-platform Video/Audio Downloader Desktop App with Modern UI and Browser Int
 
 > **🥰 Liked this project? Please consider giving it a Star (🌟) on github to show us your appreciation and help the algorythm recommend this project to even more awesome people like you!**
 
+[![Packaging status](https://repology.org/badge/vertical-allrepos/neodlp.svg)](https://repology.org/project/neodlp/versions)
+
+### ✨ Highlighted Features
+
+- Download Video/Audio from popular sites (YT, FB, IG, X and other 2.5k+ [supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md))
+- Download Video/Audio in your preffered format (MP4, WEBM, MKV, MP3 etc.)
+- Supports both Video and Playlist download
+- Supports Combining Video, Audio streams of your choice
+- Supports Multi-Language Subtitle/Caption (CC) embeding
+- Different Video/Audio metadata embeding options (info, chapters, thumbnail etc.)
+
+### 🧩 Browser Integration
+
+You can integrate NeoDLP with your favourite browser (any Chrome/Chromium/Firefox based browser) Just, install [NeoDLP Extension](https://github.com/neosubhamoy/neodlp-extension) to get started!
+
+After installing the extension you can do the following directly from the browser:
+
+- Quick Search (search current browser address with NeoDLP) (via pressing keyboard shortcut `ALT`+`SHIFT`+`Q`, You can also change this shortcut key combo from browser settings)
+
+- Right Click Context Menu Action (Download with Neo Downloader Plus - Link, Selection, Media Source)
+
+### 👀 Sneak Peek
+
+![NeoDLP-Mockup](./.github/mockup.svg)
+
 ### 💻 Supported Platforms
+
 - Windows (10 / 11)
 - Linux (Debian / Fedora / Arch Linux base)
 - MacOS (>10.3)
 
-### 🌐 Supported Sites
+> ⚠️ **NOTE:** Though most linux (debian/fedora/arch base) distros are supported but not all packages are tested on all these platforms, to save time (and some brain cells) and ship the software as fast as possible! (Currently only the debian package is tested on Ubuntu 24.04 - So, other linux packages may have issues, test it yourself and feel free to report issues if you found one)
 
-- All [Supported Sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md) by [yt-dlp](https://github.com/yt-dlp/yt-dlp) **(2.5K+)**
+### 🤝 External Dependencies
 
-### 🧩 External Dependencies
-
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) - The core CLI Tool used to download Video/Audio from the Web
-- [FFmpeg](https://www.ffmpeg.org) - Used for Video/Audio Post-processing
+- [YT-DLP](https://github.com/yt-dlp/yt-dlp) - The core CLI tool used to download Video/Audio from the Web (Hero of the show 😎)
+- [FFmpeg](https://www.ffmpeg.org) - Used for Video/Audio post-processing
 
 ### ⬇️ Download and Installation
 
-1. Download the latest [NeoDLP](https://github.com/neosubhamoy/neodlp/releases/latest) release based on your OS and CPU Architecture then install it or install it directly from an available distribution channel
+1. Download the latest [NeoDLP](https://github.com/neosubhamoy/neodlp/releases/latest) release based on your OS and CPU Architecture, then install it! -OR- Install it directly from an available distribution channel (listed below)
 
 | Arch\OS | Windows | Linux | MacOS |
 | :----        | :----   | :---- | :---- |
@@ -55,7 +81,7 @@ Want to be part of this? Feel free to contribute...!! Pull Requests are always w
 2. Git clone the forked repo in your local machine.
 3. Install Node.js dependencies: `npm install`
 4. Run development / build process
-> ⚠️ Make sure to run the build command once before running the dev command for the first time to avoid build time errors
+> ⚠️ **IMPORTANT:** Make sure to run the build command once before running the dev command for the first time to avoid compile time errors
 ```code
 # for windows and linux users
 npm run tauri dev      # for development
