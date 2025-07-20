@@ -464,9 +464,11 @@ export default function App({ children }: { children: React.ReactNode }) {
   
   const pauseDownload = async (downloadState: DownloadState) => {
     try {
-      setIsErrorExpected(true);  // Set error expected to true to handle UI state
-      console.log("Killing process with PID:", downloadState.process_id);
-      await invoke('kill_all_process', { pid: downloadState.process_id });
+      if ((downloadState.download_status === 'downloading' && downloadState.process_id) || (downloadState.download_status === 'starting' && downloadState.process_id)) {
+        setIsErrorExpected(true);  // Set error expected to true to handle UI state
+        console.log("Killing process with PID:", downloadState.process_id);
+        await invoke('kill_all_process', { pid: downloadState.process_id });
+      }
       downloadStatusUpdater.mutate({ download_id: downloadState.download_id, download_status: 'paused' }, {
         onSuccess: (data) => {
           console.log("Download status updated successfully:", data);

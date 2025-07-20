@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAppContext } from "@/providers/appContextProvider";
-import { useDownloadActionStatesStore, useDownloaderPageStatesStore, useDownloadStatesStore, useLibraryPageStatesStore } from "@/services/store";
+import { useDownloadActionStatesStore, useDownloadStatesStore, useLibraryPageStatesStore } from "@/services/store";
 import { formatBitrate, formatCodec, formatDurationString, formatFileSize, formatSecToTimeString, formatSpeed } from "@/utils";
 import { AudioLines, Clock, File, FileAudio2, FileQuestion, FileVideo2, FolderInput, ListVideo, Loader2, Music, Pause, Play, Square, Trash2, Video, X } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
@@ -32,8 +32,6 @@ export default function LibraryPage() {
     const setIsPausingDownload = useDownloadActionStatesStore(state => state.setIsPausingDownload);
     const setIsCancelingDownload = useDownloadActionStatesStore(state => state.setIsCancelingDownload);
     const setIsDeleteFileChecked = useDownloadActionStatesStore(state => state.setIsDeleteFileChecked);
-
-    const setIsErrorExpected = useDownloaderPageStatesStore((state) => state.setIsErrorExpected);
 
     const { pauseDownload, resumeDownload, cancelDownload } = useAppContext()
     const { toast } = useToast();
@@ -108,21 +106,25 @@ export default function LibraryPage() {
 
     const stopOngoingDownloads = async () => {
         if (ongoingDownloads.length > 0) {
-            setIsErrorExpected(true); // Set error expected to true to handle UI state
-            try {
-                await invoke('pause_ongoing_downloads').then(() => {
-                    queryClient.invalidateQueries({ queryKey: ['download-states'] });
+            for (const state of ongoingDownloads) {
+                setIsPausingDownload(state.download_id, true);
+                try {
+                    await pauseDownload(state);
+                } catch (e) {
+                    console.error(e);
                     toast({
-                        title: 'Stopped downloads',
-                        description: 'All ongoing downloads are being stopped.',
+                        title: 'Failed to stop download',
+                        description: `An error occurred while trying to stop the download for ${state.title}.`,
+                        variant: "destructive"
                     });
-                });
-            } catch (e) {
-                console.error(e);
+                } finally {
+                    setIsPausingDownload(state.download_id, false);
+                }
+            }
+            if (ongoingDownloads.length === 0) {
                 toast({
-                    title: 'Failed to stop downloads',
-                    description: 'An error occurred while trying to stop the downloads.',
-                    variant: "destructive"
+                    title: 'Stopped ongoing downloads',
+                    description: 'All ongoing downloads have been stopped successfully.',
                 });
             }
         } else {
