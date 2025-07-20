@@ -273,21 +273,12 @@ export default function App({ children }: { children: React.ReactNode }) {
           setErroredDownloadId(downloadId);
         }
       } else {
-        downloadStatusUpdater.mutate({ download_id: downloadId, download_status: 'completed' }, {
-          onSuccess: (data) => {
-            console.log("Download status updated successfully:", data);
-            queryClient.invalidateQueries({ queryKey: ['download-states'] });
-          },
-          onError: (error) => {
-            console.error("Failed to update download status:", error);
-          }
-        })
-
         if (await fs.exists(tempDownloadPath)) {
           downloadFilePath = await generateSafeFilePath(downloadFilePath);
-          await fs.rename(tempDownloadPath, downloadFilePath);
+          await fs.copyFile(tempDownloadPath, downloadFilePath);
+          await fs.remove(tempDownloadPath);
         }
-
+        
         downloadFilePathUpdater.mutate({ download_id: downloadId, filepath: downloadFilePath }, {
           onSuccess: (data) => {
             console.log("Download filepath updated successfully:", data);
@@ -295,6 +286,16 @@ export default function App({ children }: { children: React.ReactNode }) {
           },
           onError: (error) => {
             console.error("Failed to update download filepath:", error);
+          }
+        })
+        
+        downloadStatusUpdater.mutate({ download_id: downloadId, download_status: 'completed' }, {
+          onSuccess: (data) => {
+            console.log("Download status updated successfully:", data);
+            queryClient.invalidateQueries({ queryKey: ['download-states'] });
+          },
+          onError: (error) => {
+            console.error("Failed to update download status:", error);
           }
         })
       }
