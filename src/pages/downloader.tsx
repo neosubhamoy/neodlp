@@ -428,7 +428,7 @@ export default function DownloaderPage() {
                                     className="flex flex-col items-start gap-2 mb-2"
                                     value={selectedSubtitles}
                                     onValueChange={(value) => setSelectedSubtitles(value)}
-                                    disabled={selectedFormat?.ext !== 'mp4' && selectedFormat?.ext !== 'mkv' && selectedFormat?.ext !== 'webm'}
+                                    // disabled={selectedFormat?.ext !== 'mp4' && selectedFormat?.ext !== 'mkv' && selectedFormat?.ext !== 'webm'}
                                     >
                                         <p className="text-xs">Subtitle Languages</p>
                                         <div className="flex gap-2 flex-wrap items-center">
@@ -449,10 +449,10 @@ export default function DownloaderPage() {
                                 value={selectedDownloadFormat}
                                 onValueChange={(value) => {
                                     setSelectedDownloadFormat(value);
-                                    const currentlySelectedFormat = value === 'best' ? videoMetadata?.requested_downloads[0] : allFilteredFormats.find((format) => format.format_id === value);
-                                    if (currentlySelectedFormat?.ext !== 'mp4' && currentlySelectedFormat?.ext !== 'mkv' && currentlySelectedFormat?.ext !== 'webm') {
-                                        setSelectedSubtitles([]);
-                                    }
+                                    // const currentlySelectedFormat = value === 'best' ? videoMetadata?.requested_downloads[0] : allFilteredFormats.find((format) => format.format_id === value);
+                                    // if (currentlySelectedFormat?.ext !== 'mp4' && currentlySelectedFormat?.ext !== 'mkv' && currentlySelectedFormat?.ext !== 'webm') {
+                                    //     setSelectedSubtitles([]);
+                                    // }
                                 }}
                                 >
                                     <p className="text-xs">Suggested</p>
@@ -532,7 +532,6 @@ export default function DownloaderPage() {
                                     className="flex flex-col items-start gap-2 mb-2"
                                     value={selectedSubtitles}
                                     onValueChange={(value) => setSelectedSubtitles(value)}
-                                    disabled={selectedFormat?.ext !== 'mp4' && selectedFormat?.ext !== 'mkv' && selectedFormat?.ext !== 'webm'}
                                     >
                                         <p className="text-xs">Subtitle Languages</p>
                                         <div className="flex gap-2 flex-wrap items-center">
