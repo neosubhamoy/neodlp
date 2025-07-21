@@ -23,11 +23,15 @@ export interface CurrentVideoMetadataStore {
     isMetadataLoading: boolean;
     requestedUrl: string;
     autoSubmitSearch: boolean;
+    searchPid: number | null;
+    showSearchError: boolean;
     setVideoUrl: (url: string) => void;
     setVideoMetadata: (metadata: RawVideoInfo | null) => void;
     setIsMetadataLoading: (isLoading: boolean) => void;
     setRequestedUrl: (url: string) => void;
     setAutoSubmitSearch: (autoSubmit: boolean) => void;
+    setSearchPid: (pid: number | null) => void;
+    setShowSearchError: (showError: boolean) => void;
 }
 
 export interface DownloaderPageStatesStore {

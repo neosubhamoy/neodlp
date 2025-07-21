@@ -34,11 +34,15 @@ export const useCurrentVideoMetadataStore = create<CurrentVideoMetadataStore>((s
     isMetadataLoading: false,
     requestedUrl: '',
     autoSubmitSearch: false,
+    searchPid: null,
+    showSearchError: true,
     setVideoUrl: (url) => set(() => ({ videoUrl: url })),
     setVideoMetadata: (metadata) => set(() => ({ videoMetadata: metadata })),
     setIsMetadataLoading: (isLoading) => set(() => ({ isMetadataLoading: isLoading })),
     setRequestedUrl: (url) => set(() => ({ requestedUrl: url })),
     setAutoSubmitSearch: (autoSubmit) => set(() => ({ autoSubmitSearch: autoSubmit })),
+    setSearchPid: (pid) => set(() => ({ searchPid: pid })),
+    setShowSearchError: (showError) => set(() => ({ showSearchError: showError }))
 }));
 
 export const useDownloaderPageStatesStore = create<DownloaderPageStatesStore>((set) => ({

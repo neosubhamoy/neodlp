@@ -43,6 +43,8 @@ export default function App({ children }: { children: React.ReactNode }) {
   const tempDownloadDirPath = useBasePathsStore((state) => state.tempDownloadDirPath);
   const downloadDirPath = useBasePathsStore((state) => state.downloadDirPath);
 
+  const setSearchPid = useCurrentVideoMetadataStore((state) => state.setSearchPid);
+
   // const isUsingDefaultSettings = useSettingsPageStatesStore((state) => state.isUsingDefaultSettings);
   const setIsUsingDefaultSettings = useSettingsPageStatesStore((state) => state.setIsUsingDefaultSettings);
   const setSettingsKey = useSettingsPageStatesStore((state) => state.setSettingsKey);
@@ -121,14 +123,19 @@ export default function App({ children }: { children: React.ReactNode }) {
           jsonOutput += line;
         });
 
-        command.on('close', async () => {
-          try {
-            const data: RawVideoInfo = JSON.parse(jsonOutput);
-            resolve(data);
-          }
-          catch (e) {
-            console.error(`Failed to parse JSON: ${e}`);
+        command.on('close', async (data) => {
+          if (data.code !== 0) {
+            console.error(`yt-dlp failed to fetch metadata with code ${data.code}`);
             resolve(null);
+          } else {
+            try {
+              const parsedData: RawVideoInfo = JSON.parse(jsonOutput);
+              resolve(parsedData);
+            }
+            catch (e) {
+              console.error(`Failed to parse JSON: ${e}`);
+              resolve(null);
+            }
           }
         });
 
@@ -137,7 +144,9 @@ export default function App({ children }: { children: React.ReactNode }) {
           resolve(null);
         });
 
-        command.spawn().catch(e => {
+        command.spawn().then(child => {
+          setSearchPid(child.pid);
+        }).catch(e => {
           console.error(`Failed to spawn command: ${e}`);
           resolve(null);
         });
@@ -265,7 +274,7 @@ export default function App({ children }: { children: React.ReactNode }) {
     console.log('Starting download with args:', args);
     const command = Command.sidecar('binaries/yt-dlp', args);
 
-    command.on('close', async data => {
+    command.on('close', async (data) => {
       if (data.code !== 0) {
         console.error(`Download failed with code ${data.code}`);
         if (!isErrorExpected) {
@@ -303,6 +312,8 @@ export default function App({ children }: { children: React.ReactNode }) {
 
     command.on('error', error => {
       console.error(`Error: ${error}`);
+      setIsErrored(true);
+      setErroredDownloadId(downloadId);
     });
 
     command.stdout.on('data', line => {

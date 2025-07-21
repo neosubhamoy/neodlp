@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAppContext } from "@/providers/appContextProvider";
 import { useCurrentVideoMetadataStore, useDownloaderPageStatesStore, useSettingsPageStatesStore } from "@/services/store";
 import { determineFileType, fileFormatFilter, formatBitrate, formatDurationString, formatFileSize, formatReleaseDate, formatYtStyleCount, isObjEmpty, sortByBitrate } from "@/utils";
-import { Calendar, Clock, DownloadCloud, Eye, Info, Loader2, Music, ThumbsUp, Video, File, ListVideo, PackageSearch, AlertCircleIcon } from "lucide-react";
+import { Calendar, Clock, DownloadCloud, Eye, Info, Loader2, Music, ThumbsUp, Video, File, ListVideo, PackageSearch, AlertCircleIcon, X } from "lucide-react";
 import { FormatSelectionGroup, FormatSelectionGroupItem } from "@/components/custom/formatSelectionGroup";
 import { useEffect, useRef } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/custom/legacyToggleGroup";
@@ -23,6 +23,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { config } from "@/config";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { invoke } from "@tauri-apps/api/core";
 
 const searchFormSchema = z.object({
     url: z.string().min(1, { message: "URL is required" })
@@ -38,11 +39,14 @@ export default function DownloaderPage() {
     const isMetadataLoading = useCurrentVideoMetadataStore((state) => state.isMetadataLoading);
     const requestedUrl = useCurrentVideoMetadataStore((state) => state.requestedUrl);
     const autoSubmitSearch = useCurrentVideoMetadataStore((state) => state.autoSubmitSearch);
+    const searchPid = useCurrentVideoMetadataStore((state) => state.searchPid);
     const setVideoUrl = useCurrentVideoMetadataStore((state) => state.setVideoUrl);
     const setVideoMetadata = useCurrentVideoMetadataStore((state) => state.setVideoMetadata);
     const setIsMetadataLoading = useCurrentVideoMetadataStore((state) => state.setIsMetadataLoading);
     const setRequestedUrl = useCurrentVideoMetadataStore((state) => state.setRequestedUrl);
     const setAutoSubmitSearch = useCurrentVideoMetadataStore((state) => state.setAutoSubmitSearch);
+    const setSearchPid = useCurrentVideoMetadataStore((state) => state.setSearchPid);
+    const setShowSearchError = useCurrentVideoMetadataStore((state) => state.setShowSearchError);
 
     const activeDownloadModeTab = useDownloaderPageStatesStore((state) => state.activeDownloadModeTab);
     const isStartingDownload = useDownloaderPageStatesStore((state) => state.isStartingDownload);
@@ -205,25 +209,41 @@ export default function DownloaderPage() {
 
     function handleSearchSubmit(values: z.infer<typeof searchFormSchema>) {
         setVideoMetadata(null);
+        setSearchPid(null);
+        setShowSearchError(true);
         setIsMetadataLoading(true);
         setSelectedDownloadFormat('best');
         setSelectedCombinableVideoFormat('');
         setSelectedCombinableAudioFormat('');
         setSelectedSubtitles([]);
         setSelectedPlaylistVideoIndex('1');
+
         fetchVideoMetadata(values.url).then((metadata) => {
             if (!metadata || (metadata._type !== 'video' && metadata._type !== 'playlist') || (metadata && metadata._type === 'video' && metadata.formats.length <= 0) || (metadata && metadata._type === 'playlist' && metadata.entries.length <= 0)) {
-                toast({
-                    title: 'Opps! No results found',
-                    description: 'The provided URL does not contain any downloadable content. Please check the URL and try again.',
-                    variant: "destructive"
-                });
+                const showSearchError = useCurrentVideoMetadataStore.getState().showSearchError;
+                if (showSearchError) {
+                    toast({
+                        title: 'Oops! No results found',
+                        description: 'The provided URL does not contain any downloadable content or you are not connected to the internet. Please check the URL, your network connection and try again.',
+                        variant: "destructive"
+                    });
+                }
             }
             if (metadata && (metadata._type === 'video' || metadata._type === 'playlist') && ((metadata._type === 'video' && metadata.formats.length > 0) || (metadata._type === 'playlist' && metadata.entries.length > 0))) setVideoMetadata(metadata);
             if (metadata) console.log(metadata);
             setIsMetadataLoading(false);
         });
     }
+
+    const cancelSearch = async (pid: number | null) => {
+        setShowSearchError(false);
+        if (pid) {
+            console.log("Killing process with PID:", pid);
+            await invoke('kill_all_process', { pid: pid });
+        }
+        setVideoMetadata(null);
+        setIsMetadataLoading(false);
+    };
 
     useEffect(() => {
         const updateBottomBarWidth = (): void => {
@@ -338,6 +358,17 @@ export default function DownloaderPage() {
                                     </FormItem>
                                 )}
                             />
+                            {isMetadataLoading && (
+                                <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                disabled={!isMetadataLoading}
+                                onClick={() => cancelSearch(searchPid)}
+                                >
+                                    <X className="size-4" />
+                                </Button>
+                            )}
                             <Button
                                 type="submit"
                                 disabled={!videoUrl || isMetadataLoading}
