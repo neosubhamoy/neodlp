@@ -29,9 +29,12 @@ import { join } from "@tauri-apps/api/path";
 import { formatSpeed } from "@/utils";
 
 const websocketPortSchema = z.object({
-    port: z.coerce.number({
-        required_error: "Websocket Port is required",
-        invalid_type_error: "Websocket Port must be a valid number",
+    port: z.coerce.number<number>({
+        error: (issue) => issue.input === undefined || issue.input === null || issue.input === ""
+        ? "Websocket Port is required"
+        : "Websocket Port must be a valid number"
+    }).int({
+        message: "Websocket Port must be an integer"
     }).min(50000, {
         message: "Websocket Port must be at least 50000"
     }).max(60000, {
@@ -40,13 +43,20 @@ const websocketPortSchema = z.object({
 })
 
 const proxyUrlSchema = z.object({
-    url: z.string().min(1, { message: "Proxy URL is required" }).url({ message: "Invalid URL format" })
+    url: z.url({
+        error: (issue) => issue.input === undefined || issue.input === null || issue.input === ""
+        ? "Proxy URL is required"
+        : "Invalid URL format"
+    })
 });
 
 const rateLimitSchema = z.object({
-    rate_limit: z.coerce.number({
-        required_error: "Rate Limit is required",
-        invalid_type_error: "Rate Limit must be a valid number",
+    rate_limit: z.coerce.number<number>({
+        error: (issue) => issue.input === undefined || issue.input === null || issue.input === ""
+        ? "Rate Limit is required"
+        : "Rate Limit must be a valid number"
+    }).int({
+        message: "Rate Limit must be an integer"
     }).min(1024, {
         message: "Rate Limit must be at least 1024 bytes/s (1 KB/s)"
     }).max(104857600, {

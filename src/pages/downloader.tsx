@@ -26,8 +26,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { invoke } from "@tauri-apps/api/core";
 
 const searchFormSchema = z.object({
-    url: z.string().min(1, { message: "URL is required" })
-    .url({message: "Invalid URL format." }),
+    url: z.url({
+        error: (issue) => issue.input === undefined || issue.input === null || issue.input === ""
+        ? "URL is required"
+        : "Invalid URL format"
+    }),
 });
 
 export default function DownloaderPage() {
@@ -206,6 +209,7 @@ export default function DownloaderPage() {
         mode: "onChange",
     })
     const watchedUrl = searchForm.watch("url");
+    const { errors: searchFormErrors } = searchForm.formState;
 
     function handleSearchSubmit(values: z.infer<typeof searchFormSchema>) {
         setVideoMetadata(null);
@@ -371,7 +375,7 @@ export default function DownloaderPage() {
                             )}
                             <Button
                                 type="submit"
-                                disabled={!videoUrl || isMetadataLoading}
+                                disabled={!videoUrl || Object.keys(searchFormErrors).length > 0 || isMetadataLoading}
                             >
                                 {isMetadataLoading ? (
                                     <>
