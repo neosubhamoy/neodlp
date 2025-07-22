@@ -6,6 +6,7 @@ Cross-platform Video/Audio Downloader Desktop App with Modern UI and Browser Int
 
 [![status](https://img.shields.io/badge/status-active-brightgreen.svg?style=flat)](https://github.com/neosubhamoy/neodlp)
 [![github tag](https://img.shields.io/github/v/tag/neosubhamoy/neodlp?color=yellow)](https://github.com/neosubhamoy/neodlp)
+[![github downloads](https://img.shields.io/github/downloads/neosubhamoy/neodlp/total)](https://github.com/neosubhamoy/neodlp/releases)
 [![PRs](https://img.shields.io/badge/PRs-welcome-blue.svg?style=flat)](https://github.com/neosubhamoy/neodlp)
 
 > **🥰 Liked this project? Please consider giving it a Star (🌟) on github to show us your appreciation and help the algorythm recommend this project to even more awesome people like you!**
@@ -20,6 +21,7 @@ Cross-platform Video/Audio Downloader Desktop App with Modern UI and Browser Int
 - Supports Combining Video, Audio streams of your choice
 - Supports Multi-Language Subtitle/Caption (CC) embeding
 - Different Video/Audio metadata embeding options (info, chapters, thumbnail etc.)
+- Highly customizable and many more...😉
 
 ### 🧩 Browser Integration
 
@@ -62,6 +64,19 @@ After installing the extension you can do the following directly from the browse
 | Windows x86_64 | WinGet | `winget install neodlp` |
 | MacOS Universal | Curl-Bash Installer | `curl -sSL https://neodlp.neosubhamoy.com/neodlp_macos_installer.sh \| bash` |
 | Linux x86_64 (Arch Linux) | AUR | `yay -S neodlp` |
+
+### 💝 Support the Development
+
+NeoDLP is and will be always FREE to Use for Everyone and Open-Sourced. On the other hand the developent process of NeoDLP takes lots of time, effort and even sometimes money! So, if you appriciate my work and have the ability to donate, then please consider supporting the development by donating (even a very small donation matters and helps NeoDLP to be a better product!) Your support is the key to my motivation...🤗
+
+<a href="upi://pay?pa=subhamoybiswas636-2@oksbi&pn=Subhamoy%20Biswas" target="_blank" title="donate-with-upi">
+    <img src="https://raw.githubusercontent.com/TakiShiwa/donate-with-upi/refs/heads/main/Button/SVG/UPI-teal-01.svg" height="43" alt="Donate with UPI" />
+</a>
+<a href="https://buymeacoffee.com/neosubhamoy" target="_blank" title="buymeacoffee">
+    <img src="https://iili.io/JoQ0zN9.md.png"  alt="buymeacoffee-orange-badge" style="width: 150px;">
+</a>
+
+> 📌 **NOTE:** Donate with UPI button only works on NPCI UPI custom-protocol supported platforms (eg: android). On other platforms donate to this UPI id directly: **subhamoybiswas636-2@oksbi**
 
 ### ⚡ Technologies Used
 
