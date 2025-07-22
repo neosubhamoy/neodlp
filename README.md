@@ -69,14 +69,12 @@ After installing the extension you can do the following directly from the browse
 
 NeoDLP is and will be always FREE to Use for Everyone and Open-Sourced. On the other hand the developent process of NeoDLP takes lots of time, effort and even sometimes money! So, if you appriciate my work and have the ability to donate, then please consider supporting the development by donating (even a very small donation matters and helps NeoDLP to be a better product!) Your support is the key to my motivation...🤗
 
-<a href="upi://pay?pa=subhamoybiswas636-2@oksbi&pn=Subhamoy%20Biswas" target="_blank" title="donate-with-upi">
-    <img src="https://raw.githubusercontent.com/TakiShiwa/donate-with-upi/refs/heads/main/Button/SVG/UPI-teal-01.svg" height="43" alt="Donate with UPI" />
-</a>
 <a href="https://buymeacoffee.com/neosubhamoy" target="_blank" title="buymeacoffee">
     <img src="https://iili.io/JoQ0zN9.md.png"  alt="buymeacoffee-orange-badge" style="width: 150px;">
 </a>
+<br>
 
-> 📌 **NOTE:** Donate with UPI button only works on NPCI UPI custom-protocol supported platforms (eg: android). On other platforms donate to this UPI id directly: **subhamoybiswas636-2@oksbi**
+> 📌 **NOTE:** You can also donate via UPI by sending donations to this UPI ID directly: **[subhamoybiswas636-2@oksbi](upi://pay?pa=subhamoybiswas636-2@oksbi&pn=Subhamoy%20Biswas)**
 
 ### ⚡ Technologies Used
 
