@@ -1,23 +1,12 @@
 ### ✨ Changelog
 
-- DOWNLOADER: Introduced 'Combine' download mode (Now, You can combine a video and audio stream of your choice)
-- SETTINGS: Added global video/audio file format selection option (Available Formats: MP4, WEBM, MKV, M4A, OPUS, MP3)
-- SETTINGS: Added video/audio file metadata embeding option
-- SETTINGS: Added thumbnail embeding option in audio files (as cover art)
-- SETTINGS: Added re-encode video over remuxing option (when file format convertion is needed)
-- SETTINGS: Added strict downloadablity check option
-- SETTINGS: Added download speed rate limit option
-- SETTINGS: Added download max retries option
-- SETTINGS: Added temporary download folder cleanup option
-- UI: Improved 'Settings' ui/layout with categories (tabs)
-- UI: Merged 'Extension' sidebar tab within 'Settings' (Settings > Extension > Install)
-- UI: Improved 'Library' ui/layout with tabs
-- UI: Added 'Stop' all ongoing downloads button in 'Library'
-- UI: Renamed settings 'General' tab to 'Application' ('General' is now a sub-category of 'Application' tab)
-- UI: Improved all alert dialog messages (for better undestanding/UX)
-- FIXED: Unexpected crashing of yt-dlp causing downloads to stuck on a unrevocable state (Now, coresponding download will be 'paused' on detection of unexpected yt-dlp crash)
-- FIXED: Broken app updater progress bar/percentage (also improved the update notification card)
-- Lots of other minor fixes and improvements
+- DOWNLOADER: Added 'Cancel Search' button
+- FIXED: Downloaded files are not moving from temp to download folder in some linux distros
+- FIXED: 'Stop' all ongoing downloads button not working on linux
+- Improved search and download error handling
+- Removed subtitle (CC) embeding restriction from M4A files
+- Migrated to Zod v4 and improved form validations
+- Other minor fixes and improvements
 
 ### 📝 Notes
 

@@ -72,7 +72,8 @@ NeoDLP is and will be always FREE to Use for Everyone and Open-Sourced. On the o
 <a href="https://buymeacoffee.com/neosubhamoy" target="_blank" title="buymeacoffee">
     <img src="https://iili.io/JoQ0zN9.md.png"  alt="buymeacoffee-orange-badge" style="width: 150px;">
 </a>
-<br>
+
+<br></br>
 
 > 📌 **NOTE:** You can also donate via UPI by sending donations to this UPI ID directly: **[subhamoybiswas636-2@oksbi](upi://pay?pa=subhamoybiswas636-2@oksbi&pn=Subhamoy%20Biswas)**
 
