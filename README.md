@@ -73,9 +73,18 @@ NeoDLP is and will be always FREE to Use for Everyone and Open-Sourced. On the o
     <img src="https://iili.io/JoQ0zN9.md.png"  alt="buymeacoffee-orange-badge" style="width: 150px;">
 </a>
 
-<br></br>
+> 📌 **NOTE:** You can also donate via UPI by sending donations to this UPI ID directly: **subhamoybiswas636-2@oksbi**
 
-> 📌 **NOTE:** You can also donate via UPI by sending donations to this UPI ID directly: **[subhamoybiswas636-2@oksbi](upi://pay?pa=subhamoybiswas636-2@oksbi&pn=Subhamoy%20Biswas)**
+### 🪜 Roadmap
+
+- [x] Add support for yt-dlp
+- [x] Add basic settings and customization
+- [x] Integrate with browsers
+- [ ] Add more advanced settings and achive stability (ongoing)
+- [ ] Add media converter
+- [ ] Add multiple downloader engines
+- [ ] Add advanced web extractor
+- [ ] Add more cool stuffs 😉
 
 ### ⚡ Technologies Used
 
@@ -93,8 +102,9 @@ Want to be part of this? Feel free to contribute...!! Pull Requests are always w
 * Install [Tauri Prerequisites](https://v2.tauri.app/start/prerequisites/) for your OS / platform
 1. Fork this repo in your github account.
 2. Git clone the forked repo in your local machine.
-3. Install Node.js dependencies: `npm install`
-4. Run development / build process
+3. Create a git branch (related to the feature you are working on) (Optional - Recommended)
+4. Install Node.js dependencies: `npm install`
+5. Run development / build process
 > ⚠️ **IMPORTANT:** Make sure to run the build command once before running the dev command for the first time to avoid compile time errors
 ```code
 # for windows and linux users
@@ -108,9 +118,11 @@ npm run tauri build -- --config "./src-tauri/tauri.macos-aarch64.conf.json"     
 npm run tauri dev -- --config "./src-tauri/tauri.macos-x86_64.conf.json"     # for intel x86 macs, development
 npm run tauri build -- --config "./src-tauri/tauri.macos-x86_64.conf.json"     # for intel x86 macs, production build
 ```
-5. Do the changes, Send a Pull Request with proper Description (NOTE: Pull Requests Without Proper Description will be Rejected)
+6. Do the changes, Send a Pull Request with proper Description (NOTE: Pull Requests Without Proper Description will be Rejected)
 
-**⭕ Noticed any Bugs or Want to give us some suggetions? Always feel free to open a GitHub Issue. We would love to hear from you...!!**
+### ⭕ Bug Report
+
+Noticed any Bug? or Want to give me some suggetions? Always feel free to open a [GitHub Issue](https://github.com/neosubhamoy/neodlp/issues). I would love to hear from you...!!
 
 ### 📝 License
 
