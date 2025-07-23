@@ -57,21 +57,24 @@ After installing the extension you can do the following directly from the browse
 | Arch\OS | Windows | Linux | MacOS |
 | :----        | :----   | :---- | :---- |
 | x86_64 | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) |
-| ARM64 | ❌ N/A | ❌ N/A | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) |
+| ARM64 | ✅ Emulation | ❌ N/A | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) |
+
+> 📌 **NOTE:** x86_64 Windows binary also works on ARM64 (Windows on ARM) devices with emulation (Not planning to release separate Windows ARM64 build anytime soon as, x86_64 one works fine on ARM64 with very little performance impact/drop)
 
 | Platform (OS) | Distribution Channel | Installation Command / Instruction |
 | :---- | :---- | :---- |
-| Windows x86_64 | WinGet | `winget install neodlp` |
-| MacOS Universal | Curl-Bash Installer | `curl -sSL https://neodlp.neosubhamoy.com/neodlp_macos_installer.sh \| bash` |
+| Windows x86_64 / ARM64 | WinGet | `winget install neodlp` |
+| MacOS x86_64 / ARM64 | Curl-Bash Installer | `curl -sSL https://neodlp.neosubhamoy.com/neodlp_macos_installer.sh \| bash` |
 | Linux x86_64 (Arch Linux) | AUR | `yay -S neodlp` |
 
 ### 💝 Support the Development
 
-NeoDLP is and will be always FREE to Use for Everyone and Open-Sourced. On the other hand the developent process of NeoDLP takes lots of time, effort and even sometimes money! So, if you appriciate my work and have the ability to donate, then please consider supporting the development by donating (even a very small donation matters and helps NeoDLP to be a better product!) Your support is the key to my motivation...🤗
+NeoDLP is and will be always FREE to Use and Open-Sourced for Everyone. On the other hand the developent process of NeoDLP takes lots of time, effort and even sometimes money! So, if you appriciate my work and have the ability to donate, then please consider supporting the development by donating (even a very small donation matters and helps NeoDLP to be a better product!) Your support is the key to my motivation...🤗
 
 <a href="https://buymeacoffee.com/neosubhamoy" target="_blank" title="buymeacoffee">
     <img src="https://iili.io/JoQ0zN9.md.png"  alt="buymeacoffee-orange-badge" style="width: 150px;">
 </a>
+<br></br>
 
 > 📌 **NOTE:** You can also donate via UPI by sending donations to this UPI ID directly: **subhamoybiswas636-2@oksbi**
 
@@ -80,7 +83,7 @@ NeoDLP is and will be always FREE to Use for Everyone and Open-Sourced. On the o
 - [x] Add support for yt-dlp
 - [x] Add basic settings and customization
 - [x] Integrate with browsers
-- [ ] Add more advanced settings and achive stability (ongoing)
+- [ ] Add more advanced settings and achive stability **(ongoing)**
 - [ ] Add media converter
 - [ ] Add multiple downloader engines
 - [ ] Add advanced web extractor
