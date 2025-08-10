@@ -129,8 +129,14 @@ export default function App({ children }: { children: React.ReactNode }) {
             resolve(null);
           } else {
             try {
-              const parsedData: RawVideoInfo = JSON.parse(jsonOutput);
-              resolve(parsedData);
+              const matchedJson = jsonOutput.match(/{.*}/);
+              if (!matchedJson) {
+                console.error(`Failed to match JSON: ${jsonOutput}`);
+                resolve(null);
+                return;
+              }
+              const parsedJson: RawVideoInfo = JSON.parse(matchedJson[0]);
+              resolve(parsedJson);
             }
             catch (e) {
               console.error(`Failed to parse JSON: ${e}`);
