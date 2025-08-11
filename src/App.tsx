@@ -1,6 +1,5 @@
 import { ThemeProvider } from "@/providers/themeProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "@/components/ui/toaster";
 import { AppContext } from "@/providers/appContextProvider";
 import { DownloadState } from "@/types/download";
 import { invoke } from "@tauri-apps/api/core";
@@ -25,11 +24,10 @@ import { useNavigate } from "react-router-dom";
 import { platform } from "@tauri-apps/plugin-os";
 import { useMacOsRegisterer } from "@/helpers/use-macos-registerer";
 import useAppUpdater from "@/helpers/use-app-updater";
-import { useToast } from "@/hooks/use-toast";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 export default function App({ children }: { children: React.ReactNode }) {
-  const { toast } = useToast();
-  
   const { data: downloadStates, isSuccess: isSuccessFetchingDownloadStates } = useFetchAllDownloadStates();
   const { data: settings, isSuccess: isSuccessFetchingSettings } = useFetchAllSettings();
   const { data: kvPairs, isSuccess: isSuccessFetchingKvPairs } = useFetchAllkVPairs();
@@ -180,10 +178,8 @@ export default function App({ children }: { children: React.ReactNode }) {
     let videoMetadata = await fetchVideoMetadata(url, selectedFormat, isPlaylist && playlistIndex && typeof playlistIndex === 'string' ? playlistIndex : undefined);
     if (!videoMetadata) {
       console.error('Failed to fetch video metadata');
-      toast({
-        title: 'Download Failed',
-        description: 'yt-dlp failed to fetch video metadata. Please try again later.',
-        variant: 'destructive',
+      toast.error("Download Failed", {
+        description: "yt-dlp failed to fetch video metadata. Please try again later.",
       });
       return;
     }
@@ -865,10 +861,8 @@ export default function App({ children }: { children: React.ReactNode }) {
   // show a toast and pause the download when yt-dlp exits unexpectedly
   useEffect(() => {
     if (isErrored && !isErrorExpected) {
-      toast({
-        title: "Download Failed",
+      toast.error("Download Failed", {
         description: "yt-dlp exited unexpectedly. Please try again later",
-        variant: "destructive",
       });
       if (erroredDownloadId) {
         downloadStatusUpdater.mutate({ download_id: erroredDownloadId, download_status: 'paused' }, {
@@ -904,7 +898,7 @@ export default function App({ children }: { children: React.ReactNode }) {
       <ThemeProvider defaultTheme={APP_THEME || "system"} storageKey="vite-ui-theme">
           <TooltipProvider delayDuration={1000}>
             {children}
-            <Toaster />
+            <Sonner closeButton />
           </TooltipProvider>
       </ThemeProvider>
     </AppContext.Provider>

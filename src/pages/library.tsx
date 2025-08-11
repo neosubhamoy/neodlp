@@ -4,7 +4,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAppContext } from "@/providers/appContextProvider";
 import { useDownloadActionStatesStore, useDownloadStatesStore, useLibraryPageStatesStore } from "@/services/store";
 import { formatBitrate, formatCodec, formatDurationString, formatFileSize, formatSecToTimeString, formatSpeed } from "@/utils";
@@ -21,7 +21,6 @@ import Heading from "@/components/heading";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 
-
 export default function LibraryPage() {
     const activeTab = useLibraryPageStatesStore(state => state.activeTab);
     const setActiveTab = useLibraryPageStatesStore(state => state.setActiveTab);
@@ -34,7 +33,6 @@ export default function LibraryPage() {
     const setIsDeleteFileChecked = useDownloadActionStatesStore(state => state.setIsDeleteFileChecked);
 
     const { pauseDownload, resumeDownload, cancelDownload } = useAppContext()
-    const { toast } = useToast();
 
     const queryClient = useQueryClient();
     const downloadStateDeleter = useDeleteDownloadState();
@@ -49,24 +47,19 @@ export default function LibraryPage() {
         if (filePath && await fs.exists(filePath)) {
             try {
                 await invoke('open_file_with_app', { filePath: filePath, appName: app }).then(() => {
-                    toast({
-                        title: 'Opening file',
+                    toast.info("Opening file", {
                         description: `Opening the file with ${app ? app : 'default app'}.`,
                     })
                 });
             } catch (e) {
                 console.error(e);
-                toast({
-                    title: 'Failed to open file',
-                    description: 'An error occurred while trying to open the file.',
-                    variant: "destructive"
+                toast.error("Failed to open file", {
+                    description: "An error occurred while trying to open the file.",
                 })
             }
         } else {
-            toast({
-                title: 'File unavailable',
-                description: 'The file you are trying to open does not exist.',
-                variant: "destructive"
+            toast.info("File unavailable", {
+                description: "The file you are trying to open does not exist.",
             })
         }
     }
@@ -88,18 +81,15 @@ export default function LibraryPage() {
             onSuccess: (data) => {
                 console.log("Download State deleted successfully:", data);
                 queryClient.invalidateQueries({ queryKey: ['download-states'] });
-                toast({
-                    title: 'Removed from downloads',
-                    description: 'The download has been removed successfully.',
-                })
+                toast.success("Removed from downloads", {
+                    description: "The download has been removed successfully.",
+                });
             },
             onError: (error) => {
                 console.error("Failed to delete download state:", error);
-                toast({
-                    title: 'Failed to remove download',
-                    description: 'An error occurred while trying to remove the download.',
-                    variant: "destructive"
-                })
+                toast.error("Failed to remove download", {
+                    description: "An error occurred while trying to remove the download.",
+                });
             }
         })
     }
@@ -112,26 +102,21 @@ export default function LibraryPage() {
                     await pauseDownload(state);
                 } catch (e) {
                     console.error(e);
-                    toast({
-                        title: 'Failed to stop download',
+                    toast.error("Failed to stop download", {
                         description: `An error occurred while trying to stop the download for ${state.title}.`,
-                        variant: "destructive"
                     });
                 } finally {
                     setIsPausingDownload(state.download_id, false);
                 }
             }
             if (ongoingDownloads.length === 0) {
-                toast({
-                    title: 'Stopped ongoing downloads',
-                    description: 'All ongoing downloads have been stopped successfully.',
+                toast.success("Stopped ongoing downloads", {
+                    description: "All ongoing downloads have been stopped successfully.",
                 });
             }
         } else {
-            toast({
-                title: 'No ongoing downloads',
-                description: 'There are no ongoing downloads to stop.',
-                variant: "destructive"
+            toast.info("No ongoing downloads", {
+                description: "There are no ongoing downloads to stop.",
             });
         }
     }
@@ -374,16 +359,13 @@ export default function LibraryPage() {
                                                         setIsResumingDownload(state.download_id, true);
                                                         try {
                                                             await resumeDownload(state)
-                                                            // toast({
-                                                            //     title: 'Resumed Download',
-                                                            //     description: 'Download resumed, it will re-start shortly.',
+                                                            // toast.success("Resumed Download", {
+                                                            //     description: "Download resumed, it will re-start shortly.",
                                                             // })
                                                         } catch (e) {
                                                             console.error(e);
-                                                            toast({
-                                                                title: 'Failed to Resume Download',
-                                                                description: 'An error occurred while trying to resume the download.',
-                                                                variant: "destructive"
+                                                            toast.error("Failed to Resume Download", {
+                                                                description: "An error occurred while trying to resume the download.",
                                                             })
                                                         } finally {
                                                             setIsResumingDownload(state.download_id, false);
@@ -411,16 +393,13 @@ export default function LibraryPage() {
                                                         setIsPausingDownload(state.download_id, true);
                                                         try {
                                                             await pauseDownload(state)
-                                                            // toast({
-                                                            //     title: 'Paused Download',
-                                                            //     description: 'Download paused successfully.',
+                                                            // toast.success("Paused Download", {
+                                                            //     description: "Download paused successfully.",
                                                             // })
                                                         } catch (e) {
                                                             console.error(e);
-                                                            toast({
-                                                                title: 'Failed to Pause Download',
-                                                                description: 'An error occurred while trying to pause the download.',
-                                                                variant: "destructive"
+                                                            toast.error("Failed to Pause Download", {
+                                                                description: "An error occurred while trying to pause the download."
                                                             })
                                                         } finally {
                                                             setIsPausingDownload(state.download_id, false);
@@ -448,16 +427,13 @@ export default function LibraryPage() {
                                                     setIsCancelingDownload(state.download_id, true);
                                                     try {
                                                         await cancelDownload(state)
-                                                        toast({
-                                                            title: 'Canceled Download',
-                                                            description: 'Download canceled successfully.',
+                                                        toast.success("Canceled Download", {
+                                                            description: "Download canceled successfully.",
                                                         })
                                                     } catch (e) {
                                                         console.error(e);
-                                                        toast({
-                                                            title: 'Failed to Cancel Download',
-                                                            description: 'An error occurred while trying to cancel the download.',
-                                                            variant: "destructive"
+                                                        toast.error("Failed to Cancel Download", {
+                                                            description: "An error occurred while trying to cancel the download.",
                                                         })
                                                     } finally {
                                                         setIsCancelingDownload(state.download_id, false);

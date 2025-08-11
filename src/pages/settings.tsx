@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { ArrowDownToLine, ArrowRight, BrushCleaning, EthernetPort, ExternalLink, FileVideo, Folder, FolderOpen, Info, Loader2, LucideIcon, Monitor, Moon, Radio, RotateCcw, RotateCw, Sun, Terminal, WandSparkles, Wifi, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
@@ -65,7 +65,6 @@ const rateLimitSchema = z.object({
 });
 
 export default function SettingsPage() {
-    const { toast } = useToast();
     const { setTheme } = useTheme();
 
     const activeTab = useSettingsPageStatesStore(state => state.activeTab);
@@ -123,17 +122,14 @@ export default function SettingsPage() {
     const openLink = async (url: string, app: string | null) => {
         try {
             await invoke('open_file_with_app', { filePath: url, appName: app }).then(() => {
-                toast({
-                    title: 'Opening Link',
+                toast.info("Opening link", {
                     description: `Opening link with ${app ? app : 'default app'}.`,
                 })
             });
         } catch (e) {
             console.error(e);
-            toast({
-                title: 'Failed to open link',
-                description: 'An error occurred while trying to open the link.',
-                variant: "destructive"
+            toast.error("Failed to open link", {
+                description: "An error occurred while trying to open the link.",
             })
         }
     }
@@ -148,20 +144,16 @@ export default function SettingsPage() {
                         await fs.remove(filePath);
                     }
                 }
-                toast({
-                    title: "Temporary Downloads Cleaned",
+                toast.success("Temporary Downloads Cleaned", {
                     description: "All temporary downloads have been successfully cleaned up.",
                 });
             } catch (e) {
-                toast({
-                    title: "Temporary Downloads Cleanup Failed",
+                toast.error("Temporary Downloads Cleanup Failed", {
                     description: "An error occurred while trying to clean up temporary downloads. Please try again.",
-                    variant: "destructive",
                 });
             }
         } else {
-            toast({
-                title: "No Temporary Downloads",
+            toast.info("No Temporary Downloads", {
                 description: "There are no temporary downloads to clean up.",
             });
         }
@@ -180,16 +172,13 @@ export default function SettingsPage() {
     function handleProxyUrlSubmit(values: z.infer<typeof proxyUrlSchema>) {
         try {
             saveSettingsKey('proxy_url', values.url);
-            toast({
-                title: "Proxy URL updated",
+            toast.success("Proxy URL updated", {
                 description: `Proxy URL changed to ${values.url}`,
             });
         } catch (error) {
             console.error("Error changing proxy URL:", error);
-            toast({
-                title: "Failed to change proxy URL",
-                description: "Please try again.",
-                variant: "destructive",
+            toast.error("Failed to change proxy URL", {
+                description: "An error occurred while trying to change the proxy URL. Please try again.",
             });
         }
     }
@@ -207,16 +196,13 @@ export default function SettingsPage() {
     function handleRateLimitSubmit(values: z.infer<typeof rateLimitSchema>) {
         try {
             saveSettingsKey('rate_limit', values.rate_limit);
-            toast({
-                title: "Rate Limit updated",
+            toast.success("Rate Limit updated", {
                 description: `Rate Limit changed to ${values.rate_limit} bytes/s`,
             });
         } catch (error) {
             console.error("Error changing rate limit:", error);
-            toast({
-                title: "Failed to change rate limit",
-                description: "Please try again.",
-                variant: "destructive",
+            toast.error("Failed to change rate limit", {
+                description: "An error occurred while trying to change the rate limit. Please try again.",
             });
         }
     }
@@ -245,16 +231,13 @@ export default function SettingsPage() {
                 }
             });
             saveSettingsKey('websocket_port', updatedConfig.port);
-            toast({
-                title: "Websocket port updated",
+            toast.success("Websocket port updated", {
                 description: `Websocket port changed to ${values.port}`,
             });
         } catch (error) {
             console.error("Error changing websocket port:", error);
-            toast({
-                title: "Failed to change websocket port",
-                description: "Please try again.",
-                variant: "destructive",
+            toast.error("Failed to change websocket port", {
+                description: "An error occurred while trying to change the websocket port. Please try again.",
             });
         } finally {
             setIsChangingWebSocketPort(false);
@@ -492,10 +475,8 @@ export default function SettingsPage() {
                                                 }
                                             } catch (error) {
                                                 console.error("Error selecting folder:", error);
-                                                toast({
-                                                    title: "Failed to select folder",
-                                                    description: "Please try again.",
-                                                    variant: "destructive",
+                                                toast.error("Failed to select folder", {
+                                                    description: "An error occurred while trying to select the download folder. Please try again.",
                                                 });
                                             }
                                         }}
@@ -739,16 +720,13 @@ export default function SettingsPage() {
                                     setIsRestartingWebSocketServer(true);
                                     try {
                                         await invoke("restart_websocket_server");
-                                        toast({
-                                            title: "Websocket server restarted",
+                                        toast.success("Websocket server restarted", {
                                             description: "Websocket server restarted successfully.",
                                         });
                                     } catch (error) {
                                         console.error("Error restarting websocket server:", error);
-                                        toast({
-                                            title: "Failed to restart websocket server",
-                                            description: "Please try again.",
-                                            variant: "destructive",
+                                        toast.error("Failed to restart websocket server", {
+                                            description: "An error occurred while trying to restart the websocket server. Please try again.",
                                         });
                                     } finally {
                                         setIsRestartingWebSocketServer(false);

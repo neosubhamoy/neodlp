@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAppContext } from "@/providers/appContextProvider";
 import { useCurrentVideoMetadataStore, useDownloaderPageStatesStore, useSettingsPageStatesStore } from "@/services/store";
 import { determineFileType, fileFormatFilter, formatBitrate, formatDurationString, formatFileSize, formatReleaseDate, formatYtStyleCount, isObjEmpty, sortByBitrate } from "@/utils";
@@ -35,7 +35,6 @@ const searchFormSchema = z.object({
 
 export default function DownloaderPage() {
     const { fetchVideoMetadata, startDownload } = useAppContext();
-    const { toast } = useToast();
     
     const videoUrl = useCurrentVideoMetadataStore((state) => state.videoUrl);
     const videoMetadata = useCurrentVideoMetadataStore((state) => state.videoMetadata);
@@ -226,10 +225,8 @@ export default function DownloaderPage() {
             if (!metadata || (metadata._type !== 'video' && metadata._type !== 'playlist') || (metadata && metadata._type === 'video' && metadata.formats.length <= 0) || (metadata && metadata._type === 'playlist' && metadata.entries.length <= 0)) {
                 const showSearchError = useCurrentVideoMetadataStore.getState().showSearchError;
                 if (showSearchError) {
-                    toast({
-                        title: 'Oops! No results found',
-                        description: 'The provided URL does not contain any downloadable content or you are not connected to the internet. Please check the URL, your network connection and try again.',
-                        variant: "destructive"
+                    toast.error("Oops! No results found", {
+                        description: "The provided URL does not contain any downloadable content or you are not connected to the internet. Please check the URL, your network connection and try again.",
                     });
                 }
             }
@@ -307,20 +304,16 @@ export default function DownloaderPage() {
                         // If URL is invalid, just reset the flag
                         setAutoSubmitSearch(false);
                         setRequestedUrl('');
-                        toast({
-                            title: 'Invalid URL',
-                            description: 'The provided URL is not valid.',
-                            variant: "destructive"
+                        toast.error("Invalid URL", {
+                            description: "The provided URL is not valid.",
                         });
                     }
                 } else {
                     // If metadata is loading, just reset the flag
                     setAutoSubmitSearch(false);
                     setRequestedUrl('');
-                    toast({
-                        title: 'Search in progress',
-                        description: 'Search in progress, try again later.',
-                        variant: "destructive"
+                    toast.info("Search in progress", {
+                        description: "There's a search in progress, Please try again later.",
                     });
                 }
             } else {
@@ -941,10 +934,8 @@ export default function DownloaderPage() {
                             // });
                         } catch (error) {
                             console.error('Download failed to start:', error);
-                            toast({
-                                title: 'Failed to Start Download',
-                                description: 'There was an error initiating the download.',
-                                variant: "destructive"
+                            toast.error("Failed to Start Download", {
+                                description: "There was an error initiating the download."
                             });
                         } finally {
                             setIsStartingDownload(false);

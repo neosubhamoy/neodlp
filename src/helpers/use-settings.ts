@@ -1,11 +1,10 @@
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useResetSettings, useSaveSettingsKey } from "@/services/mutations";
 import { useSettingsPageStatesStore } from "@/services/store";
 import { useQueryClient } from "@tanstack/react-query";
 import { invoke } from "@tauri-apps/api/core";
 
 export function useSettings() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const setSettingsKey = useSettingsPageStatesStore(state => state.setSettingsKey);
   const resetSettingsState = useSettingsPageStatesStore(state => state.resetSettings);
@@ -22,10 +21,8 @@ export function useSettings() {
       onError: (error) => {
         console.error("Error saving settings key:", error);
         queryClient.invalidateQueries({ queryKey: ["settings"] });
-        toast({
-          title: "Failed to update settings",
+        toast.error("Failed to update settings", {
           description: `Failed to update ${key}`,
-          variant: "destructive",
         });
       }
     });
@@ -39,26 +36,21 @@ export function useSettings() {
           resetSettingsState();
           console.log("Settings reset successfully");
           queryClient.invalidateQueries({ queryKey: ["settings"] });
-          toast({
-            title: "Settings reset successfully",
+          toast.success("Settings reset successfully", {
             description: "All settings have been reset to default.",
           });
         } catch (error) {
           console.error("Error resetting settings:", error);
-          toast({
-            title: "Failed to reset settings",
+          toast.error("Failed to reset settings", {
             description: "Failed to reset settings to default.",
-            variant: "destructive",
           });
           return;
         }
       },
       onError: (error) => {
         console.error("Error resetting settings:", error);
-        toast({
-          title: "Failed to reset settings",
+        toast.error("Failed to reset settings", {
           description: "Failed to reset settings to default.",
-          variant: "destructive",
         });
       }
     });
