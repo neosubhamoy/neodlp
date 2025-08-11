@@ -36,11 +36,10 @@
             "icons/icon.ico"
         ],
         "externalBin": [
-            "binaries/yt-dlp"
+            "binaries/yt-dlp",
+            "binaries/ffmpeg",
+            "binaries/ffprobe"
         ],
-        "resources": {
-            "resources/binaries/ffmpeg-x86_64-unknown-linux-gnu": "binaries/ffmpeg-x86_64"
-        },
         "linux": {
             "deb": {
                 "files": {

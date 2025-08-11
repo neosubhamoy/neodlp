@@ -9,7 +9,6 @@ const __dirname = path.dirname(__filename);
 // Define array of binary source directories
 const binSrcDirs = [
     path.join(__dirname, 'src-tauri', 'binaries'),
-    path.join(__dirname, 'src-tauri', 'resources', 'binaries'),
 ];
 
 function makeFilesExecutable() {

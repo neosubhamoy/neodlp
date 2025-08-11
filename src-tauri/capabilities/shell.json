@@ -16,6 +16,16 @@
           "sidecar": true
         },
         {
+          "name": "binaries/ffmpeg",
+          "args": true,
+          "sidecar": true
+        },
+        {
+          "name": "binaries/ffprobe",
+          "args": true,
+          "sidecar": true
+        },
+        {
           "name": "pkexec",
           "cmd": "pkexec",
           "args": true
@@ -27,6 +37,16 @@
       "allow": [
         {
           "name": "binaries/yt-dlp",
+          "args": true,
+          "sidecar": true
+        },
+        {
+          "name": "binaries/ffmpeg",
+          "args": true,
+          "sidecar": true
+        },
+        {
+          "name": "binaries/ffprobe",
           "args": true,
           "sidecar": true
         }

@@ -36,10 +36,11 @@
             "icons/icon.ico"
         ],
         "externalBin": [
-            "binaries/yt-dlp"
+            "binaries/yt-dlp",
+            "binaries/ffmpeg",
+            "binaries/ffprobe"
         ],
         "resources": {
-            "resources/binaries/ffmpeg-x86_64-pc-windows-msvc.exe": "binaries/ffmpeg-x86_64.exe",
             "target/release/neodlp-msghost.exe": "neodlp-msghost.exe",
             "resources/msghost-manifest/windows/chrome.json": "neodlp-msghost.json",
             "resources/msghost-manifest/windows/firefox.json": "neodlp-msghost-moz.json"
