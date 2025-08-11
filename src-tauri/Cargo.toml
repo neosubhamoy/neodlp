@@ -27,9 +27,9 @@ tokio = { version = "1", features = ["full"] }
 tokio-tungstenite = "*"
 sqlx = { version = "0.8", features = [ "sqlite", "runtime-tokio", "tls-native-tls" ] }
 base64 = "0.22"
-directories = "5.0"
+directories = "6.0"
 futures-util = "0.3"
-tauri-plugin-opener = "2"
+tauri-plugin-opener = "2.4.0"
 tauri-plugin-shell = "2"
 tauri-plugin-fs = "2"
 tauri-plugin-os = "2"
@@ -38,7 +38,7 @@ tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 tauri-plugin-process = "2"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
-tauri-plugin-single-instance = "2"
+tauri-plugin-single-instance = "2.3.2"
 tauri-plugin-updater = "2"
 
 [workspace]

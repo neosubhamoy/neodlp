@@ -1,5 +1,13 @@
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
+import type { LegendPayload } from "recharts/types/component/DefaultLegendContent"
+import {
+  NameType,
+  Payload,
+  ValueType,
+} from "recharts/types/component/DefaultTooltipContent"
+import type { Props as LegendProps } from "recharts/types/component/Legend"
+import { TooltipContentProps } from "recharts/types/component/Tooltip"
 
 import { cn } from "@/lib/utils"
 
@@ -18,6 +26,36 @@ export type ChartConfig = {
 
 type ChartContextProps = {
   config: ChartConfig
+}
+
+export type CustomTooltipProps = TooltipContentProps<ValueType, NameType> & {
+  className?: string
+  hideLabel?: boolean
+  hideIndicator?: boolean
+  indicator?: "line" | "dot" | "dashed"
+  nameKey?: string
+  labelKey?: string
+  labelFormatter?: (
+    label: TooltipContentProps<number, string>["label"],
+    payload: TooltipContentProps<number, string>["payload"]
+  ) => React.ReactNode
+  formatter?: (
+    value: number | string,
+    name: string,
+    item: Payload<number | string, string>,
+    index: number,
+    payload: ReadonlyArray<Payload<number | string, string>>
+  ) => React.ReactNode
+  labelClassName?: string
+  color?: string
+}
+
+export type ChartLegendContentProps = {
+  className?: string
+  hideIcon?: boolean
+  verticalAlign?: LegendProps["verticalAlign"]
+  payload?: LegendPayload[]
+  nameKey?: string
 }
 
 const ChartContext = React.createContext<ChartContextProps | null>(null)
@@ -82,17 +120,17 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
         __html: Object.entries(THEMES)
           .map(
             ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
-  })
-  .join("\n")}
-}
-`
+            ${prefix} [data-chart=${id}] {
+            ${colorConfig
+              .map(([key, itemConfig]) => {
+                const color =
+                  itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+                  itemConfig.color
+                return color ? `  --color-${key}: ${color};` : null
+              })
+              .join("\n")}
+            }
+            `
           )
           .join("\n"),
       }}
@@ -105,25 +143,18 @@ const ChartTooltip = RechartsPrimitive.Tooltip
 function ChartTooltipContent({
   active,
   payload,
+  label,
   className,
   indicator = "dot",
   hideLabel = false,
   hideIndicator = false,
-  label,
   labelFormatter,
-  labelClassName,
   formatter,
+  labelClassName,
   color,
   nameKey,
   labelKey,
-}: React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
-  React.ComponentProps<"div"> & {
-    hideLabel?: boolean
-    hideIndicator?: boolean
-    indicator?: "line" | "dot" | "dashed"
-    nameKey?: string
-    labelKey?: string
-  }) {
+}: CustomTooltipProps) {
   const { config } = useChart()
 
   const tooltipLabel = React.useMemo(() => {
@@ -134,10 +165,14 @@ function ChartTooltipContent({
     const [item] = payload
     const key = `${labelKey || item?.dataKey || item?.name || "value"}`
     const itemConfig = getPayloadConfigFromPayload(config, item, key)
-    const value =
-      !labelKey && typeof label === "string"
-        ? config[label as keyof typeof config]?.label || label
-        : itemConfig?.label
+    const value = (() => {
+      const v =
+        !labelKey && typeof label === "string"
+          ? config[label as keyof typeof config]?.label ?? label
+          : itemConfig?.label
+
+      return typeof v === "string" || typeof v === "number" ? v : undefined
+    })()
 
     if (labelFormatter) {
       return (
@@ -254,11 +289,7 @@ function ChartLegendContent({
   payload,
   verticalAlign = "bottom",
   nameKey,
-}: React.ComponentProps<"div"> &
-  Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
-    hideIcon?: boolean
-    nameKey?: string
-  }) {
+}: ChartLegendContentProps) {
   const { config } = useChart()
 
   if (!payload?.length) {
