@@ -43,7 +43,7 @@ After installing the extension you can do the following directly from the browse
 - Linux (Debian / Fedora / Arch Linux base)
 - MacOS (>10.3)
 
-> ⚠️ **NOTE:** Though most linux (debian/fedora/arch base) distros are supported but not all packages are tested on all these platforms, to save time (and some brain cells) and ship the software as fast as possible! (Currently only the debian package is tested on Ubuntu 24.04 - So, other linux packages may have issues, test it yourself and feel free to report issues if you found one)
+> ⚠️ **NOTE:** Though most linux (debian/fedora/arch base) distros are supported but not all packages are tested on all these platforms, to save some time (and brain cells) and ship the software as fast as possible! (Currently only the debian package is tested on Ubuntu 24.04 LTS - So, other linux packages may have issues, test it yourself and feel free to report issues if you found one)
 
 ### 🤝 External Dependencies
 
@@ -59,7 +59,7 @@ After installing the extension you can do the following directly from the browse
 | x86_64 | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) |
 | ARM64 | ✅ Emulation | ❌ N/A | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) |
 
-> 📌 **NOTE:** x86_64 Windows binary also works on ARM64 (Windows on ARM) devices with emulation (Not planning to release separate Windows ARM64 build anytime soon as, x86_64 one works fine on ARM64 with very little performance impact/drop)
+> 📌 **NOTE:** x86_64 Windows binary also works on ARM64 (Windows on ARM) devices with emulation (Not planning to release native Windows ARM64 build anytime soon as, x86_64 one works fine on ARM64 without noticeable performance impact)
 
 | Platform (OS) | Distribution Channel | Installation Command / Instruction |
 | :---- | :---- | :---- |

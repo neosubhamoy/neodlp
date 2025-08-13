@@ -1,6 +1,6 @@
 [package]
 name = "neodlp"
-version = "0.2.1"
+version = "0.2.2"
 description = "NeoDLP"
 authors = ["neosubhamoy <hey@neosubhamoy.com>"]
 edition = "2021"
