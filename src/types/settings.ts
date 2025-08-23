@@ -22,6 +22,10 @@ export interface Settings {
     embed_video_metadata: boolean;
     embed_audio_metadata: boolean;
     embed_audio_thumbnail: boolean;
+    use_cookies: boolean;
+    import_cookies_from: string;
+    cookies_browser: string;
+    cookies_file: string;
     // extension settings
     websocket_port: number;
 }

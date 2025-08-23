@@ -141,6 +141,11 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         embed_video_metadata: false,
         embed_audio_metadata: true,
         embed_audio_thumbnail: true,
+        use_cookies: false,
+        import_cookies_from: 'browser',
+        cookies_browser: 'firefox',
+        cookies_file: '',
+        // extension settings
         websocket_port: 53511
     },
     isUsingDefaultSettings: true,
@@ -185,6 +190,11 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             embed_video_metadata: false,
             embed_audio_metadata: true,
             embed_audio_thumbnail: true,
+            use_cookies: false,
+            import_cookies_from: 'browser',
+            cookies_browser: 'firefox',
+            cookies_file: '',
+            // extension settings
             websocket_port: 53511
         },
         isUsingDefaultSettings: true

@@ -70,6 +70,10 @@ export default function App({ children }: { children: React.ReactNode }) {
   const EMBED_VIDEO_METADATA = useSettingsPageStatesStore(state => state.settings.embed_video_metadata);
   const EMBED_AUDIO_METADATA = useSettingsPageStatesStore(state => state.settings.embed_audio_metadata);
   const EMBED_AUDIO_THUMBNAIL = useSettingsPageStatesStore(state => state.settings.embed_audio_thumbnail);
+  const USE_COOKIES = useSettingsPageStatesStore(state => state.settings.use_cookies);
+  const IMPORT_COOKIES_FROM = useSettingsPageStatesStore(state => state.settings.import_cookies_from);
+  const COOKIES_BROWSER = useSettingsPageStatesStore(state => state.settings.cookies_browser);
+  const COOKIES_FILE = useSettingsPageStatesStore(state => state.settings.cookies_file);
 
   const isErrored = useDownloaderPageStatesStore((state) => state.isErrored);
   const isErrorExpected = useDownloaderPageStatesStore((state) => state.isErrorExpected);
@@ -112,6 +116,13 @@ export default function App({ children }: { children: React.ReactNode }) {
       if (STRICT_DOWNLOADABILITY_CHECK && !formatId) args.push('--check-all-formats');
       if (STRICT_DOWNLOADABILITY_CHECK && formatId) args.push('--check-formats');
       if (USE_PROXY && PROXY_URL) args.push('--proxy', PROXY_URL);
+      if (USE_COOKIES) {
+        if (IMPORT_COOKIES_FROM === 'browser' && COOKIES_BROWSER) {
+          args.push('--cookies-from-browser', COOKIES_BROWSER);
+        } else if (IMPORT_COOKIES_FROM === 'file' && COOKIES_FILE) {
+          args.push('--cookies', COOKIES_FILE);
+        }
+      };
       const command = Command.sidecar('binaries/yt-dlp', args);
 
       let jsonOutput = '';
@@ -271,6 +282,14 @@ export default function App({ children }: { children: React.ReactNode }) {
 
     if (USE_RATE_LIMIT && RATE_LIMIT) {
       args.push('--limit-rate', `${RATE_LIMIT}`);
+    }
+
+    if (USE_COOKIES) {
+      if (IMPORT_COOKIES_FROM === 'browser' && COOKIES_BROWSER) {
+        args.push('--cookies-from-browser', COOKIES_BROWSER);
+      } else if (IMPORT_COOKIES_FROM === 'file' && COOKIES_FILE) {
+        args.push('--cookies', COOKIES_FILE);
+      }
     }
 
     console.log('Starting download with args:', args);

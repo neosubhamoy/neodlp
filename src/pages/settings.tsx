@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { ArrowDownToLine, ArrowRight, BrushCleaning, EthernetPort, ExternalLink, FileVideo, Folder, FolderOpen, Info, Loader2, LucideIcon, Monitor, Moon, Radio, RotateCcw, RotateCw, Sun, Terminal, WandSparkles, Wifi, Wrench } from "lucide-react";
+import { ArrowDownToLine, ArrowRight, BrushCleaning, Cookie, EthernetPort, ExternalLink, FileVideo, Folder, FolderOpen, Info, Loader2, LucideIcon, Monitor, Moon, Radio, RotateCcw, RotateCw, Sun, Terminal, WandSparkles, Wifi, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { useTheme } from "@/providers/themeProvider";
@@ -95,6 +95,11 @@ export default function SettingsPage() {
     const embedVideoMetadata = useSettingsPageStatesStore(state => state.settings.embed_video_metadata);
     const embedAudioMetadata = useSettingsPageStatesStore(state => state.settings.embed_audio_metadata);
     const embedAudioThumbnail = useSettingsPageStatesStore(state => state.settings.embed_audio_thumbnail);
+    const useCookies = useSettingsPageStatesStore(state => state.settings.use_cookies);
+    const importCookiesFrom = useSettingsPageStatesStore(state => state.settings.import_cookies_from);
+    const cookiesBrowser = useSettingsPageStatesStore(state => state.settings.cookies_browser);
+    const cookiesFile = useSettingsPageStatesStore(state => state.settings.cookies_file);
+
     const websocketPort = useSettingsPageStatesStore(state => state.settings.websocket_port);
     const isChangingWebSocketPort = useSettingsPageStatesStore(state => state.isChangingWebSocketPort);
     const setIsChangingWebSocketPort = useSettingsPageStatesStore(state => state.setIsChangingWebSocketPort);
@@ -384,9 +389,14 @@ export default function SettingsPage() {
                                 value="network"
                                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
                             ><Wifi className="size-4" /> Network</TabsTrigger>
+                            <TabsTrigger
+                                key="cookies"
+                                value="cookies"
+                                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
+                            ><Cookie className="size-4" /> Cookies</TabsTrigger>
                         </TabsList>
                         <div className="min-h-full flex flex-col max-w-[55%] w-full border-l border-border pl-4">
-                            <TabsContent key="general" value="general" className="flex flex-col gap-4 min-h-[235px]">
+                            <TabsContent key="general" value="general" className="flex flex-col gap-4 min-h-[275px]">
                                 <div className="max-parallel-downloads">
                                     <h3 className="font-semibold">Max Parallel Downloads</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Set maximum number of allowed parallel downloads</p>
@@ -432,7 +442,7 @@ export default function SettingsPage() {
                                     <Label htmlFor="max-retries" className="text-xs text-muted-foreground">(Current: {maxRetries}) (Default: 5, Maximum: 100)</Label>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="appearance" value="appearance" className="flex flex-col gap-4 min-h-[235px]">
+                            <TabsContent key="appearance" value="appearance" className="flex flex-col gap-4 min-h-[275px]">
                                 <div className="app-theme">
                                     <h3 className="font-semibold">Theme</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Choose app interface theme</p>
@@ -455,7 +465,7 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="folders" value="folders" className="flex flex-col gap-4 min-h-[235px]">
+                            <TabsContent key="folders" value="folders" className="flex flex-col gap-4 min-h-[275px]">
                                 <div className="download-dir">
                                     <h3 className="font-semibold">Download Folder</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Set default download folder (directory)</p>
@@ -515,7 +525,7 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="formats" value="formats" className="flex flex-col gap-4 min-h-[235px]">
+                            <TabsContent key="formats" value="formats" className="flex flex-col gap-4 min-h-[275px]">
                                 <div className="video-format">
                                     <h3 className="font-semibold">Video Format</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Choose in which format the final video file will be saved</p>
@@ -580,7 +590,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                             </TabsContent>
-                            <TabsContent key="metadata" value="metadata" className="flex flex-col gap-4 min-h-[235px]">
+                            <TabsContent key="metadata" value="metadata" className="flex flex-col gap-4 min-h-[275px]">
                                 <div className="embed-video-metadata">
                                     <h3 className="font-semibold">Embed Metadata</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Wheather to embed metadata in video/audio files (info, chapters)</p>
@@ -611,7 +621,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                             </TabsContent>
-                            <TabsContent key="network" value="network" className="flex flex-col gap-4 min-h-[235px]">
+                            <TabsContent key="network" value="network" className="flex flex-col gap-4 min-h-[275px]">
                                 <div className="proxy">
                                     <h3 className="font-semibold">Proxy</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Use proxy for downloads, Unblocks blocked sites in your region (download speed may affect, some sites may not work)</p>
@@ -691,6 +701,93 @@ export default function SettingsPage() {
                                             </Button>
                                         </form>
                                     </Form>
+                                </div>
+                            </TabsContent>
+                            <TabsContent key="cookies" value="cookies" className="flex flex-col gap-4 min-h-[275px]">
+                                <div className="cookies">
+                                    <h3 className="font-semibold">Cookies</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Use cookies to access exclusive/private (login-protected) contents from sites (use wisely, over-use can even block/ban your account)</p>
+                                    <div className="flex items-center space-x-2 mb-4">
+                                        <Switch
+                                        id="use-cookies"
+                                        checked={useCookies}
+                                        onCheckedChange={(checked) => saveSettingsKey('use_cookies', checked)}
+                                        />
+                                        <Label htmlFor="use-cookies">Use Cookies</Label>
+                                    </div>
+                                    <RadioGroup
+                                    orientation="horizontal"
+                                    className="flex items-center gap-4"
+                                    value={importCookiesFrom}
+                                    onValueChange={(value) => saveSettingsKey('import_cookies_from', value)}
+                                    disabled={!useCookies}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <RadioGroupItem value="browser" id="cookies-browser" />
+                                            <Label htmlFor="cookies-browser">Import from Browser</Label>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <RadioGroupItem value="file" id="cookies-file" />
+                                            <Label htmlFor="cookies-file">Import from Text File</Label>
+                                        </div>
+                                    </RadioGroup>
+                                    <div className="flex flex-col gap-2 mt-5 mb-2">
+                                        <Label className="text-xs">Import Cookies from Browser</Label>
+                                        <Select
+                                        value={cookiesBrowser}
+                                        onValueChange={(value) => saveSettingsKey('cookies_browser', value)}
+                                        disabled={importCookiesFrom !== "browser" || !useCookies}
+                                        >
+                                            <SelectTrigger className="w-[230px] ring-0 focus:ring-0">
+                                                <SelectValue placeholder="Select browser to import cookies" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectLabel>Browsers</SelectLabel>
+                                                    <SelectItem value="firefox">Firefox (Recommended)</SelectItem>
+                                                    <SelectItem value="chrome">Chrome</SelectItem>
+                                                    <SelectItem value="chromium">Chromium</SelectItem>
+                                                    <SelectItem value="safari">Safari</SelectItem>
+                                                    <SelectItem value="brave">Brave</SelectItem>
+                                                    <SelectItem value="edge">Edge</SelectItem>
+                                                    <SelectItem value="opera">Opera</SelectItem>
+                                                    <SelectItem value="vivaldi">Vivaldi</SelectItem>
+                                                    <SelectItem value="whale">Whale</SelectItem>
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="flex flex-col gap-2 mt-3 mb-2">
+                                        <Label className="text-xs">Import Cookies from Text File (Netscape format)</Label>
+                                        <div className="flex items-center gap-4">
+                                            <Input className="focus-visible:ring-0" type="text" placeholder="Select cookies text file" value={cookiesFile ?? ''} disabled={importCookiesFrom !== "file" || !useCookies} readOnly/>
+                                            <Button
+                                            variant="outline"
+                                            disabled={importCookiesFrom !== "file" || !useCookies}
+                                            onClick={async () => {
+                                                try {
+                                                    const file = await open({
+                                                        multiple: false,
+                                                        directory: false,
+                                                        filters: [
+                                                            { name: 'Text', extensions: ['txt'] },
+                                                        ],
+                                                    });
+                                                    if (file && typeof file === 'string') {
+                                                        saveSettingsKey('cookies_file', file);
+                                                    }
+                                                } catch (error) {
+                                                    console.error("Error selecting file:", error);
+                                                    toast.error("Failed to select file", {
+                                                        description: "An error occurred while trying to select the cookies text file. Please try again.",
+                                                    });
+                                                }
+                                            }}
+                                            >
+                                                <FolderOpen className="w-4 h-4" /> Browse
+                                            </Button>
+                                        </div>
+                                    </div>
                                 </div>
                             </TabsContent>
                         </div>
