@@ -74,6 +74,12 @@ export default function App({ children }: { children: React.ReactNode }) {
   const IMPORT_COOKIES_FROM = useSettingsPageStatesStore(state => state.settings.import_cookies_from);
   const COOKIES_BROWSER = useSettingsPageStatesStore(state => state.settings.cookies_browser);
   const COOKIES_FILE = useSettingsPageStatesStore(state => state.settings.cookies_file);
+  const USE_SPONSORBLOCK = useSettingsPageStatesStore(state => state.settings.use_sponsorblock);
+  const SPONSORBLOCK_MODE = useSettingsPageStatesStore(state => state.settings.sponsorblock_mode);
+  const SPONSORBLOCK_REMOVE = useSettingsPageStatesStore(state => state.settings.sponsorblock_remove);
+  const SPONSORBLOCK_MARK = useSettingsPageStatesStore(state => state.settings.sponsorblock_mark);
+  const SPONSORBLOCK_REMOVE_CATEGORIES = useSettingsPageStatesStore(state => state.settings.sponsorblock_remove_categories);
+  const SPONSORBLOCK_MARK_CATEGORIES = useSettingsPageStatesStore(state => state.settings.sponsorblock_mark_categories);
 
   const isErrored = useDownloaderPageStatesStore((state) => state.isErrored);
   const isErrorExpected = useDownloaderPageStatesStore((state) => state.isErrorExpected);
@@ -205,6 +211,8 @@ export default function App({ children }: { children: React.ReactNode }) {
       if (AUDIO_FORMAT !== 'auto' && fileType === 'audio') videoMetadata.ext = AUDIO_FORMAT;
     }
 
+    if (resumeState && resumeState.output_format) videoMetadata.ext = resumeState.output_format;
+
     const videoId = resumeState?.video_id || generateVideoId(videoMetadata.id, videoMetadata.webpage_url_domain);
     const playlistId = isPlaylist ? (resumeState?.playlist_id || generateVideoId(videoMetadata.playlist_id, videoMetadata.webpage_url_domain)) : null;
     const downloadId = resumeState?.download_id || generateDownloadId(videoMetadata.id, videoMetadata.webpage_url_domain);
@@ -237,59 +245,82 @@ export default function App({ children }: { children: React.ReactNode }) {
       args.push('--playlist-items', playlistIndex);
     }
 
-    if (fileType !== 'unknown' && (VIDEO_FORMAT !== 'auto' || AUDIO_FORMAT !== 'auto')) {
-      if (VIDEO_FORMAT !== 'auto' && fileType === 'video+audio') {
+    let outputFormat = null;
+    if (fileType !== 'unknown' && ((VIDEO_FORMAT !== 'auto' || AUDIO_FORMAT !== 'auto') || resumeState?.output_format)) {
+      outputFormat = resumeState?.output_format || (fileType === 'video+audio' ? VIDEO_FORMAT : (fileType === 'video' ? VIDEO_FORMAT : (fileType === 'audio' ? AUDIO_FORMAT : null)));
+      if ((VIDEO_FORMAT !== 'auto' && fileType === 'video+audio') || (resumeState?.output_format && fileType === 'video+audio')) {
         if (ALWAYS_REENCODE_VIDEO) {
-          args.push('--recode-video', VIDEO_FORMAT);
+          args.push('--recode-video', resumeState?.output_format || VIDEO_FORMAT);
         } else {
-          args.push('--merge-output-format', VIDEO_FORMAT);
+          args.push('--merge-output-format', resumeState?.output_format || VIDEO_FORMAT);
         }
       }
-      if (VIDEO_FORMAT !== 'auto' && fileType === 'video') {
+      if ((VIDEO_FORMAT !== 'auto' && fileType === 'video') || (resumeState?.output_format && fileType === 'video')) {
         if (ALWAYS_REENCODE_VIDEO) {
-          args.push('--recode-video', VIDEO_FORMAT);
+          args.push('--recode-video', resumeState?.output_format || VIDEO_FORMAT);
         } else {
-        args.push('--remux-video', VIDEO_FORMAT);
+        args.push('--remux-video', resumeState?.output_format || VIDEO_FORMAT);
         }
       }
-      if (AUDIO_FORMAT !== 'auto' && fileType === 'audio') {
-        args.push('--extract-audio', '--audio-format', AUDIO_FORMAT);
+      if ((AUDIO_FORMAT !== 'auto' && fileType === 'audio') || (resumeState?.output_format && fileType === 'audio')) {
+        args.push('--extract-audio', '--audio-format', resumeState?.output_format || AUDIO_FORMAT);
       }
     }
 
-    if (fileType !== 'unknown' && (EMBED_VIDEO_METADATA || EMBED_AUDIO_METADATA)) {
-      if (EMBED_VIDEO_METADATA && (fileType === 'video+audio' || fileType === 'video')) {
+    let embedMetadata = 0;
+    if (fileType !== 'unknown' && ((EMBED_VIDEO_METADATA || EMBED_AUDIO_METADATA) || resumeState?.embed_metadata)) {
+      if ((EMBED_VIDEO_METADATA || resumeState?.embed_metadata) && (fileType === 'video+audio' || fileType === 'video')) {
+        embedMetadata = 1;
         args.push('--embed-metadata');
       }
-      if (EMBED_AUDIO_METADATA && fileType === 'audio') {
+      if ((EMBED_AUDIO_METADATA || resumeState?.embed_metadata) && fileType === 'audio') {
+        embedMetadata = 1;
         args.push('--embed-metadata');
       }
     }
 
-    if (EMBED_AUDIO_THUMBNAIL && fileType === 'audio') {
+    let embedThumbnail = 0;
+    if (fileType === 'audio' && (EMBED_AUDIO_THUMBNAIL || resumeState?.embed_thumbnail)) {
+      embedThumbnail = 1;
       args.push('--embed-thumbnail');
     }
-
-    if (resumeState) {
-      args.push('--continue');
-    } else {
-      args.push('--no-continue');
-    }
-
+    
     if (USE_PROXY && PROXY_URL) {
       args.push('--proxy', PROXY_URL);
     }
-
+    
     if (USE_RATE_LIMIT && RATE_LIMIT) {
       args.push('--limit-rate', `${RATE_LIMIT}`);
     }
-
+    
     if (USE_COOKIES) {
       if (IMPORT_COOKIES_FROM === 'browser' && COOKIES_BROWSER) {
         args.push('--cookies-from-browser', COOKIES_BROWSER);
       } else if (IMPORT_COOKIES_FROM === 'file' && COOKIES_FILE) {
         args.push('--cookies', COOKIES_FILE);
       }
+    }
+    
+    let sponsorblockRemove = null;
+    let sponsorblockMark = null;
+    if (USE_SPONSORBLOCK || (resumeState?.sponsorblock_remove || resumeState?.sponsorblock_mark)) {
+      if (SPONSORBLOCK_MODE === 'remove' || resumeState?.sponsorblock_remove) {
+        sponsorblockRemove = resumeState?.sponsorblock_remove || (SPONSORBLOCK_REMOVE === 'custom' ? (
+          SPONSORBLOCK_REMOVE_CATEGORIES.length > 0 ? SPONSORBLOCK_REMOVE_CATEGORIES.join(',') : 'default'
+        ) : (SPONSORBLOCK_REMOVE));
+        args.push('--sponsorblock-remove', sponsorblockRemove);
+      } else if (SPONSORBLOCK_MODE === 'mark' || resumeState?.sponsorblock_mark) {
+        sponsorblockMark = resumeState?.sponsorblock_mark || (SPONSORBLOCK_MARK === 'custom' ? (
+          SPONSORBLOCK_MARK_CATEGORIES.length > 0 ? SPONSORBLOCK_MARK_CATEGORIES.join(',') : 'default'
+        ) : (SPONSORBLOCK_MARK));
+        args.push('--sponsorblock-mark', sponsorblockMark);
+      }
+    }
+    
+    if (resumeState) {
+      args.push('--continue');
+    } else {
+      args.push('--no-continue');
     }
 
     console.log('Starting download with args:', args);
@@ -378,7 +409,12 @@ export default function App({ children }: { children: React.ReactNode }) {
           eta: currentProgress.eta || null,
           filepath: downloadFilePath,
           filetype: determineFileType(videoMetadata.vcodec, videoMetadata.acodec) || null,
-          filesize: videoMetadata.filesize_approx || null
+          filesize: videoMetadata.filesize_approx || null,
+          output_format: outputFormat,
+          embed_metadata: embedMetadata,
+          embed_thumbnail: embedThumbnail,
+          sponsorblock_remove: sponsorblockRemove,
+          sponsorblock_mark: sponsorblockMark
         };
         downloadStateSaver.mutate(state, {
           onSuccess: (data) => {
@@ -463,7 +499,12 @@ export default function App({ children }: { children: React.ReactNode }) {
             eta: resumeState?.eta || null,
             filepath: downloadFilePath,
             filetype: resumeState?.filetype || null,
-            filesize: resumeState?.filesize || null
+            filesize: resumeState?.filesize || null,
+            output_format: resumeState?.output_format || null,
+            embed_metadata: resumeState?.embed_metadata || 0,
+            embed_thumbnail: resumeState?.embed_thumbnail || 0,
+            sponsorblock_remove: resumeState?.sponsorblock_remove || null,
+            sponsorblock_mark: resumeState?.sponsorblock_mark || null
           }
           downloadStateSaver.mutate(state, {
             onSuccess: (data) => {

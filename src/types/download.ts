@@ -37,6 +37,13 @@ export interface DownloadState {
     filepath: string | null;
     filetype: string | null;
     filesize: number | null;
+    output_format: string | null;
+    embed_metadata: number;
+    embed_thumbnail: number;
+    sponsorblock_remove: string | null;
+    sponsorblock_mark: string | null;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface Download {
@@ -65,6 +72,13 @@ export interface Download {
     filepath: string | null;
     filetype: string | null;
     filesize: number | null;
+    output_format: string | null;
+    embed_metadata: number;
+    embed_thumbnail: number;
+    sponsorblock_remove: string | null;
+    sponsorblock_mark: string | null;
+    created_at: string;
+    updated_at: string;
 }
 
 export interface DownloadProgress {

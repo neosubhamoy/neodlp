@@ -26,6 +26,12 @@ export interface Settings {
     import_cookies_from: string;
     cookies_browser: string;
     cookies_file: string;
+    use_sponsorblock: boolean;
+    sponsorblock_mode: string;
+    sponsorblock_remove: string;
+    sponsorblock_mark: string;
+    sponsorblock_remove_categories: string[];
+    sponsorblock_mark_categories: string[];
     // extension settings
     websocket_port: number;
 }

@@ -145,6 +145,12 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         import_cookies_from: 'browser',
         cookies_browser: 'firefox',
         cookies_file: '',
+        use_sponsorblock: false,
+        sponsorblock_mode: 'remove',
+        sponsorblock_remove: 'default',
+        sponsorblock_mark: 'default',
+        sponsorblock_remove_categories: [],
+        sponsorblock_mark_categories: [],
         // extension settings
         websocket_port: 53511
     },
@@ -194,6 +200,12 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             import_cookies_from: 'browser',
             cookies_browser: 'firefox',
             cookies_file: '',
+            use_sponsorblock: false,
+            sponsorblock_mode: 'remove',
+            sponsorblock_remove: 'default',
+            sponsorblock_mark: 'default',
+            sponsorblock_remove_categories: [],
+            sponsorblock_mark_categories: [],
             // extension settings
             websocket_port: 53511
         },

@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { ArrowDownToLine, ArrowRight, BrushCleaning, Cookie, EthernetPort, ExternalLink, FileVideo, Folder, FolderOpen, Info, Loader2, LucideIcon, Monitor, Moon, Radio, RotateCcw, RotateCw, Sun, Terminal, WandSparkles, Wifi, Wrench } from "lucide-react";
+import { ArrowDownToLine, ArrowRight, BrushCleaning, Cookie, EthernetPort, ExternalLink, FileVideo, Folder, FolderOpen, Info, Loader2, LucideIcon, Monitor, Moon, Radio, RotateCcw, RotateCw, ShieldMinus, Sun, Terminal, WandSparkles, Wifi, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { useTheme } from "@/providers/themeProvider";
@@ -27,6 +27,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import * as fs from "@tauri-apps/plugin-fs";
 import { join } from "@tauri-apps/api/path";
 import { formatSpeed } from "@/utils";
+import { ToggleGroup, ToggleGroupItem } from "@/components/custom/legacyToggleGroup";
 
 const websocketPortSchema = z.object({
     port: z.coerce.number<number>({
@@ -99,6 +100,12 @@ export default function SettingsPage() {
     const importCookiesFrom = useSettingsPageStatesStore(state => state.settings.import_cookies_from);
     const cookiesBrowser = useSettingsPageStatesStore(state => state.settings.cookies_browser);
     const cookiesFile = useSettingsPageStatesStore(state => state.settings.cookies_file);
+    const useSponsorblock = useSettingsPageStatesStore(state => state.settings.use_sponsorblock);
+    const sponsorblockMode = useSettingsPageStatesStore(state => state.settings.sponsorblock_mode);
+    const sponsorblockRemove = useSettingsPageStatesStore(state => state.settings.sponsorblock_remove);
+    const sponsorblockMark = useSettingsPageStatesStore(state => state.settings.sponsorblock_mark);
+    const sponsorblockRemoveCategories = useSettingsPageStatesStore(state => state.settings.sponsorblock_remove_categories);
+    const sponsorblockMarkCategories = useSettingsPageStatesStore(state => state.settings.sponsorblock_mark_categories);
 
     const websocketPort = useSettingsPageStatesStore(state => state.settings.websocket_port);
     const isChangingWebSocketPort = useSettingsPageStatesStore(state => state.isChangingWebSocketPort);
@@ -122,6 +129,19 @@ export default function SettingsPage() {
         { value: 'light', icon: Sun, label: 'Light' },
         { value: 'dark', icon: Moon, label: 'Dark' },
         { value: 'system', icon: Monitor, label: 'System' },
+    ];
+
+    const sponsorblockCategories = [
+        { code: 'sponsor', label: 'Sponsorship' },
+        { code: 'intro', label: 'Intro' },
+        { code: 'outro', label: 'Outro' },
+        { code: 'interaction', label: 'Interaction' },
+        { code: 'selfpromo', label: 'Self Promotion' },
+        { code: 'music_offtopic', label: 'Music Offtopic' },
+        { code: 'preview', label: 'Preview' },
+        { code: 'filler', label: 'Filler' },
+        { code: 'poi_highlight', label: 'Point of Interest' },
+        { code: 'chapter', label: 'Chapter' },
     ];
 
     const openLink = async (url: string, app: string | null) => {
@@ -394,9 +414,14 @@ export default function SettingsPage() {
                                 value="cookies"
                                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
                             ><Cookie className="size-4" /> Cookies</TabsTrigger>
+                            <TabsTrigger
+                                key="sponsorblock"
+                                value="sponsorblock"
+                                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
+                            ><ShieldMinus className="size-4" /> Sponsorblock</TabsTrigger>
                         </TabsList>
                         <div className="min-h-full flex flex-col max-w-[55%] w-full border-l border-border pl-4">
-                            <TabsContent key="general" value="general" className="flex flex-col gap-4 min-h-[275px]">
+                            <TabsContent key="general" value="general" className="flex flex-col gap-4 min-h-[310px]">
                                 <div className="max-parallel-downloads">
                                     <h3 className="font-semibold">Max Parallel Downloads</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Set maximum number of allowed parallel downloads</p>
@@ -442,7 +467,7 @@ export default function SettingsPage() {
                                     <Label htmlFor="max-retries" className="text-xs text-muted-foreground">(Current: {maxRetries}) (Default: 5, Maximum: 100)</Label>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="appearance" value="appearance" className="flex flex-col gap-4 min-h-[275px]">
+                            <TabsContent key="appearance" value="appearance" className="flex flex-col gap-4 min-h-[310px]">
                                 <div className="app-theme">
                                     <h3 className="font-semibold">Theme</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Choose app interface theme</p>
@@ -465,7 +490,7 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="folders" value="folders" className="flex flex-col gap-4 min-h-[275px]">
+                            <TabsContent key="folders" value="folders" className="flex flex-col gap-4 min-h-[310px]">
                                 <div className="download-dir">
                                     <h3 className="font-semibold">Download Folder</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Set default download folder (directory)</p>
@@ -525,7 +550,7 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="formats" value="formats" className="flex flex-col gap-4 min-h-[275px]">
+                            <TabsContent key="formats" value="formats" className="flex flex-col gap-4 min-h-[310px]">
                                 <div className="video-format">
                                     <h3 className="font-semibold">Video Format</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Choose in which format the final video file will be saved</p>
@@ -590,7 +615,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                             </TabsContent>
-                            <TabsContent key="metadata" value="metadata" className="flex flex-col gap-4 min-h-[275px]">
+                            <TabsContent key="metadata" value="metadata" className="flex flex-col gap-4 min-h-[310px]">
                                 <div className="embed-video-metadata">
                                     <h3 className="font-semibold">Embed Metadata</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Wheather to embed metadata in video/audio files (info, chapters)</p>
@@ -621,7 +646,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                             </TabsContent>
-                            <TabsContent key="network" value="network" className="flex flex-col gap-4 min-h-[275px]">
+                            <TabsContent key="network" value="network" className="flex flex-col gap-4 min-h-[310px]">
                                 <div className="proxy">
                                     <h3 className="font-semibold">Proxy</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Use proxy for downloads, Unblocks blocked sites in your region (download speed may affect, some sites may not work)</p>
@@ -703,7 +728,7 @@ export default function SettingsPage() {
                                     </Form>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="cookies" value="cookies" className="flex flex-col gap-4 min-h-[275px]">
+                            <TabsContent key="cookies" value="cookies" className="flex flex-col gap-4 min-h-[310px]">
                                 <div className="cookies">
                                     <h3 className="font-semibold">Cookies</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Use cookies to access exclusive/private (login-protected) contents from sites (use wisely, over-use can even block/ban your account)</p>
@@ -788,6 +813,130 @@ export default function SettingsPage() {
                                             </Button>
                                         </div>
                                     </div>
+                                    <Label className="text-xs text-muted-foreground">(Configured: {importCookiesFrom === "browser" ? 'Yes' : cookiesFile ? 'Yes' : 'No'}, From: {importCookiesFrom === "browser" ? 'Browser' : 'Text'}, Status: {useCookies ? 'Enabled' : 'Disabled'})</Label>
+                                </div>
+                            </TabsContent>
+                            <TabsContent key="sponsorblock" value="sponsorblock" className="flex flex-col gap-4 min-h-[310px]">
+                                <div className="sponsorblock">
+                                    <h3 className="font-semibold">Sponsor Block</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Use sponsorblock to remove/mark unwanted segments in videos (sponsorships, intros, outros, etc.)</p>
+                                    <div className="flex items-center space-x-2 mb-4">
+                                        <Switch
+                                        id="use-sponsorblock"
+                                        checked={useSponsorblock}
+                                        onCheckedChange={(checked) => saveSettingsKey('use_sponsorblock', checked)}
+                                        />
+                                        <Label htmlFor="use-sponsorblock">Use Sponsorblock</Label>
+                                    </div>
+                                    <RadioGroup
+                                    orientation="horizontal"
+                                    className="flex items-center gap-4"
+                                    value={sponsorblockMode}
+                                    onValueChange={(value) => saveSettingsKey('sponsorblock_mode', value)}
+                                    disabled={!useSponsorblock}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <RadioGroupItem value="remove" id="sponsorblock-remove" />
+                                            <Label htmlFor="sponsorblock-remove">Remove Segments</Label>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <RadioGroupItem value="mark" id="sponsorblock-mark" />
+                                            <Label htmlFor="sponsorblock-mark">Mark Segments</Label>
+                                        </div>
+                                    </RadioGroup>
+                                    <div className="flex flex-col gap-2 mt-5">
+                                        <Label className="text-xs mb-1">Sponsorblock Remove Categories</Label>
+                                        <RadioGroup
+                                        orientation="horizontal"
+                                        className="flex items-center gap-4"
+                                        value={sponsorblockRemove}
+                                        onValueChange={(value) => saveSettingsKey('sponsorblock_remove', value)}
+                                        disabled={!useSponsorblock || sponsorblockMode !== "remove"}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <RadioGroupItem value="default" id="sponsorblock-remove-default" />
+                                                <Label htmlFor="sponsorblock-remove-default">Default</Label>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <RadioGroupItem value="all" id="sponsorblock-remove-all" />
+                                                <Label htmlFor="sponsorblock-remove-all">All</Label>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <RadioGroupItem value="custom" id="sponsorblock-remove-custom" />
+                                                <Label htmlFor="sponsorblock-remove-custom">Custom</Label>
+                                            </div>
+                                        </RadioGroup>
+                                        <ToggleGroup
+                                        type="multiple"
+                                        variant="outline"
+                                        className="flex flex-col items-start gap-2 mt-1"
+                                        value={sponsorblockRemove === "custom" ? sponsorblockRemoveCategories : sponsorblockRemove === "default" ? sponsorblockCategories.filter((cat) => cat.code !== 'poi_highlight' && cat.code !== 'filler').map((cat) => cat.code) : sponsorblockRemove === "all" ? sponsorblockCategories.filter((cat) => cat.code !== 'poi_highlight').map((cat) => cat.code) : []}
+                                        onValueChange={(value) => saveSettingsKey('sponsorblock_remove_categories', value)}
+                                        disabled={!useSponsorblock || sponsorblockMode !== "remove" || sponsorblockRemove !== "custom"}
+                                        >
+                                            <div className="flex gap-2 flex-wrap items-center">
+                                                {sponsorblockCategories.map((category) => (
+                                                    category.code !== "poi_highlight" && (
+                                                        <ToggleGroupItem
+                                                        className="text-xs text-nowrap border-2 data-[state=on]:border-2 data-[state=on]:border-primary data-[state=on]:bg-muted/70 hover:bg-muted/70"
+                                                        value={category.code}
+                                                        size="sm"
+                                                        aria-label={category.label}
+                                                        key={category.code}
+                                                        >
+                                                            {category.label}
+                                                        </ToggleGroupItem>
+                                                    )
+                                                ))}
+                                            </div>
+                                        </ToggleGroup>
+                                    </div>
+                                    <div className="flex flex-col gap-2 mt-4">
+                                        <Label className="text-xs mb-1">Sponsorblock Mark Categories</Label>
+                                        <RadioGroup
+                                        orientation="horizontal"
+                                        className="flex items-center gap-4"
+                                        value={sponsorblockMark}
+                                        onValueChange={(value) => saveSettingsKey('sponsorblock_mark', value)}
+                                        disabled={!useSponsorblock || sponsorblockMode !== "mark"}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <RadioGroupItem value="default" id="sponsorblock-mark-default" />
+                                                <Label htmlFor="sponsorblock-mark-default">Default</Label>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <RadioGroupItem value="all" id="sponsorblock-mark-all" />
+                                                <Label htmlFor="sponsorblock-mark-all">All</Label>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <RadioGroupItem value="custom" id="sponsorblock-mark-custom" />
+                                                <Label htmlFor="sponsorblock-mark-custom">Custom</Label>
+                                            </div>
+                                        </RadioGroup>
+                                        <ToggleGroup
+                                        type="multiple"
+                                        variant="outline"
+                                        className="flex flex-col items-start gap-2 mt-1 mb-2"
+                                        value={sponsorblockMark === "custom" ? sponsorblockMarkCategories : sponsorblockMark === "default" ? sponsorblockCategories.map((cat) => cat.code) : sponsorblockMark === "all" ? sponsorblockCategories.map((cat) => cat.code) : []}
+                                        onValueChange={(value) => saveSettingsKey('sponsorblock_mark_categories', value)}
+                                        disabled={!useSponsorblock || sponsorblockMode !== "mark" || sponsorblockMark !== "custom"}
+                                        >
+                                            <div className="flex gap-2 flex-wrap items-center">
+                                                {sponsorblockCategories.map((category) => (
+                                                    <ToggleGroupItem
+                                                    className="text-xs text-nowrap border-2 data-[state=on]:border-2 data-[state=on]:border-primary data-[state=on]:bg-muted/70 hover:bg-muted/70"
+                                                    value={category.code}
+                                                    size="sm"
+                                                    aria-label={category.label}
+                                                    key={category.code}
+                                                    >
+                                                        {category.label}
+                                                    </ToggleGroupItem>
+                                                ))}
+                                            </div>
+                                        </ToggleGroup>
+                                    </div>
+                                    <Label className="text-xs text-muted-foreground">(Configured: {sponsorblockMode === "remove" && sponsorblockRemove === "custom" && sponsorblockRemoveCategories.length <= 0 ? 'No' : sponsorblockMode === "mark" && sponsorblockMark === "custom" && sponsorblockMarkCategories.length <= 0 ? 'No' : 'Yes'}, Mode: {sponsorblockMode === "remove" ? 'Remove' : 'Mark'}, Status: {useSponsorblock ? 'Enabled' : 'Disabled'})</Label>
                                 </div>
                             </TabsContent>
                         </div>

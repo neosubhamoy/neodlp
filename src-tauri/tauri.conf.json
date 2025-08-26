@@ -36,6 +36,9 @@
     ]
   },
   "plugins": {
+    "sql": {
+      "preload": ["sqlite:database.db"]
+    },
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNDM0I4ODcyODdGOTM4MDIKUldRQ09QbUhjb2c3UENGY1lFUVdTVWhucmJ4QzdGeW9sU3VHVFlGNWY5anZab2s4SU1rMWFsekMK",
       "endpoints": [
