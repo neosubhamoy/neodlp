@@ -32,6 +32,7 @@ export interface Settings {
     sponsorblock_mark: string;
     sponsorblock_remove_categories: string[];
     sponsorblock_mark_categories: string[];
+    use_aria2: boolean;
     // extension settings
     websocket_port: number;
 }

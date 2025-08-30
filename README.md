@@ -41,14 +41,15 @@ After installing the extension you can do the following directly from the browse
 
 - Windows (10 / 11)
 - Linux (Debian / Fedora / Arch Linux base)
-- MacOS (>10.3)
+- MacOS (>10.5)
 
 > ⚠️ **NOTE:** Though most linux (debian/fedora/arch base) distros are supported but not all packages are tested on all these platforms, to save some time (and brain cells) and ship the software as fast as possible! (Currently only the debian package is tested on Ubuntu 24.04 LTS - So, other linux packages may have issues, test it yourself and feel free to report issues if you found one)
 
 ### 🤝 External Dependencies
 
-- [YT-DLP](https://github.com/yt-dlp/yt-dlp) - The core CLI tool used to download Video/Audio from the Web (Hero of the show 😎)
-- [FFmpeg](https://www.ffmpeg.org) - Used for Video/Audio post-processing
+- [YT-DLP](https://github.com/yt-dlp/yt-dlp) (Latest Nightly) - The core CLI tool used to download video/audio from the web (Hero of the show 😎)
+- [FFmpeg & FFprobe](https://www.ffmpeg.org) (v7.1.1) - Used for video/audio post-processing
+- [Aria2](https://aria2.github.io) (v1.37.0) - Used as an external downloader for blazing fast downloads with yt-dlp
 
 ### ⬇️ Download and Installation
 
@@ -83,6 +84,7 @@ NeoDLP is and will be always FREE to Use and Open-Sourced for Everyone. On the o
 - [x] Add support for yt-dlp
 - [x] Add basic settings and customization
 - [x] Integrate with browsers
+- [x] Add aria2c support
 - [ ] Add more advanced settings and achive stability **(ongoing)**
 - [ ] Add media converter
 - [ ] Add multiple downloader engines
@@ -125,8 +127,17 @@ npm run tauri build -- --config "./src-tauri/tauri.macos-x86_64.conf.json"     #
 
 ### ⭕ Bug Report
 
-Noticed any Bug? or Want to give me some suggetions? Always feel free to open a [GitHub Issue](https://github.com/neosubhamoy/neodlp/issues). I would love to hear from you...!!
+Noticed any Bug? or Want to give me some suggetion? Always feel free to open a [GitHub Issue](https://github.com/neosubhamoy/neodlp/issues). I would love to hear from you...!!
+
+### 💫 Credits
+
+- NeoDLP's 'Format Selection' options are inspired from the [Seal](https://github.com/JunkFood02/Seal) app by [@JunkFood02](https://github.com/JunkFood02)
+- Aria2 Linux x86_64 static build is provided by [@q3aql](https://github.com/q3aql/aria2-static-builds)
+- Aria2 MacOS x86_64 and ARM64 static builds are provided by [@tofuliang](https://github.com/tofuliang/aria2)
 
 ### 📝 License
 
 NeoDLP is Licensed under the [MIT license](https://github.com/neosubhamoy/neodlp/blob/main/LICENSE). Anyone can view, modify, use (personal and commercial) or distribute it's sources without any attribution and extra permissions.
+
+****
+An Open Sourced Project - Developed with ❤️ by **Subhamoy**

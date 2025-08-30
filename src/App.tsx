@@ -80,6 +80,7 @@ export default function App({ children }: { children: React.ReactNode }) {
   const SPONSORBLOCK_MARK = useSettingsPageStatesStore(state => state.settings.sponsorblock_mark);
   const SPONSORBLOCK_REMOVE_CATEGORIES = useSettingsPageStatesStore(state => state.settings.sponsorblock_remove_categories);
   const SPONSORBLOCK_MARK_CATEGORIES = useSettingsPageStatesStore(state => state.settings.sponsorblock_mark_categories);
+  const USE_ARIA2 = useSettingsPageStatesStore(state => state.settings.use_aria2);
 
   const isErrored = useDownloaderPageStatesStore((state) => state.isErrored);
   const isErrorExpected = useDownloaderPageStatesStore((state) => state.isErrorExpected);
@@ -247,7 +248,7 @@ export default function App({ children }: { children: React.ReactNode }) {
 
     let outputFormat = null;
     if (fileType !== 'unknown' && ((VIDEO_FORMAT !== 'auto' || AUDIO_FORMAT !== 'auto') || resumeState?.output_format)) {
-      outputFormat = resumeState?.output_format || (fileType === 'video+audio' ? VIDEO_FORMAT : (fileType === 'video' ? VIDEO_FORMAT : (fileType === 'audio' ? AUDIO_FORMAT : null)));
+      outputFormat = resumeState?.output_format || (fileType === 'video+audio' && VIDEO_FORMAT !== 'auto' ? VIDEO_FORMAT : (fileType === 'video' && VIDEO_FORMAT !== 'auto' ? VIDEO_FORMAT : (fileType === 'audio' && AUDIO_FORMAT !== 'auto' ? AUDIO_FORMAT : null)));
       if ((VIDEO_FORMAT !== 'auto' && fileType === 'video+audio') || (resumeState?.output_format && fileType === 'video+audio')) {
         if (ALWAYS_REENCODE_VIDEO) {
           args.push('--recode-video', resumeState?.output_format || VIDEO_FORMAT);
@@ -316,8 +317,18 @@ export default function App({ children }: { children: React.ReactNode }) {
         args.push('--sponsorblock-mark', sponsorblockMark);
       }
     }
+
+    let useAria2 = 0;
+    if (USE_ARIA2 || resumeState?.use_aria2) {
+      useAria2 = 1;
+      args.push(
+        '--downloader', 'aria2c',
+        '--downloader', 'dash,m3u8:native',
+        '--downloader-args', 'aria2c:-c -j 16 -x 16 -s 16 -k 1M --check-certificate=false'
+      );
+    }
     
-    if (resumeState) {
+    if (resumeState || USE_ARIA2) {
       args.push('--continue');
     } else {
       args.push('--no-continue');
@@ -369,7 +380,8 @@ export default function App({ children }: { children: React.ReactNode }) {
     });
 
     command.stdout.on('data', line => {
-      if (line.startsWith('status:')) {
+      if (line.startsWith('status:') || line.startsWith('[#')) {
+        console.log(line);
         const currentProgress = parseProgressLine(line);
         const state: DownloadState = {
           download_id: downloadId,
@@ -414,7 +426,8 @@ export default function App({ children }: { children: React.ReactNode }) {
           embed_metadata: embedMetadata,
           embed_thumbnail: embedThumbnail,
           sponsorblock_remove: sponsorblockRemove,
-          sponsorblock_mark: sponsorblockMark
+          sponsorblock_mark: sponsorblockMark,
+          use_aria2: useAria2
         };
         downloadStateSaver.mutate(state, {
           onSuccess: (data) => {
@@ -504,7 +517,8 @@ export default function App({ children }: { children: React.ReactNode }) {
             embed_metadata: resumeState?.embed_metadata || 0,
             embed_thumbnail: resumeState?.embed_thumbnail || 0,
             sponsorblock_remove: resumeState?.sponsorblock_remove || null,
-            sponsorblock_mark: resumeState?.sponsorblock_mark || null
+            sponsorblock_mark: resumeState?.sponsorblock_mark || null,
+            use_aria2: resumeState?.use_aria2 || 0
           }
           downloadStateSaver.mutate(state, {
             onSuccess: (data) => {
@@ -546,9 +560,28 @@ export default function App({ children }: { children: React.ReactNode }) {
         onSuccess: (data) => {
           console.log("Download status updated successfully:", data);
           queryClient.invalidateQueries({ queryKey: ['download-states'] });
+          
+          /* re-check if the download is properly paused (if not try again after a small delay)
+          as the pause opertion happens within high throughput of operations and have a high chgance of failure.
+          */
+          if (isSuccessFetchingDownloadStates && downloadStates.find(state => state.download_id === downloadState.download_id)?.download_status !== 'paused') {
+            console.log("Download status not updated to paused yet, retrying...");
+            setTimeout(() => {
+              downloadStatusUpdater.mutate({ download_id: downloadState.download_id, download_status: 'paused' }, {
+                onSuccess: (data) => {
+                  console.log("Download status updated successfully on retry:", data);
+                  queryClient.invalidateQueries({ queryKey: ['download-states'] });
+                },
+                onError: (error) => {
+                  console.error("Failed to update download status:", error);
+                }
+              });
+            }, 200);
+          }
+
           // Reset the processing flag to ensure queue can be processed
           isProcessingQueueRef.current = false;
-          
+
           // Process the queue after a short delay to ensure state is updated
           setTimeout(() => {
             processQueuedDownloads();

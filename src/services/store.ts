@@ -151,6 +151,7 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         sponsorblock_mark: 'default',
         sponsorblock_remove_categories: [],
         sponsorblock_mark_categories: [],
+        use_aria2: false,
         // extension settings
         websocket_port: 53511
     },
@@ -206,6 +207,7 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             sponsorblock_mark: 'default',
             sponsorblock_remove_categories: [],
             sponsorblock_mark_categories: [],
+            use_aria2: false,
             // extension settings
             websocket_port: 53511
         },

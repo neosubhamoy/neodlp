@@ -106,6 +106,7 @@ export default function SettingsPage() {
     const sponsorblockMark = useSettingsPageStatesStore(state => state.settings.sponsorblock_mark);
     const sponsorblockRemoveCategories = useSettingsPageStatesStore(state => state.settings.sponsorblock_remove_categories);
     const sponsorblockMarkCategories = useSettingsPageStatesStore(state => state.settings.sponsorblock_mark_categories);
+    const useAria2 = useSettingsPageStatesStore(state => state.settings.use_aria2);
 
     const websocketPort = useSettingsPageStatesStore(state => state.settings.websocket_port);
     const isChangingWebSocketPort = useSettingsPageStatesStore(state => state.isChangingWebSocketPort);
@@ -465,6 +466,15 @@ export default function SettingsPage() {
                                     onValueChange={(value) => saveSettingsKey('max_retries', value[0])}
                                     />
                                     <Label htmlFor="max-retries" className="text-xs text-muted-foreground">(Current: {maxRetries}) (Default: 5, Maximum: 100)</Label>
+                                </div>
+                                <div className="aria2">
+                                    <h3 className="font-semibold">Aria2</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Use aria2c as external downloader (recommended for large files and unstable connections, resuming is not supported)</p>
+                                    <Switch
+                                    id="aria2"
+                                    checked={useAria2}
+                                    onCheckedChange={(checked) => saveSettingsKey('use_aria2', checked)}
+                                    />
                                 </div>
                             </TabsContent>
                             <TabsContent key="appearance" value="appearance" className="flex flex-col gap-4 min-h-[310px]">

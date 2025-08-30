@@ -26,6 +26,11 @@
           "sidecar": true
         },
         {
+          "name": "binaries/aria2c",
+          "args": true,
+          "sidecar": true
+        },
+        {
           "name": "pkexec",
           "cmd": "pkexec",
           "args": true
@@ -47,6 +52,11 @@
         },
         {
           "name": "binaries/ffprobe",
+          "args": true,
+          "sidecar": true
+        },
+        {
+          "name": "binaries/aria2c",
           "args": true,
           "sidecar": true
         }

@@ -201,7 +201,8 @@ export const saveDownloadState = async (downloadState: DownloadState) => {
                 embed_metadata = $27,
                 embed_thumbnail = $28,
                 sponsorblock_remove = $29,
-                sponsorblock_mark = $30
+                sponsorblock_mark = $30,
+                use_aria2 = $31
             WHERE download_id = $1`,
             [
                 downloadState.download_id,
@@ -233,7 +234,8 @@ export const saveDownloadState = async (downloadState: DownloadState) => {
                 downloadState.embed_metadata,
                 downloadState.embed_thumbnail,
                 downloadState.sponsorblock_remove,
-                downloadState.sponsorblock_mark
+                downloadState.sponsorblock_mark,
+                downloadState.use_aria2
             ]
         )
     }
@@ -267,8 +269,9 @@ export const saveDownloadState = async (downloadState: DownloadState) => {
             embed_metadata,
             embed_thumbnail,
             sponsorblock_remove,
-            sponsorblock_mark
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30)`,
+            sponsorblock_mark,
+            use_aria2
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31)`,
         [
             downloadState.download_id,
             downloadState.download_status,
@@ -299,7 +302,8 @@ export const saveDownloadState = async (downloadState: DownloadState) => {
             downloadState.embed_metadata,
             downloadState.embed_thumbnail,
             downloadState.sponsorblock_remove,
-            downloadState.sponsorblock_mark
+            downloadState.sponsorblock_mark,
+            downloadState.use_aria2
         ]
     )
 }

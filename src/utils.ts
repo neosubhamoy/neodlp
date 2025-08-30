@@ -21,32 +21,130 @@ export function getRouteName(location: string, routes: Array<RoutesObj> = AllRou
   return lastPart ? lastPart.toUpperCase() : 'Dashboard';
 }
 
+const convertToBytes = (value: number, unit: string): number => {
+  switch (unit) {
+    case 'B':
+      return value;
+    case 'KiB':
+      return value * 1024;
+    case 'MiB':
+      return value * 1024 * 1024;
+    case 'GiB':
+      return value * 1024 * 1024 * 1024;
+    default:
+      return value;
+  }
+};
+
 export const parseProgressLine = (line: string): DownloadProgress => {
   const progress: Partial<DownloadProgress> = {
     status: 'downloading'
   };
 
+  // Check if line contains both aria2c and yt-dlp format (combined format)
+  if (line.includes(']status:')) {
+    // Extract the status part after the closing bracket
+    const statusIndex = line.indexOf(']status:');
+    if (statusIndex !== -1) {
+      const statusPart = line.substring(statusIndex + 1); // +1 to skip the ']'
+      // Parse the yt-dlp format part
+      statusPart.split(',').forEach(pair => {
+        const [key, value] = pair.split(':');
+        if (key && value) {
+          switch (key.trim()) {
+            case 'status':
+              progress.status = value.trim();
+              break;
+            case 'progress':
+              progress.progress = parseFloat(value.replace('%', '').trim());
+              break;
+            case 'speed':
+              progress.speed = parseFloat(value);
+              break;
+            case 'downloaded':
+              progress.downloaded = parseInt(value, 10);
+              break;
+            case 'total':
+              progress.total = parseInt(value, 10);
+              break;
+            case 'eta':
+              if (value.trim() !== 'NA') {
+                progress.eta = parseInt(value, 10);
+              }
+              break;
+          }
+        }
+      });
+    }
+    return progress as DownloadProgress;
+  }
+
+  // Check if line is aria2c format only
+  if (line.startsWith('[#') && line.includes('MiB') && line.includes('%')) {
+    // Parse aria2c format: [#99f72b 2.5MiB/3.4MiB(75%) CN:1 DL:503KiB ETA:1s]
+    
+    // Extract progress percentage
+    const progressMatch = line.match(/\((\d+(?:\.\d+)?)%\)/);
+    if (progressMatch) {
+      progress.progress = parseFloat(progressMatch[1]);
+    }
+
+    // Extract downloaded/total sizes
+    const sizeMatch = line.match(/(\d+(?:\.\d+)?)(MiB|KiB|GiB|B)\/(\d+(?:\.\d+)?)(MiB|KiB|GiB|B)/);
+    if (sizeMatch) {
+      const downloaded = parseFloat(sizeMatch[1]);
+      const downloadedUnit = sizeMatch[2];
+      const total = parseFloat(sizeMatch[3]);
+      const totalUnit = sizeMatch[4];
+
+      // Convert to bytes
+      progress.downloaded = convertToBytes(downloaded, downloadedUnit);
+      progress.total = convertToBytes(total, totalUnit);
+    }
+
+    // Extract download speed
+    const speedMatch = line.match(/DL:(\d+(?:\.\d+)?)(KiB|MiB|GiB|B)/);
+    if (speedMatch) {
+      const speed = parseFloat(speedMatch[1]);
+      const speedUnit = speedMatch[2];
+      progress.speed = convertToBytes(speed, speedUnit);
+    }
+
+    // Extract ETA
+    const etaMatch = line.match(/ETA:(\d+)s/);
+    if (etaMatch) {
+      progress.eta = parseInt(etaMatch[1], 10);
+    }
+
+    return progress as DownloadProgress;
+  }
+  
+  // Original yt-dlp format: status:downloading,progress: 75.1%,speed:1022692.427018,downloaded:30289474,total:40331784,eta:9
   line.split(',').forEach(pair => {
     const [key, value] = pair.split(':');
-    switch (key) {
-      case 'status':
-        progress.status = value.trim();
-        break;
-      case 'progress':
-        progress.progress = parseFloat(value.replace('%', '').trim());
-        break;
-      case 'speed':
-        progress.speed = parseFloat(value);
-        break;
-      case 'downloaded':
-        progress.downloaded = parseInt(value, 10);
-        break;
-      case 'total':
-        progress.total = parseInt(value, 10);
-        break;
-      case 'eta':
-        progress.eta = parseInt(value, 10);
-        break;
+    if (key && value) {
+      switch (key.trim()) {
+        case 'status':
+          progress.status = value.trim();
+          break;
+        case 'progress':
+          progress.progress = parseFloat(value.replace('%', '').trim());
+          break;
+        case 'speed':
+          progress.speed = parseFloat(value);
+          break;
+        case 'downloaded':
+          progress.downloaded = parseInt(value, 10);
+          break;
+        case 'total':
+          progress.total = parseInt(value, 10);
+          break;
+        case 'eta':
+          if (value.trim() !== 'NA') {
+            progress.eta = parseInt(value, 10);
+          }
+          break;
+      }
     }
   });
 

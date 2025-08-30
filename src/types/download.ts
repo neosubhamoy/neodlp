@@ -42,6 +42,7 @@ export interface DownloadState {
     embed_thumbnail: number;
     sponsorblock_remove: string | null;
     sponsorblock_mark: string | null;
+    use_aria2: number;
     created_at?: string;
     updated_at?: string;
 }
@@ -77,6 +78,7 @@ export interface Download {
     embed_thumbnail: number;
     sponsorblock_remove: string | null;
     sponsorblock_mark: string | null;
+    use_aria2: number;
     created_at: string;
     updated_at: string;
 }
