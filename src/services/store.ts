@@ -152,6 +152,8 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         sponsorblock_remove_categories: [],
         sponsorblock_mark_categories: [],
         use_aria2: false,
+        use_force_internet_protocol: false,
+        force_internet_protocol: 'ipv4',
         // extension settings
         websocket_port: 53511
     },
@@ -208,6 +210,8 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             sponsorblock_remove_categories: [],
             sponsorblock_mark_categories: [],
             use_aria2: false,
+            use_force_internet_protocol: false,
+            force_internet_protocol: 'ipv4',
             // extension settings
             websocket_port: 53511
         },

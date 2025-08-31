@@ -107,6 +107,8 @@ export default function SettingsPage() {
     const sponsorblockRemoveCategories = useSettingsPageStatesStore(state => state.settings.sponsorblock_remove_categories);
     const sponsorblockMarkCategories = useSettingsPageStatesStore(state => state.settings.sponsorblock_mark_categories);
     const useAria2 = useSettingsPageStatesStore(state => state.settings.use_aria2);
+    const useForceInternetProtocol = useSettingsPageStatesStore(state => state.settings.use_force_internet_protocol);
+    const forceInternetProtocol = useSettingsPageStatesStore(state => state.settings.force_internet_protocol);
 
     const websocketPort = useSettingsPageStatesStore(state => state.settings.websocket_port);
     const isChangingWebSocketPort = useSettingsPageStatesStore(state => state.isChangingWebSocketPort);
@@ -736,6 +738,35 @@ export default function SettingsPage() {
                                             </Button>
                                         </form>
                                     </Form>
+                                </div>
+                                <div className="force-internet-protocol">
+                                    <h3 className="font-semibold">Force Internet Protocol</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Force using a specific internet protocol (ipv4/ipv6) for all downloads, useful if you network supports only one (some sites may not work)</p>
+                                    <div className="flex items-center space-x-2 mb-4">
+                                        <Switch
+                                        id="use-force-internet-protocol"
+                                        checked={useForceInternetProtocol}
+                                        onCheckedChange={(checked) => saveSettingsKey('use_force_internet_protocol', checked)}
+                                        />
+                                        <Label htmlFor="use-force-internet-protocol">Force</Label>
+                                    </div>
+                                    <RadioGroup
+                                    orientation="horizontal"
+                                    className="flex items-center gap-4 mb-2"
+                                    value={forceInternetProtocol}
+                                    onValueChange={(value) => saveSettingsKey('force_internet_protocol', value)}
+                                    disabled={!useForceInternetProtocol}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <RadioGroupItem value="ipv4" id="force-ipv4" />
+                                            <Label htmlFor="force-ipv4">Use IPv4 Only</Label>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <RadioGroupItem value="ipv6" id="force-ipv6" />
+                                            <Label htmlFor="force-ipv6">Use IPv6 Only</Label>
+                                        </div>
+                                    </RadioGroup>
+                                    <Label className="text-xs text-muted-foreground">(Forced: {forceInternetProtocol === "ipv4" ? 'IPv4' : 'IPv6'}, Status: {useForceInternetProtocol ? 'Enabled' : 'Disabled'})</Label>
                                 </div>
                             </TabsContent>
                             <TabsContent key="cookies" value="cookies" className="flex flex-col gap-4 min-h-[310px]">

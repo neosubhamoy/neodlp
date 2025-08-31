@@ -81,6 +81,8 @@ export default function App({ children }: { children: React.ReactNode }) {
   const SPONSORBLOCK_REMOVE_CATEGORIES = useSettingsPageStatesStore(state => state.settings.sponsorblock_remove_categories);
   const SPONSORBLOCK_MARK_CATEGORIES = useSettingsPageStatesStore(state => state.settings.sponsorblock_mark_categories);
   const USE_ARIA2 = useSettingsPageStatesStore(state => state.settings.use_aria2);
+  const USE_FORCE_INTERNET_PROTOCOL = useSettingsPageStatesStore(state => state.settings.use_force_internet_protocol);
+  const FORCE_INTERNET_PROTOCOL = useSettingsPageStatesStore(state => state.settings.force_internet_protocol);
 
   const isErrored = useDownloaderPageStatesStore((state) => state.isErrored);
   const isErrorExpected = useDownloaderPageStatesStore((state) => state.isErrorExpected);
@@ -123,6 +125,13 @@ export default function App({ children }: { children: React.ReactNode }) {
       if (STRICT_DOWNLOADABILITY_CHECK && !formatId) args.push('--check-all-formats');
       if (STRICT_DOWNLOADABILITY_CHECK && formatId) args.push('--check-formats');
       if (USE_PROXY && PROXY_URL) args.push('--proxy', PROXY_URL);
+      if (USE_FORCE_INTERNET_PROTOCOL && FORCE_INTERNET_PROTOCOL) {
+        if (FORCE_INTERNET_PROTOCOL === 'ipv4') {
+          args.push('--force-ipv4');
+        } else if (FORCE_INTERNET_PROTOCOL === 'ipv6') {
+          args.push('--force-ipv6');
+        }
+      }
       if (USE_COOKIES) {
         if (IMPORT_COOKIES_FROM === 'browser' && COOKIES_BROWSER) {
           args.push('--cookies-from-browser', COOKIES_BROWSER);
@@ -292,6 +301,14 @@ export default function App({ children }: { children: React.ReactNode }) {
     
     if (USE_RATE_LIMIT && RATE_LIMIT) {
       args.push('--limit-rate', `${RATE_LIMIT}`);
+    }
+
+    if (USE_FORCE_INTERNET_PROTOCOL && FORCE_INTERNET_PROTOCOL) {
+      if (FORCE_INTERNET_PROTOCOL === 'ipv4') {
+        args.push('--force-ipv4');
+      } else if (FORCE_INTERNET_PROTOCOL === 'ipv6') {
+        args.push('--force-ipv6');
+      }
     }
     
     if (USE_COOKIES) {
