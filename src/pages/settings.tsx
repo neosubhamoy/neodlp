@@ -469,7 +469,7 @@ export default function SettingsPage() {
                                 </div>
                                 <div className="aria2">
                                     <h3 className="font-semibold">Aria2</h3>
-                                    <p className="text-xs text-muted-foreground mb-3">Use aria2c as external downloader (recommended for large files and unstable connections, resuming is not supported)</p>
+                                    <p className="text-xs text-muted-foreground mb-3">Use aria2c as external downloader (recommended only if you are experiancing too slow download speeds with native downloader, you need to install aria2 via homebrew if you are on macos to use this feature)</p>
                                     <Switch
                                     id="aria2"
                                     checked={useAria2}

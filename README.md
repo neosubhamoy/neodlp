@@ -49,7 +49,7 @@ After installing the extension you can do the following directly from the browse
 
 - [YT-DLP](https://github.com/yt-dlp/yt-dlp) (Latest Nightly) - The core CLI tool used to download video/audio from the web (Hero of the show 😎)
 - [FFmpeg & FFprobe](https://www.ffmpeg.org) (v7.1.1) - Used for video/audio post-processing
-- [Aria2](https://aria2.github.io) (v1.37.0) - Used as an external downloader for blazing fast downloads with yt-dlp
+- [Aria2](https://aria2.github.io) (v1.37.0) - Used as an external downloader for blazing fast downloads with yt-dlp (Not included with NeoDLP MacOS builds)
 
 ### ⬇️ Download and Installation
 
@@ -132,8 +132,7 @@ Noticed any Bug? or Want to give me some suggetion? Always feel free to open a [
 ### 💫 Credits
 
 - NeoDLP's 'Format Selection' options are inspired from the [Seal](https://github.com/JunkFood02/Seal) app by [@JunkFood02](https://github.com/JunkFood02)
-- Aria2 Linux x86_64 static build is provided by [@q3aql](https://github.com/q3aql/aria2-static-builds)
-- Aria2 MacOS x86_64 and ARM64 static builds are provided by [@tofuliang](https://github.com/tofuliang/aria2)
+- Aria2 Windows x86_64 and Linux x86_64 static binaries are built by [@q3aql](https://github.com/q3aql/aria2-static-builds)
 
 ### 📝 License
 

@@ -31,6 +31,11 @@
           "sidecar": true
         },
         {
+          "name": "aria2c",
+          "cmd": "aria2c",
+          "args": true
+        },
+        {
           "name": "pkexec",
           "cmd": "pkexec",
           "args": true
@@ -59,6 +64,11 @@
           "name": "binaries/aria2c",
           "args": true,
           "sidecar": true
+        },
+        {
+          "name": "aria2c",
+          "cmd": "aria2c",
+          "args": true
         }
       ]
     }
