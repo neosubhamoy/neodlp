@@ -741,7 +741,7 @@ export default function SettingsPage() {
                                 </div>
                                 <div className="force-internet-protocol">
                                     <h3 className="font-semibold">Force Internet Protocol</h3>
-                                    <p className="text-xs text-muted-foreground mb-3">Force using a specific internet protocol (ipv4/ipv6) for all downloads, useful if you network supports only one (some sites may not work)</p>
+                                    <p className="text-xs text-muted-foreground mb-3">Force using a specific internet protocol (ipv4/ipv6) for all downloads, useful if your network supports only one (some sites may not work)</p>
                                     <div className="flex items-center space-x-2 mb-4">
                                         <Switch
                                         id="use-force-internet-protocol"

@@ -3,6 +3,7 @@ import { RawVideoInfo } from "@/types/video";
 import { Settings } from "@/types/settings";
 import { KvStore } from "@/types/kvStore";
 import { Update } from "@tauri-apps/plugin-updater";
+import { Log } from "@/types/logs";
 
 export interface BasePathsStore {
     ffmpegPath: string | null;
@@ -118,4 +119,11 @@ export interface KvPairsStatesStore {
     kvPairs: KvStore
     setKvPairsKey: (key: string, value: unknown) => void;
     setKvPairs: (kvPairs: KvStore) => void;
+}
+
+export interface LogsStore {
+    logs: Log[];
+    setLogs: (logs: Log[]) => void;
+    addLog: (log: Log) => void;
+    clearLogs: () => void;
 }

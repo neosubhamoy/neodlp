@@ -1,4 +1,4 @@
-import { BasePathsStore, CurrentVideoMetadataStore, DownloadActionStatesStore, DownloaderPageStatesStore, DownloadStatesStore, KvPairsStatesStore, LibraryPageStatesStore, SettingsPageStatesStore } from '@/types/store';
+import { BasePathsStore, CurrentVideoMetadataStore, DownloadActionStatesStore, DownloaderPageStatesStore, DownloadStatesStore, KvPairsStatesStore, LibraryPageStatesStore, LogsStore, SettingsPageStatesStore } from '@/types/store';
 import { create } from 'zustand';
 
 export const useBasePathsStore = create<BasePathsStore>((set) => ({
@@ -238,4 +238,11 @@ export const useKvPairsStatesStore = create<KvPairsStatesStore>((set) => ({
         }
     })),
     setKvPairs: (kvPairs) => set(() => ({ kvPairs }))
+}));
+
+export const useLogsStore = create<LogsStore>((set) => ({
+    logs: [],
+    setLogs: (logs) => set(() => ({ logs })),
+    addLog: (log) => set((state) => ({ logs: [...state.logs, log] })),
+    clearLogs: () => set(() => ({ logs: [] }))
 }));

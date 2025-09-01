@@ -26,6 +26,7 @@ import { useMacOsRegisterer } from "@/helpers/use-macos-registerer";
 import useAppUpdater from "@/helpers/use-app-updater";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { toast } from "sonner";
+import { useLogger } from "@/helpers/use-logger";
 
 export default function App({ children }: { children: React.ReactNode }) {
   const { data: downloadStates, isSuccess: isSuccessFetchingDownloadStates } = useFetchAllDownloadStates();
@@ -93,6 +94,7 @@ export default function App({ children }: { children: React.ReactNode }) {
 
   const appWindow = getCurrentWebviewWindow()
   const navigate = useNavigate();
+  const LOG = useLogger();
   const { updateYtDlp } = useYtDlpUpdater();
   const { registerToMac } = useMacOsRegisterer();
   const { checkForAppUpdate } = useAppUpdater();
@@ -151,12 +153,14 @@ export default function App({ children }: { children: React.ReactNode }) {
         command.on('close', async (data) => {
           if (data.code !== 0) {
             console.error(`yt-dlp failed to fetch metadata with code ${data.code}`);
+            LOG.error('NEODLP', `yt-dlp exited with code ${data.code} while fetching metadata for URL: ${url} (ignore if you manually cancelled)`);
             resolve(null);
           } else {
             try {
               const matchedJson = jsonOutput.match(/{.*}/);
               if (!matchedJson) {
                 console.error(`Failed to match JSON: ${jsonOutput}`);
+                LOG.error('NEODLP', `Failed to parse metadata JSON for URL: ${url})`);
                 resolve(null);
                 return;
               }
@@ -165,6 +169,7 @@ export default function App({ children }: { children: React.ReactNode }) {
             }
             catch (e) {
               console.error(`Failed to parse JSON: ${e}`);
+              LOG.error('NEODLP', `Failed to parse metadata JSON for URL: ${url}) with error: ${e}`);
               resolve(null);
             }
           }
@@ -172,23 +177,28 @@ export default function App({ children }: { children: React.ReactNode }) {
 
         command.on('error', error => {
           console.error(`Error fetching metadata: ${error}`);
+          LOG.error('NEODLP', `Error occurred while fetching metadata for URL: ${url} : ${error}`);
           resolve(null);
         });
 
+        LOG.info('NEODLP', `Fetching metadata for URL: ${url}, with args: ${args.join(' ')}`);
         command.spawn().then(child => {
           setSearchPid(child.pid);
         }).catch(e => {
           console.error(`Failed to spawn command: ${e}`);
+          LOG.error('NEODLP', `Failed to spawn yt-dlp process for fetching metadata for URL: ${url} : ${e}`);
           resolve(null);
         });
       });
     } catch (e) {
       console.error(`Failed to fetch metadata: ${e}`);
+      LOG.error('NEODLP', `Failed to fetch metadata for URL: ${url} : ${e}`);
       return null;
     }
   };
   
   const startDownload = async (url: string, selectedFormat: string, selectedSubtitles?: string | null, resumeState?: DownloadState, playlistItems?: string) => {
+    LOG.info('NEODLP', `Initiating yt-dlp download for URL: ${url}`);
     // set error states to default
     setIsErrored(false);
     setIsErrorExpected(false);
@@ -343,6 +353,7 @@ export default function App({ children }: { children: React.ReactNode }) {
         '--downloader', 'dash,m3u8:native',
         '--downloader-args', 'aria2c:-c -j 16 -x 16 -s 16 -k 1M --check-certificate=false'
       );
+      LOG.warning('NEODLP', `Looks like you are using aria2 for this yt-dlp download: ${downloadId}. Make sure aria2 is installed on your system if you are on macOS for this to work. Also, pause/resume might not work as expected especially on windows (using aria2 is not recommended for most downloads).`);
     }
     
     if (resumeState || USE_ARIA2) {
@@ -357,6 +368,7 @@ export default function App({ children }: { children: React.ReactNode }) {
     command.on('close', async (data) => {
       if (data.code !== 0) {
         console.error(`Download failed with code ${data.code}`);
+        LOG.error(`YT-DLP Download ${downloadId}`, `yt-dlp exited with code ${data.code} (ignore if you manually paused or cancelled the download)`);
         if (!isErrorExpected) {
           setIsErrored(true);
           setErroredDownloadId(downloadId);
@@ -364,6 +376,7 @@ export default function App({ children }: { children: React.ReactNode }) {
       } else {
         if (await fs.exists(tempDownloadPath)) {
           downloadFilePath = await generateSafeFilePath(downloadFilePath);
+          LOG.info('NEODLP', `yt-dlp download completed with id: ${downloadId}, moving downloaded file from: "${tempDownloadPath}" to final destination: "${downloadFilePath}"`);
           await fs.copyFile(tempDownloadPath, downloadFilePath);
           await fs.remove(tempDownloadPath);
         }
@@ -392,6 +405,7 @@ export default function App({ children }: { children: React.ReactNode }) {
 
     command.on('error', error => {
       console.error(`Error: ${error}`);
+      LOG.error(`YT-DLP Download ${downloadId}`, `Error occurred: ${error}`);
       setIsErrored(true);
       setErroredDownloadId(downloadId);
     });
@@ -399,6 +413,7 @@ export default function App({ children }: { children: React.ReactNode }) {
     command.stdout.on('data', line => {
       if (line.startsWith('status:') || line.startsWith('[#')) {
         console.log(line);
+        LOG.info(`YT-DLP Download ${downloadId}`, line);
         const currentProgress = parseProgressLine(line);
         const state: DownloadState = {
           download_id: downloadId,
@@ -457,6 +472,7 @@ export default function App({ children }: { children: React.ReactNode }) {
         })
       } else {
         console.log(line);
+        if (line.trim() !== '') LOG.info(`YT-DLP Download ${downloadId}`, line);
       }
     });
 
@@ -553,21 +569,25 @@ export default function App({ children }: { children: React.ReactNode }) {
       })
 
       if (!ongoingDownloads || ongoingDownloads && ongoingDownloads?.length < MAX_PARALLEL_DOWNLOADS) {
+        LOG.info('NEODLP', `Starting yt-dlp download with args: ${args.join(' ')}`);
         const child = await command.spawn();
         processPid = child.pid;
         return Promise.resolve();
       } else {
         console.log("Download is queued, not starting immediately.");
+        LOG.info('NEODLP', `Download queued with id: ${downloadId}`);
         return Promise.resolve();
       }
     } catch (e) {
       console.error(`Failed to start download: ${e}`);
+      LOG.error('NEODLP', `Failed to start download for URL: ${url} with error: ${e}`);
       throw e;
     }
   };
   
   const pauseDownload = async (downloadState: DownloadState) => {
     try {
+      LOG.info('NEODLP', `Pausing yt-dlp download with id: ${downloadState.download_id} (as per user request)`);
       if ((downloadState.download_status === 'downloading' && downloadState.process_id) || (downloadState.download_status === 'starting' && downloadState.process_id)) {
         setIsErrorExpected(true);  // Set error expected to true to handle UI state
         console.log("Killing process with PID:", downloadState.process_id);
@@ -611,6 +631,7 @@ export default function App({ children }: { children: React.ReactNode }) {
       return Promise.resolve();
     } catch (e) {
       console.error(`Failed to pause download: ${e}`);
+      LOG.error('NEODLP', `Failed to pause download with id: ${downloadState.download_id} with error: ${e}`);
       isProcessingQueueRef.current = false;
       throw e;
     }
@@ -618,6 +639,7 @@ export default function App({ children }: { children: React.ReactNode }) {
   
   const resumeDownload = async (downloadState: DownloadState) => {
     try {
+      LOG.info('NEODLP', `Resuming yt-dlp download with id: ${downloadState.download_id} (as per user request)`);
       await startDownload(
         downloadState.playlist_id && downloadState.playlist_index ? downloadState.playlist_url : downloadState.url,
         downloadState.format_id,
@@ -627,12 +649,14 @@ export default function App({ children }: { children: React.ReactNode }) {
       return Promise.resolve();
     } catch (e) {
       console.error(`Failed to resume download: ${e}`);
+      LOG.error('NEODLP', `Failed to resume download with id: ${downloadState.download_id} with error: ${e}`);
       throw e;
     }
   };
 
   const cancelDownload = async (downloadState: DownloadState) => {
     try {
+      LOG.info('NEODLP', `Cancelling yt-dlp download with id: ${downloadState.download_id} (as per user request)`);
       if ((downloadState.download_status === 'downloading' && downloadState.process_id) || (downloadState.download_status === 'starting' && downloadState.process_id)) {
         setIsErrorExpected(true); // Set error expected to true to handle UI state
         console.log("Killing process with PID:", downloadState.process_id);
@@ -658,6 +682,7 @@ export default function App({ children }: { children: React.ReactNode }) {
       return Promise.resolve();
     } catch (e) {
       console.error(`Failed to cancel download: ${e}`);
+      LOG.error('NEODLP', `Failed to cancel download with id: ${downloadState.download_id} with error: ${e}`);
       throw e;
     }
   }
@@ -698,6 +723,7 @@ export default function App({ children }: { children: React.ReactNode }) {
       }
       
       console.log("Starting queued download:", downloadToStart.download_id);
+      LOG.info('NEODLP', `Starting queued download with id: ${downloadToStart.download_id}`);
       lastProcessedDownloadIdRef.current = downloadToStart.download_id;
       
       // Update status to 'starting' first
@@ -719,6 +745,7 @@ export default function App({ children }: { children: React.ReactNode }) {
       
     } catch (error) {
       console.error("Error processing download queue:", error);
+      LOG.error('NEODLP', `Error processing download queue: ${error}`);
     } finally {
       // Important: reset the processing flag
       setTimeout(() => {
@@ -761,6 +788,7 @@ export default function App({ children }: { children: React.ReactNode }) {
           appWindow.setFocus();
           navigate('/');
           if (event.payload.url) {
+            LOG.info('NEODLP', `Received download request from neodlp browser extension for URL: ${event.payload.url}`);
             const { setRequestedUrl, setAutoSubmitSearch } = useCurrentVideoMetadataStore.getState();
             setRequestedUrl(event.payload.url);
             setAutoSubmitSearch(true);
@@ -912,6 +940,7 @@ export default function App({ children }: { children: React.ReactNode }) {
     const YTDLP_UPDATE_INTERVAL = 86400000   // 24H;
     if (YTDLP_AUTO_UPDATE && (ytDlpUpdateLastCheck === null || currentTimestamp - ytDlpUpdateLastCheck > YTDLP_UPDATE_INTERVAL)) {
       console.log("Running auto-update for yt-dlp...");
+      LOG.info('NEODLP', 'Updating yt-dlp to latest version (triggered because auto-update is enabled)');
       updateYtDlp();
     } else {
       console.log("Skipping yt-dlp auto-update, either disabled or recently updated.");
@@ -938,14 +967,18 @@ export default function App({ children }: { children: React.ReactNode }) {
     const currentPlatform = platform();
     if (currentPlatform === 'macos' && (!macOsRegisteredVersion || macOsRegisteredVersion !== appVersion)) {
       console.log("Running MacOS auto registration...");
+      LOG.info('NEODLP', 'Running macOS registration');
       registerToMac().then((result: { success: boolean, message: string }) => {
         if (result.success) {
           console.log("MacOS registration successful:", result.message);
+          LOG.info('NEODLP', 'macOS registration successful');
         } else {
           console.error("MacOS registration failed:", result.message);
+          LOG.error('NEODLP', `macOS registration failed: ${result.message}`);
         }
       }).catch((error) => {
         console.error("Error during macOS registration:", error);
+        LOG.error('NEODLP', `Error during macOS registration: ${error}`);
       });
     }
   }, [isSettingsStatePropagated, isKvPairsStatePropagated]);
