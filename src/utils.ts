@@ -209,6 +209,10 @@ export const formatCodec = (codec: string) => {
   return codec.toUpperCase();
 }
 
+export const generateID = () => {
+  return `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+}
+
 export const generateDownloadId = (videoId: string, host: string) => {
   host = host.trim().split('.')[0];
   return `${host}_${videoId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

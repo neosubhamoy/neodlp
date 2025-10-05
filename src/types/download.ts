@@ -43,6 +43,7 @@ export interface DownloadState {
     sponsorblock_remove: string | null;
     sponsorblock_mark: string | null;
     use_aria2: number;
+    custom_command: string | null;
     created_at?: string;
     updated_at?: string;
 }
@@ -79,6 +80,7 @@ export interface Download {
     sponsorblock_remove: string | null;
     sponsorblock_mark: string | null;
     use_aria2: number;
+    custom_command: string | null;
     created_at: string;
     updated_at: string;
 }

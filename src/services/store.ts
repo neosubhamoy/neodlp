@@ -15,7 +15,7 @@ export const useDownloadStatesStore = create<DownloadStatesStore>((set) => ({
         const existingIndex = prev.downloadStates.findIndex(
             item => item.download_id === state.download_id
         );
-        
+
         if (existingIndex !== -1) {
             // Update existing state
             const updatedStates = [...prev.downloadStates];
@@ -47,22 +47,45 @@ export const useCurrentVideoMetadataStore = create<CurrentVideoMetadataStore>((s
 
 export const useDownloaderPageStatesStore = create<DownloaderPageStatesStore>((set) => ({
     activeDownloadModeTab: 'selective',
+    activeDownloadConfigurationTab: 'options',
     isStartingDownload: false,
     selectedDownloadFormat: 'best',
     selectedCombinableVideoFormat: '',
     selectedCombinableAudioFormat: '',
     selectedSubtitles: [],
     selectedPlaylistVideoIndex: '1',
+    downloadConfiguration: {
+        output_format: null,
+        embed_metadata: null,
+        embed_thumbnail: null,
+        custom_command: null
+    },
     isErrored: false,
     isErrorExpected: false,
     erroredDownloadId: null,
     setActiveDownloadModeTab: (tab) => set(() => ({ activeDownloadModeTab: tab })),
+    setActiveDownloadConfigurationTab: (tab) => set(() => ({ activeDownloadConfigurationTab: tab })),
     setIsStartingDownload: (isStarting) => set(() => ({ isStartingDownload: isStarting })),
     setSelectedDownloadFormat: (format) => set(() => ({ selectedDownloadFormat: format })),
     setSelectedCombinableVideoFormat: (format) => set(() => ({ selectedCombinableVideoFormat: format })),
     setSelectedCombinableAudioFormat: (format) => set(() => ({ selectedCombinableAudioFormat: format })),
     setSelectedSubtitles: (subtitles) => set(() => ({ selectedSubtitles: subtitles })),
     setSelectedPlaylistVideoIndex: (index) => set(() => ({ selectedPlaylistVideoIndex: index })),
+    setDownloadConfigurationKey: (key, value) => set((state) => ({
+        downloadConfiguration: {
+            ...state.downloadConfiguration,
+            [key]: value
+        }
+    })),
+    setDownloadConfiguration: (config) => set(() => ({ downloadConfiguration: config })),
+    resetDownloadConfiguration: () => set(() => ({
+        downloadConfiguration: {
+            output_format: null,
+            embed_metadata: null,
+            embed_thumbnail: null,
+            custom_command: null
+        }
+    })),
     setIsErrored: (isErrored) => set(() => ({ isErrored: isErrored })),
     setIsErrorExpected: (isErrorExpected) => set(() => ({ isErrorExpected: isErrorExpected })),
     setErroredDownloadId: (downloadId) => set(() => ({ erroredDownloadId: downloadId })),
@@ -154,6 +177,8 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         use_aria2: false,
         use_force_internet_protocol: false,
         force_internet_protocol: 'ipv4',
+        use_custom_commands: false,
+        custom_commands: [],
         // extension settings
         websocket_port: 53511
     },
@@ -212,6 +237,8 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             use_aria2: false,
             use_force_internet_protocol: false,
             force_internet_protocol: 'ipv4',
+            use_custom_commands: false,
+            custom_commands: [],
             // extension settings
             websocket_port: 53511
         },

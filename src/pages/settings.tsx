@@ -1,13 +1,13 @@
 import Heading from "@/components/heading";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useBasePathsStore, useDownloadStatesStore, useSettingsPageStatesStore } from "@/services/store";
+import { useBasePathsStore, useDownloaderPageStatesStore, useDownloadStatesStore, useSettingsPageStatesStore } from "@/services/store";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { ArrowDownToLine, ArrowRight, BrushCleaning, Cookie, EthernetPort, ExternalLink, FileVideo, Folder, FolderOpen, Info, Loader2, LucideIcon, Monitor, Moon, Radio, RotateCcw, RotateCw, ShieldMinus, Sun, Terminal, WandSparkles, Wifi, Wrench } from "lucide-react";
+import { ArrowDownToLine, ArrowRight, BrushCleaning, Cookie, EthernetPort, ExternalLink, FileVideo, Folder, FolderOpen, Info, Loader2, LucideIcon, Monitor, Moon, Radio, RotateCcw, RotateCw, ShieldMinus, SquareTerminal, Sun, Terminal, Trash, TriangleAlert, WandSparkles, Wifi, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { useTheme } from "@/providers/themeProvider";
@@ -26,8 +26,10 @@ import { SlidingButton } from "@/components/custom/slidingButton";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import * as fs from "@tauri-apps/plugin-fs";
 import { join } from "@tauri-apps/api/path";
-import { formatSpeed } from "@/utils";
+import { formatSpeed, generateID } from "@/utils";
 import { ToggleGroup, ToggleGroupItem } from "@/components/custom/legacyToggleGroup";
+import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const websocketPortSchema = z.object({
     port: z.coerce.number<number>({
@@ -63,6 +65,11 @@ const rateLimitSchema = z.object({
     }).max(104857600, {
         message: "Rate Limit must be at most 104857600 bytes/s (100 MB/s)"
     }),
+});
+
+const addCustomCommandSchema = z.object({
+    label: z.string().min(1, { message: "Label is required" }),
+    args: z.string().min(1, { message: "Arguments are required" }),
 });
 
 export default function SettingsPage() {
@@ -109,15 +116,20 @@ export default function SettingsPage() {
     const useAria2 = useSettingsPageStatesStore(state => state.settings.use_aria2);
     const useForceInternetProtocol = useSettingsPageStatesStore(state => state.settings.use_force_internet_protocol);
     const forceInternetProtocol = useSettingsPageStatesStore(state => state.settings.force_internet_protocol);
+    const useCustomCommands = useSettingsPageStatesStore(state => state.settings.use_custom_commands);
+    const customCommands = useSettingsPageStatesStore(state => state.settings.custom_commands);
 
     const websocketPort = useSettingsPageStatesStore(state => state.settings.websocket_port);
     const isChangingWebSocketPort = useSettingsPageStatesStore(state => state.isChangingWebSocketPort);
     const setIsChangingWebSocketPort = useSettingsPageStatesStore(state => state.setIsChangingWebSocketPort);
     const isRestartingWebSocketServer = useSettingsPageStatesStore(state => state.isRestartingWebSocketServer);
     const setIsRestartingWebSocketServer = useSettingsPageStatesStore(state => state.setIsRestartingWebSocketServer);
-    
+
+    const setDownloadConfigurationKey = useDownloaderPageStatesStore((state) => state.setDownloadConfigurationKey);
+    const resetDownloadConfiguration = useDownloaderPageStatesStore((state) => state.resetDownloadConfiguration);
+
     const downloadStates = useDownloadStatesStore(state => state.downloadStates);
-    const ongoingDownloads = downloadStates.filter(state => 
+    const ongoingDownloads = downloadStates.filter(state =>
         ['starting', 'downloading', 'queued'].includes(state.download_status)
     );
 
@@ -231,6 +243,56 @@ export default function SettingsPage() {
             console.error("Error changing rate limit:", error);
             toast.error("Failed to change rate limit", {
                 description: "An error occurred while trying to change the rate limit. Please try again.",
+            });
+        }
+    }
+
+    const addCustomCommandForm = useForm<z.infer<typeof addCustomCommandSchema>>({
+        resolver: zodResolver(addCustomCommandSchema),
+        defaultValues: {
+            label: '',
+            args: '',
+        },
+        mode: "onChange",
+    });
+    const watchedLabel = addCustomCommandForm.watch("label");
+    const watchedArgs = addCustomCommandForm.watch("args");
+    const { errors: addCustomCommandFormErrors } = addCustomCommandForm.formState;
+
+    function handleAddCustomCommandSubmit(values: z.infer<typeof addCustomCommandSchema>) {
+        try {
+            const newCommand = {
+                id: generateID(),
+                label: values.label,
+                args: values.args,
+            };
+            const updatedCommands = [...customCommands, newCommand];
+            saveSettingsKey('custom_commands', updatedCommands);
+            toast.success("Custom Command added", {
+                description: `Custom Command "${values.label}" added.`,
+            });
+            addCustomCommandForm.reset();
+        } catch (error) {
+            console.error("Error adding custom command:", error);
+            toast.error("Failed to add custom command", {
+                description: "An error occurred while trying to add the custom command. Please try again.",
+            });
+        }
+    }
+
+    function handleRemoveCustomCommandSubmit(commandId: string) {
+        try {
+            const removedCommand = customCommands.find(command => command.id === commandId);
+            const updatedCommands = customCommands.filter(command => command.id !== commandId);
+            saveSettingsKey('custom_commands', updatedCommands);
+            setDownloadConfigurationKey('custom_command', null);
+            toast.success("Custom Command removed", {
+                description: `Custom Command "${removedCommand?.label}" removed.`,
+            });
+        } catch (error) {
+            console.error("Error removing custom command:", error);
+            toast.error("Failed to remove custom command", {
+                description: "An error occurred while trying to remove the custom command. Please try again.",
             });
         }
     }
@@ -422,9 +484,14 @@ export default function SettingsPage() {
                                 value="sponsorblock"
                                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
                             ><ShieldMinus className="size-4" /> Sponsorblock</TabsTrigger>
+                            <TabsTrigger
+                                key="commands"
+                                value="commands"
+                                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
+                            ><SquareTerminal className="size-4" /> Commands</TabsTrigger>
                         </TabsList>
                         <div className="min-h-full flex flex-col max-w-[55%] w-full border-l border-border pl-4">
-                            <TabsContent key="general" value="general" className="flex flex-col gap-4 min-h-[310px]">
+                            <TabsContent key="general" value="general" className="flex flex-col gap-4 min-h-[350px]">
                                 <div className="max-parallel-downloads">
                                     <h3 className="font-semibold">Max Parallel Downloads</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Set maximum number of allowed parallel downloads</p>
@@ -476,10 +543,11 @@ export default function SettingsPage() {
                                     id="aria2"
                                     checked={useAria2}
                                     onCheckedChange={(checked) => saveSettingsKey('use_aria2', checked)}
+                                    disabled={useCustomCommands}
                                     />
                                 </div>
                             </TabsContent>
-                            <TabsContent key="appearance" value="appearance" className="flex flex-col gap-4 min-h-[310px]">
+                            <TabsContent key="appearance" value="appearance" className="flex flex-col gap-4 min-h-[350px]">
                                 <div className="app-theme">
                                     <h3 className="font-semibold">Theme</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Choose app interface theme</p>
@@ -502,7 +570,7 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="folders" value="folders" className="flex flex-col gap-4 min-h-[310px]">
+                            <TabsContent key="folders" value="folders" className="flex flex-col gap-4 min-h-[350px]">
                                 <div className="download-dir">
                                     <h3 className="font-semibold">Download Folder</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Set default download folder (directory)</p>
@@ -562,7 +630,7 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="formats" value="formats" className="flex flex-col gap-4 min-h-[310px]">
+                            <TabsContent key="formats" value="formats" className="flex flex-col gap-4 min-h-[350px]">
                                 <div className="video-format">
                                     <h3 className="font-semibold">Video Format</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Choose in which format the final video file will be saved</p>
@@ -571,6 +639,7 @@ export default function SettingsPage() {
                                     className="flex items-center gap-4"
                                     value={videoFormat}
                                     onValueChange={(value) => saveSettingsKey('video_format', value)}
+                                    disabled={useCustomCommands}
                                     >
                                         <div className="flex items-center gap-3">
                                             <RadioGroupItem value="auto" id="v-auto" />
@@ -598,6 +667,7 @@ export default function SettingsPage() {
                                     className="flex items-center gap-4"
                                     value={audioFormat}
                                     onValueChange={(value) => saveSettingsKey('audio_format', value)}
+                                    disabled={useCustomCommands}
                                     >
                                         <div className="flex items-center gap-3">
                                             <RadioGroupItem value="auto" id="a-auto" />
@@ -624,10 +694,11 @@ export default function SettingsPage() {
                                     id="always-reencode-video"
                                     checked={alwaysReencodeVideo}
                                     onCheckedChange={(checked) => saveSettingsKey('always_reencode_video', checked)}
+                                    disabled={useCustomCommands}
                                     />
                                 </div>
                             </TabsContent>
-                            <TabsContent key="metadata" value="metadata" className="flex flex-col gap-4 min-h-[310px]">
+                            <TabsContent key="metadata" value="metadata" className="flex flex-col gap-4 min-h-[350px]">
                                 <div className="embed-video-metadata">
                                     <h3 className="font-semibold">Embed Metadata</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Wheather to embed metadata in video/audio files (info, chapters)</p>
@@ -636,6 +707,7 @@ export default function SettingsPage() {
                                         id="embed-video-metadata"
                                         checked={embedVideoMetadata}
                                         onCheckedChange={(checked) => saveSettingsKey('embed_video_metadata', checked)}
+                                        disabled={useCustomCommands}
                                         />
                                         <Label htmlFor="embed-video-metadata">Video</Label>
                                     </div>
@@ -644,6 +716,7 @@ export default function SettingsPage() {
                                         id="embed-audio-metadata"
                                         checked={embedAudioMetadata}
                                         onCheckedChange={(checked) => saveSettingsKey('embed_audio_metadata', checked)}
+                                        disabled={useCustomCommands}
                                         />
                                         <Label htmlFor="embed-audio-metadata">Audio</Label>
                                     </div>
@@ -655,10 +728,11 @@ export default function SettingsPage() {
                                     id="embed-audio-thumbnail"
                                     checked={embedAudioThumbnail}
                                     onCheckedChange={(checked) => saveSettingsKey('embed_audio_thumbnail', checked)}
+                                    disabled={useCustomCommands}
                                     />
                                 </div>
                             </TabsContent>
-                            <TabsContent key="network" value="network" className="flex flex-col gap-4 min-h-[310px]">
+                            <TabsContent key="network" value="network" className="flex flex-col gap-4 min-h-[350px]">
                                 <div className="proxy">
                                     <h3 className="font-semibold">Proxy</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Use proxy for downloads, Unblocks blocked sites in your region (download speed may affect, some sites may not work)</p>
@@ -667,6 +741,7 @@ export default function SettingsPage() {
                                         id="use-proxy"
                                         checked={useProxy}
                                         onCheckedChange={(checked) => saveSettingsKey('use_proxy', checked)}
+                                        disabled={useCustomCommands}
                                         />
                                         <Label htmlFor="use-proxy">Use Proxy</Label>
                                     </div>
@@ -682,10 +757,11 @@ export default function SettingsPage() {
                                                             <Input
                                                             className="focus-visible:ring-0"
                                                             placeholder="Enter proxy URL"
+                                                            readOnly={useCustomCommands}
                                                             {...field}
                                                             />
                                                         </FormControl>
-                                                        <Label htmlFor="url" className="text-xs text-muted-foreground">(Configured: {proxyUrl ? 'Yes' : 'No'}, Status: {useProxy ? 'Enabled' : 'Disabled'})</Label>
+                                                        <Label htmlFor="url" className="text-xs text-muted-foreground">(Configured: {proxyUrl ? 'Yes' : 'No'}, Status: {useProxy && !useCustomCommands ? 'Enabled' : 'Disabled'})</Label>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
@@ -707,6 +783,7 @@ export default function SettingsPage() {
                                         id="use-rate-limit"
                                         checked={useRateLimit}
                                         onCheckedChange={(checked) => saveSettingsKey('use_rate_limit', checked)}
+                                        disabled={useCustomCommands}
                                         />
                                         <Label htmlFor="use-rate-limit">Use Rate Limit</Label>
                                     </div>
@@ -722,10 +799,11 @@ export default function SettingsPage() {
                                                             <Input
                                                             className="focus-visible:ring-0"
                                                             placeholder="Enter rate limit in bytes/s"
+                                                            readOnly={useCustomCommands}
                                                             {...field}
                                                             />
                                                         </FormControl>
-                                                        <Label htmlFor="rate_limit" className="text-xs text-muted-foreground">(Configured: {rateLimit ? `${rateLimit} = ${formatSpeed(rateLimit)}` : 'No'}, Status: {useRateLimit ? 'Enabled' : 'Disabled'}) (Default: 1048576, Range: 1024-104857600)</Label>
+                                                        <Label htmlFor="rate_limit" className="text-xs text-muted-foreground">(Configured: {rateLimit ? `${rateLimit} = ${formatSpeed(rateLimit)}` : 'No'}, Status: {useRateLimit && !useCustomCommands ? 'Enabled' : 'Disabled'}) (Default: 1048576, Range: 1024-104857600)</Label>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
@@ -741,12 +819,13 @@ export default function SettingsPage() {
                                 </div>
                                 <div className="force-internet-protocol">
                                     <h3 className="font-semibold">Force Internet Protocol</h3>
-                                    <p className="text-xs text-muted-foreground mb-3">Force using a specific internet protocol (ipv4/ipv6) for all downloads, useful if your network supports only one (some sites may not work)</p>
+                                    <p className="text-xs text-muted-foreground mb-3">Force use a specific internet protocol (ipv4/ipv6) for all downloads, useful if your network supports only one (some sites may not work)</p>
                                     <div className="flex items-center space-x-2 mb-4">
                                         <Switch
                                         id="use-force-internet-protocol"
                                         checked={useForceInternetProtocol}
                                         onCheckedChange={(checked) => saveSettingsKey('use_force_internet_protocol', checked)}
+                                        disabled={useCustomCommands}
                                         />
                                         <Label htmlFor="use-force-internet-protocol">Force</Label>
                                     </div>
@@ -755,7 +834,7 @@ export default function SettingsPage() {
                                     className="flex items-center gap-4 mb-2"
                                     value={forceInternetProtocol}
                                     onValueChange={(value) => saveSettingsKey('force_internet_protocol', value)}
-                                    disabled={!useForceInternetProtocol}
+                                    disabled={!useForceInternetProtocol || useCustomCommands}
                                     >
                                         <div className="flex items-center gap-3">
                                             <RadioGroupItem value="ipv4" id="force-ipv4" />
@@ -766,10 +845,10 @@ export default function SettingsPage() {
                                             <Label htmlFor="force-ipv6">Use IPv6 Only</Label>
                                         </div>
                                     </RadioGroup>
-                                    <Label className="text-xs text-muted-foreground">(Forced: {forceInternetProtocol === "ipv4" ? 'IPv4' : 'IPv6'}, Status: {useForceInternetProtocol ? 'Enabled' : 'Disabled'})</Label>
+                                    <Label className="text-xs text-muted-foreground">(Forced: {forceInternetProtocol === "ipv4" ? 'IPv4' : 'IPv6'}, Status: {useForceInternetProtocol && !useCustomCommands ? 'Enabled' : 'Disabled'})</Label>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="cookies" value="cookies" className="flex flex-col gap-4 min-h-[310px]">
+                            <TabsContent key="cookies" value="cookies" className="flex flex-col gap-4 min-h-[350px]">
                                 <div className="cookies">
                                     <h3 className="font-semibold">Cookies</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Use cookies to access exclusive/private (login-protected) contents from sites (use wisely, over-use can even block/ban your account)</p>
@@ -778,6 +857,7 @@ export default function SettingsPage() {
                                         id="use-cookies"
                                         checked={useCookies}
                                         onCheckedChange={(checked) => saveSettingsKey('use_cookies', checked)}
+                                        disabled={useCustomCommands}
                                         />
                                         <Label htmlFor="use-cookies">Use Cookies</Label>
                                     </div>
@@ -786,7 +866,7 @@ export default function SettingsPage() {
                                     className="flex items-center gap-4"
                                     value={importCookiesFrom}
                                     onValueChange={(value) => saveSettingsKey('import_cookies_from', value)}
-                                    disabled={!useCookies}
+                                    disabled={!useCookies || useCustomCommands}
                                     >
                                         <div className="flex items-center gap-3">
                                             <RadioGroupItem value="browser" id="cookies-browser" />
@@ -802,7 +882,7 @@ export default function SettingsPage() {
                                         <Select
                                         value={cookiesBrowser}
                                         onValueChange={(value) => saveSettingsKey('cookies_browser', value)}
-                                        disabled={importCookiesFrom !== "browser" || !useCookies}
+                                        disabled={importCookiesFrom !== "browser" || !useCookies || useCustomCommands}
                                         >
                                             <SelectTrigger className="w-[230px] ring-0 focus:ring-0">
                                                 <SelectValue placeholder="Select browser to import cookies" />
@@ -829,7 +909,7 @@ export default function SettingsPage() {
                                             <Input className="focus-visible:ring-0" type="text" placeholder="Select cookies text file" value={cookiesFile ?? ''} disabled={importCookiesFrom !== "file" || !useCookies} readOnly/>
                                             <Button
                                             variant="outline"
-                                            disabled={importCookiesFrom !== "file" || !useCookies}
+                                            disabled={importCookiesFrom !== "file" || !useCookies || useCustomCommands}
                                             onClick={async () => {
                                                 try {
                                                     const file = await open({
@@ -854,10 +934,10 @@ export default function SettingsPage() {
                                             </Button>
                                         </div>
                                     </div>
-                                    <Label className="text-xs text-muted-foreground">(Configured: {importCookiesFrom === "browser" ? 'Yes' : cookiesFile ? 'Yes' : 'No'}, From: {importCookiesFrom === "browser" ? 'Browser' : 'Text'}, Status: {useCookies ? 'Enabled' : 'Disabled'})</Label>
+                                    <Label className="text-xs text-muted-foreground">(Configured: {importCookiesFrom === "browser" ? 'Yes' : cookiesFile ? 'Yes' : 'No'}, From: {importCookiesFrom === "browser" ? 'Browser' : 'Text'}, Status: {useCookies && !useCustomCommands ? 'Enabled' : 'Disabled'})</Label>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="sponsorblock" value="sponsorblock" className="flex flex-col gap-4 min-h-[310px]">
+                            <TabsContent key="sponsorblock" value="sponsorblock" className="flex flex-col gap-4 min-h-[350px]">
                                 <div className="sponsorblock">
                                     <h3 className="font-semibold">Sponsor Block</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Use sponsorblock to remove/mark unwanted segments in videos (sponsorships, intros, outros, etc.)</p>
@@ -866,6 +946,7 @@ export default function SettingsPage() {
                                         id="use-sponsorblock"
                                         checked={useSponsorblock}
                                         onCheckedChange={(checked) => saveSettingsKey('use_sponsorblock', checked)}
+                                        disabled={useCustomCommands}
                                         />
                                         <Label htmlFor="use-sponsorblock">Use Sponsorblock</Label>
                                     </div>
@@ -874,7 +955,7 @@ export default function SettingsPage() {
                                     className="flex items-center gap-4"
                                     value={sponsorblockMode}
                                     onValueChange={(value) => saveSettingsKey('sponsorblock_mode', value)}
-                                    disabled={!useSponsorblock}
+                                    disabled={!useSponsorblock || useCustomCommands}
                                     >
                                         <div className="flex items-center gap-3">
                                             <RadioGroupItem value="remove" id="sponsorblock-remove" />
@@ -892,7 +973,7 @@ export default function SettingsPage() {
                                         className="flex items-center gap-4"
                                         value={sponsorblockRemove}
                                         onValueChange={(value) => saveSettingsKey('sponsorblock_remove', value)}
-                                        disabled={!useSponsorblock || sponsorblockMode !== "remove"}
+                                        disabled={!useSponsorblock || sponsorblockMode !== "remove" || useCustomCommands}
                                         >
                                             <div className="flex items-center gap-3">
                                                 <RadioGroupItem value="default" id="sponsorblock-remove-default" />
@@ -913,7 +994,7 @@ export default function SettingsPage() {
                                         className="flex flex-col items-start gap-2 mt-1"
                                         value={sponsorblockRemove === "custom" ? sponsorblockRemoveCategories : sponsorblockRemove === "default" ? sponsorblockCategories.filter((cat) => cat.code !== 'poi_highlight' && cat.code !== 'filler').map((cat) => cat.code) : sponsorblockRemove === "all" ? sponsorblockCategories.filter((cat) => cat.code !== 'poi_highlight').map((cat) => cat.code) : []}
                                         onValueChange={(value) => saveSettingsKey('sponsorblock_remove_categories', value)}
-                                        disabled={!useSponsorblock || sponsorblockMode !== "remove" || sponsorblockRemove !== "custom"}
+                                        disabled={!useSponsorblock || sponsorblockMode !== "remove" || sponsorblockRemove !== "custom" || useCustomCommands}
                                         >
                                             <div className="flex gap-2 flex-wrap items-center">
                                                 {sponsorblockCategories.map((category) => (
@@ -939,7 +1020,7 @@ export default function SettingsPage() {
                                         className="flex items-center gap-4"
                                         value={sponsorblockMark}
                                         onValueChange={(value) => saveSettingsKey('sponsorblock_mark', value)}
-                                        disabled={!useSponsorblock || sponsorblockMode !== "mark"}
+                                        disabled={!useSponsorblock || sponsorblockMode !== "mark" || useCustomCommands}
                                         >
                                             <div className="flex items-center gap-3">
                                                 <RadioGroupItem value="default" id="sponsorblock-mark-default" />
@@ -960,7 +1041,7 @@ export default function SettingsPage() {
                                         className="flex flex-col items-start gap-2 mt-1 mb-2"
                                         value={sponsorblockMark === "custom" ? sponsorblockMarkCategories : sponsorblockMark === "default" ? sponsorblockCategories.map((cat) => cat.code) : sponsorblockMark === "all" ? sponsorblockCategories.map((cat) => cat.code) : []}
                                         onValueChange={(value) => saveSettingsKey('sponsorblock_mark_categories', value)}
-                                        disabled={!useSponsorblock || sponsorblockMode !== "mark" || sponsorblockMark !== "custom"}
+                                        disabled={!useSponsorblock || sponsorblockMode !== "mark" || sponsorblockMark !== "custom" || useCustomCommands}
                                         >
                                             <div className="flex gap-2 flex-wrap items-center">
                                                 {sponsorblockCategories.map((category) => (
@@ -977,7 +1058,109 @@ export default function SettingsPage() {
                                             </div>
                                         </ToggleGroup>
                                     </div>
-                                    <Label className="text-xs text-muted-foreground">(Configured: {sponsorblockMode === "remove" && sponsorblockRemove === "custom" && sponsorblockRemoveCategories.length <= 0 ? 'No' : sponsorblockMode === "mark" && sponsorblockMark === "custom" && sponsorblockMarkCategories.length <= 0 ? 'No' : 'Yes'}, Mode: {sponsorblockMode === "remove" ? 'Remove' : 'Mark'}, Status: {useSponsorblock ? 'Enabled' : 'Disabled'})</Label>
+                                    <Label className="text-xs text-muted-foreground">(Configured: {sponsorblockMode === "remove" && sponsorblockRemove === "custom" && sponsorblockRemoveCategories.length <= 0 ? 'No' : sponsorblockMode === "mark" && sponsorblockMark === "custom" && sponsorblockMarkCategories.length <= 0 ? 'No' : 'Yes'}, Mode: {sponsorblockMode === "remove" ? 'Remove' : 'Mark'}, Status: {useSponsorblock && !useCustomCommands ? 'Enabled' : 'Disabled'})</Label>
+                                </div>
+                            </TabsContent>
+                            <TabsContent key="commands" value="commands" className="flex flex-col gap-4 min-h-[350px]">
+                                <div className="custom-commands">
+                                    <h3 className="font-semibold">Custom Commands</h3>
+                                    <p className="text-xs text-muted-foreground mb-3"> Run custom yt-dlp commands for your downloads</p>
+                                    <Alert className="mb-3">
+                                        <TriangleAlert />
+                                        <AlertTitle className="text-sm">Most Settings will be Disabled!</AlertTitle>
+                                        <AlertDescription className="text-xs">
+                                            This feature is intended for advanced users only. Turning it on will disable most other settings in the app. Make sure you know what you are doing before using this feature, otherwise things could break easily.
+                                        </AlertDescription>
+                                    </Alert>
+                                    <div className="flex items-center space-x-2 mb-4">
+                                        <Switch
+                                        id="use-custom-commands"
+                                        checked={useCustomCommands}
+                                        onCheckedChange={(checked) => {
+                                            saveSettingsKey('use_custom_commands', checked)
+                                            resetDownloadConfiguration();
+                                        }}
+                                        />
+                                        <Label htmlFor="use-custom-commands">Use Custom Commands</Label>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <Form {...addCustomCommandForm}>
+                                            <form onSubmit={addCustomCommandForm.handleSubmit(handleAddCustomCommandSubmit)} className="flex flex-col gap-3" autoComplete="off">
+                                                <FormField
+                                                    control={addCustomCommandForm.control}
+                                                    name="args"
+                                                    disabled={!useCustomCommands}
+                                                    render={({ field }) => (
+                                                        <FormItem className="w-full">
+                                                            <FormControl>
+                                                                <Textarea
+                                                                className="focus-visible:ring-0"
+                                                                placeholder="Enter yt-dlp command line arguments (no need to start with 'yt-dlp', already passed args: url, output paths, selected formats, selected subtitles, playlist item. also, bulk downloading is not supported)"
+                                                                {...field}
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <div className="flex gap-4 w-full">
+                                                    <FormField
+                                                        control={addCustomCommandForm.control}
+                                                        name="label"
+                                                        disabled={!useCustomCommands}
+                                                        render={({ field }) => (
+                                                            <FormItem className="w-full">
+                                                                <FormControl>
+                                                                    <Input
+                                                                    className="focus-visible:ring-0"
+                                                                    placeholder="Enter template label"
+                                                                    {...field}
+                                                                    />
+                                                                </FormControl>
+                                                                {/* <Label htmlFor="label" className="text-xs text-muted-foreground">(Configured: {rateLimit ? `${rateLimit} = ${formatSpeed(rateLimit)}` : 'No'}, Status: {useRateLimit ? 'Enabled' : 'Disabled'}) (Default: 1048576, Range: 1024-104857600)</Label> */}
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                    <Button
+                                                        type="submit"
+                                                        disabled={!watchedLabel || !watchedArgs || Object.keys(addCustomCommandFormErrors).length > 0 || !useCustomCommands}
+                                                    >
+                                                        Add
+                                                    </Button>
+                                                </div>
+                                            </form>
+                                        </Form>
+                                    </div>
+                                    <div className="flex-flex-col gap-2 mt-4">
+                                        <Label className="text-xs mb-3">Custom Command Templates</Label>
+                                        {customCommands.length === 0 ? (
+                                            <p className="text-sm text-muted-foreground">NO CUSTOM COMMAND TEMPLATE ADDED YET!</p>
+                                        ) : (
+                                            <div className="flex flex-col gap-3 w-full">
+                                                {customCommands.map((command) => (
+                                                    <div key={command.id} className="p-2 flex justify-between gap-2 border border-border rounded-md">
+                                                        <div className="flex flex-col">
+                                                            <h5 className="text-sm mb-1">{command.label}</h5>
+                                                            <p className="text-xs font-mono text-muted-foreground">{command.args}</p>
+                                                        </div>
+                                                        <div className="flex">
+                                                            <Button
+                                                            variant="destructive"
+                                                            size="icon"
+                                                            disabled={!useCustomCommands}
+                                                            onClick={() => {
+                                                                handleRemoveCustomCommandSubmit(command.id);
+                                                            }}
+                                                            >
+                                                                <Trash className="w-4 h-4" />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </TabsContent>
                         </div>

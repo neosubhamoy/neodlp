@@ -3,6 +3,12 @@ export interface SettingsTable {
     value: string;
 }
 
+export interface CustomCommand {
+    id: string;
+    label: string;
+    args: string;
+}
+
 export interface Settings {
     ytdlp_update_channel: string;
     ytdlp_auto_update: boolean;
@@ -35,6 +41,15 @@ export interface Settings {
     use_aria2: boolean;
     use_force_internet_protocol: boolean;
     force_internet_protocol: string;
+    use_custom_commands: boolean;
+    custom_commands: CustomCommand[];
     // extension settings
     websocket_port: number;
+}
+
+export interface DownloadConfiguration {
+    output_format: string | null;
+    embed_metadata: boolean | null;
+    embed_thumbnail: boolean | null;
+    custom_command: string | null;
 }

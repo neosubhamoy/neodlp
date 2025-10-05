@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { useAppContext } from "@/providers/appContextProvider";
 import { useCurrentVideoMetadataStore, useDownloaderPageStatesStore, useSettingsPageStatesStore } from "@/services/store";
 import { determineFileType, fileFormatFilter, formatBitrate, formatDurationString, formatFileSize, formatReleaseDate, formatYtStyleCount, isObjEmpty, sortByBitrate } from "@/utils";
-import { Calendar, Clock, DownloadCloud, Eye, Info, Loader2, Music, ThumbsUp, Video, File, ListVideo, PackageSearch, AlertCircleIcon, X } from "lucide-react";
+import { Calendar, Clock, DownloadCloud, Eye, Info, Loader2, Music, ThumbsUp, Video, File, ListVideo, PackageSearch, AlertCircleIcon, X, Settings2 } from "lucide-react";
 import { FormatSelectionGroup, FormatSelectionGroupItem } from "@/components/custom/formatSelectionGroup";
 import { useEffect, useRef } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/custom/legacyToggleGroup";
@@ -24,6 +24,11 @@ import { config } from "@/config";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { invoke } from "@tauri-apps/api/core";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 const searchFormSchema = z.object({
     url: z.url({
@@ -35,7 +40,7 @@ const searchFormSchema = z.object({
 
 export default function DownloaderPage() {
     const { fetchVideoMetadata, startDownload } = useAppContext();
-    
+
     const videoUrl = useCurrentVideoMetadataStore((state) => state.videoUrl);
     const videoMetadata = useCurrentVideoMetadataStore((state) => state.videoMetadata);
     const isMetadataLoading = useCurrentVideoMetadataStore((state) => state.isMetadataLoading);
@@ -51,23 +56,33 @@ export default function DownloaderPage() {
     const setShowSearchError = useCurrentVideoMetadataStore((state) => state.setShowSearchError);
 
     const activeDownloadModeTab = useDownloaderPageStatesStore((state) => state.activeDownloadModeTab);
+    const activeDownloadConfigurationTab = useDownloaderPageStatesStore((state) => state.activeDownloadConfigurationTab);
     const isStartingDownload = useDownloaderPageStatesStore((state) => state.isStartingDownload);
     const selectedDownloadFormat = useDownloaderPageStatesStore((state) => state.selectedDownloadFormat);
     const selectedCombinableVideoFormat = useDownloaderPageStatesStore((state) => state.selectedCombinableVideoFormat);
     const selectedCombinableAudioFormat = useDownloaderPageStatesStore((state) => state.selectedCombinableAudioFormat);
     const selectedSubtitles = useDownloaderPageStatesStore((state) => state.selectedSubtitles);
     const selectedPlaylistVideoIndex = useDownloaderPageStatesStore((state) => state.selectedPlaylistVideoIndex);
+    const downloadConfiguration = useDownloaderPageStatesStore((state) => state.downloadConfiguration);
     const setActiveDownloadModeTab = useDownloaderPageStatesStore((state) => state.setActiveDownloadModeTab);
+    const setActiveDownloadConfigurationTab = useDownloaderPageStatesStore((state) => state.setActiveDownloadConfigurationTab);
     const setIsStartingDownload = useDownloaderPageStatesStore((state) => state.setIsStartingDownload);
     const setSelectedDownloadFormat = useDownloaderPageStatesStore((state) => state.setSelectedDownloadFormat);
     const setSelectedCombinableVideoFormat = useDownloaderPageStatesStore((state) => state.setSelectedCombinableVideoFormat);
     const setSelectedCombinableAudioFormat = useDownloaderPageStatesStore((state) => state.setSelectedCombinableAudioFormat);
     const setSelectedSubtitles = useDownloaderPageStatesStore((state) => state.setSelectedSubtitles);
     const setSelectedPlaylistVideoIndex = useDownloaderPageStatesStore((state) => state.setSelectedPlaylistVideoIndex);
+    const setDownloadConfigurationKey = useDownloaderPageStatesStore((state) => state.setDownloadConfigurationKey);
+    const resetDownloadConfiguration = useDownloaderPageStatesStore((state) => state.resetDownloadConfiguration);
 
     const videoFormat = useSettingsPageStatesStore(state => state.settings.video_format);
     const audioFormat = useSettingsPageStatesStore(state => state.settings.audio_format);
-    
+    const embedVideoMetadata = useSettingsPageStatesStore(state => state.settings.embed_video_metadata);
+    const embedAudioMetadata = useSettingsPageStatesStore(state => state.settings.embed_audio_metadata);
+    const embedAudioThumbnail = useSettingsPageStatesStore(state => state.settings.embed_audio_thumbnail);
+    const useCustomCommands = useSettingsPageStatesStore(state => state.settings.use_custom_commands);
+    const customCommands = useSettingsPageStatesStore(state => state.settings.custom_commands);
+
     const audioOnlyFormats = videoMetadata?._type === 'video' ? sortByBitrate(videoMetadata?.formats.filter(fileFormatFilter('audio'))) : videoMetadata?._type === 'playlist' ? sortByBitrate(videoMetadata?.entries[Number(selectedPlaylistVideoIndex) - 1].formats.filter(fileFormatFilter('audio'))) : [];
     const videoOnlyFormats = videoMetadata?._type === 'video' ? sortByBitrate(videoMetadata?.formats.filter(fileFormatFilter('video'))) : videoMetadata?._type === 'playlist' ? sortByBitrate(videoMetadata?.entries[Number(selectedPlaylistVideoIndex) - 1].formats.filter(fileFormatFilter('video'))) : [];
     const combinedFormats = videoMetadata?._type === 'video' ? sortByBitrate(videoMetadata?.formats.filter(fileFormatFilter('video+audio'))) : videoMetadata?._type === 'playlist' ? sortByBitrate(videoMetadata?.entries[Number(selectedPlaylistVideoIndex) - 1].formats.filter(fileFormatFilter('video+audio'))) : [];
@@ -146,7 +161,10 @@ export default function DownloaderPage() {
 
     let selectedFormatExtensionMsg = 'Auto - unknown';
     if (activeDownloadModeTab === 'combine') {
-        if (videoFormat !== 'auto') {
+        if (downloadConfiguration.output_format && downloadConfiguration.output_format !== 'auto') {
+            selectedFormatExtensionMsg = `Combined - ${downloadConfiguration.output_format.toUpperCase()}`;
+        }
+        else if (videoFormat !== 'auto') {
             selectedFormatExtensionMsg = `Combined - ${videoFormat.toUpperCase()}`;
         }
         else if (selectedAudioFormat?.ext && selectedVideoFormat?.ext) {
@@ -155,10 +173,12 @@ export default function DownloaderPage() {
             selectedFormatExtensionMsg = `Combined - unknown`;
         }
     } else if (selectedFormat?.ext) {
-        if ((selectedFormatFileType === 'video+audio' || selectedFormatFileType === 'video') && videoFormat !== 'auto') {
-            selectedFormatExtensionMsg = `Forced - ${videoFormat.toUpperCase()}`;
-        } else if (selectedFormatFileType === 'audio' && audioFormat !== 'auto') {
-            selectedFormatExtensionMsg = `Forced - ${audioFormat.toUpperCase()}`;
+        if ((selectedFormatFileType === 'video+audio' || selectedFormatFileType === 'video') && ((downloadConfiguration.output_format && downloadConfiguration.output_format !== 'auto') || videoFormat !== 'auto')) {
+            selectedFormatExtensionMsg = `Forced - ${(downloadConfiguration.output_format && downloadConfiguration.output_format !== 'auto') ? downloadConfiguration.output_format.toUpperCase() : videoFormat.toUpperCase()}`;
+        } else if (selectedFormatFileType === 'audio' && ((downloadConfiguration.output_format && downloadConfiguration.output_format !== 'auto') || audioFormat !== 'auto')) {
+            selectedFormatExtensionMsg = `Forced - ${(downloadConfiguration.output_format && downloadConfiguration.output_format !== 'auto') ? downloadConfiguration.output_format.toUpperCase() : audioFormat.toUpperCase()}`;
+        } else if (selectedFormatFileType === 'unknown' && downloadConfiguration.output_format && downloadConfiguration.output_format !== 'auto') {
+            selectedFormatExtensionMsg = `Forced - ${downloadConfiguration.output_format.toUpperCase()}`;
         } else {
             selectedFormatExtensionMsg = `Auto - ${selectedFormat.ext.toUpperCase()}`;
         }
@@ -220,6 +240,7 @@ export default function DownloaderPage() {
         setSelectedCombinableAudioFormat('');
         setSelectedSubtitles([]);
         setSelectedPlaylistVideoIndex('1');
+        resetDownloadConfiguration();
 
         fetchVideoMetadata(values.url).then((metadata) => {
             if (!metadata || (metadata._type !== 'video' && metadata._type !== 'playlist') || (metadata && metadata._type === 'video' && metadata.formats.length <= 0) || (metadata && metadata._type === 'playlist' && metadata.entries.length <= 0)) {
@@ -271,6 +292,10 @@ export default function DownloaderPage() {
     }, []);
 
     useEffect(() => {
+        useCustomCommands ? setActiveDownloadConfigurationTab('commands') : setActiveDownloadConfigurationTab('options');
+    }, []);
+
+    useEffect(() => {
         if (watchedUrl !== videoUrl) {
             setVideoUrl(watchedUrl);
         }
@@ -283,18 +308,18 @@ export default function DownloaderPage() {
                 searchForm.setValue("url", requestedUrl);
                 setVideoUrl(requestedUrl);
             }
-            
+
             // Auto-submit the form if the flag is set
             if (autoSubmitSearch && requestedUrl) {
                 if (!isMetadataLoading) {
                     // trigger a validation check on the URL field first then get the result
                     await searchForm.trigger("url");
                     const isValidUrl = !searchForm.getFieldState("url").invalid;
-                    
+
                     if (isValidUrl) {
                         // Reset the flag first to prevent loops
                         setAutoSubmitSearch(false);
-                        
+
                         // Submit the form with a small delay to ensure UI is ready
                         setTimeout(() => {
                             handleSearchSubmit({ url: requestedUrl });
@@ -435,7 +460,12 @@ export default function DownloaderPage() {
                     <Tabs
                     className=""
                     value={activeDownloadModeTab}
-                    onValueChange={(tab) => setActiveDownloadModeTab(tab)}
+                    onValueChange={(tab) => {
+                        setActiveDownloadModeTab(tab)
+                        setDownloadConfigurationKey('output_format', null);
+                        setDownloadConfigurationKey('embed_metadata', null);
+                        setDownloadConfigurationKey('embed_thumbnail', null);
+                    }}
                     >
                         <div className="flex items-center justify-between">
                             <h3 className="text-sm flex items-center gap-2">
@@ -481,6 +511,9 @@ export default function DownloaderPage() {
                                     // if (currentlySelectedFormat?.ext !== 'mp4' && currentlySelectedFormat?.ext !== 'mkv' && currentlySelectedFormat?.ext !== 'webm') {
                                     //     setSelectedSubtitles([]);
                                     // }
+                                    setDownloadConfigurationKey('output_format', null);
+                                    setDownloadConfigurationKey('embed_metadata', null);
+                                    setDownloadConfigurationKey('embed_thumbnail', null);
                                 }}
                                 >
                                     <p className="text-xs">Suggested</p>
@@ -581,6 +614,9 @@ export default function DownloaderPage() {
                                 value={selectedCombinableAudioFormat}
                                 onValueChange={(value) => {
                                     setSelectedCombinableAudioFormat(value);
+                                    setDownloadConfigurationKey('output_format', null);
+                                    setDownloadConfigurationKey('embed_metadata', null);
+                                    setDownloadConfigurationKey('embed_thumbnail', null);
                                 }}
                                 >
                                     {videoOnlyFormats && videoOnlyFormats.length > 0 && audioOnlyFormats && audioOnlyFormats.length > 0 && (
@@ -602,6 +638,9 @@ export default function DownloaderPage() {
                                 value={selectedCombinableVideoFormat}
                                 onValueChange={(value) => {
                                     setSelectedCombinableVideoFormat(value);
+                                    setDownloadConfigurationKey('output_format', null);
+                                    setDownloadConfigurationKey('embed_metadata', null);
+                                    setDownloadConfigurationKey('embed_thumbnail', null);
                                 }}
                                 >
                                     {audioOnlyFormats && audioOnlyFormats.length > 0 && videoOnlyFormats && videoOnlyFormats.length > 0 && (
@@ -653,7 +692,7 @@ export default function DownloaderPage() {
                             >
                                 {videoMetadata.entries.map((entry) => entry ? (
                                     <PlaylistToggleGroupItem
-                                        key={entry.playlist_index} 
+                                        key={entry.playlist_index}
                                         value={entry.playlist_index.toString()}
                                         video={entry}
                                     />
@@ -668,6 +707,7 @@ export default function DownloaderPage() {
                                 setSelectedSubtitles([]);
                                 setSelectedCombinableVideoFormat('');
                                 setSelectedCombinableAudioFormat('');
+                                resetDownloadConfiguration();
                             }}
                             >
                                 {videoMetadata.entries.map((entry) => entry ? (
@@ -909,49 +949,244 @@ export default function DownloaderPage() {
                             <span className="text-xs text-muted-foreground">{selectedFormatFinalMsg}</span>
                         </div>
                     </div>
-                    <Button
-                    onClick={async () => {
-                        setIsStartingDownload(true);
-                        try {
-                            if (videoMetadata._type === 'playlist') {
-                                await startDownload(
-                                    videoMetadata.original_url,
-                                    activeDownloadModeTab === 'combine' ? `${selectedCombinableVideoFormat}+${selectedCombinableAudioFormat}` : selectedDownloadFormat === 'best' ? videoMetadata.entries[Number(selectedPlaylistVideoIndex) - 1].requested_downloads[0].format_id : selectedDownloadFormat,
-                                    selectedSubtitles.length > 0 ? selectedSubtitles.join(',') : null,
-                                    undefined,
-                                    selectedPlaylistVideoIndex
-                                );
-                            } else if (videoMetadata._type === 'video') {
-                                await startDownload(
-                                    videoMetadata.webpage_url,
-                                    activeDownloadModeTab === 'combine' ? `${selectedCombinableVideoFormat}+${selectedCombinableAudioFormat}` : selectedDownloadFormat === 'best' ? videoMetadata.requested_downloads[0].format_id : selectedDownloadFormat,
-                                    selectedSubtitles.length > 0 ? selectedSubtitles.join(',') : null
-                                );
+                    <div className="flex items-center gap-2">
+                        <Dialog>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <DialogTrigger asChild>
+                                        <Button
+                                        variant="outline"
+                                        size="icon"
+                                        disabled={!selectedDownloadFormat || (activeDownloadModeTab === 'combine' && (!selectedCombinableVideoFormat || !selectedCombinableAudioFormat))}
+                                        >
+                                            <Settings2 className="size-4" />
+                                        </Button>
+                                    </DialogTrigger>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                <p>Configurations</p>
+                                </TooltipContent>
+                            </Tooltip>
+                            <DialogContent className="sm:max-w-[450px]">
+                                <DialogHeader>
+                                    <DialogTitle>Configurations</DialogTitle>
+                                    <DialogDescription>Tweak this download's configurations</DialogDescription>
+                                </DialogHeader>
+                                <div className="flex flex-col gap-2 max-h-[300px] overflow-y-scroll overflow-x-hidden no-scrollbar">
+                                    <Tabs
+                                    className=""
+                                    value={activeDownloadConfigurationTab}
+                                    onValueChange={(tab) => setActiveDownloadConfigurationTab(tab)}
+                                    >
+                                        <TabsList>
+                                            <TabsTrigger value="options">Options</TabsTrigger>
+                                            <TabsTrigger value="commands">Commands</TabsTrigger>
+                                        </TabsList>
+                                        <TabsContent value="options">
+                                            {useCustomCommands ? (
+                                            <Alert className="mt-2 mb-3">
+                                                <AlertCircleIcon />
+                                                <AlertTitle className="text-sm">Options Unavailable!</AlertTitle>
+                                                <AlertDescription className="text-xs">
+                                                    You cannot use these options when custom commands are enabled. To use these options, disable custom commands from Settings.
+                                                </AlertDescription>
+                                            </Alert>
+                                            ) : null}
+                                            <div className="video-format">
+                                                <Label className="text-xs mb-3 mt-2">Output Format ({(selectedFormatFileType && (selectedFormatFileType === 'video' || selectedFormatFileType === 'video+audio')) || activeDownloadModeTab === 'combine' ? 'Video' : selectedFormatFileType && selectedFormatFileType === 'audio' ? 'Audio' : 'Unknown'})</Label>
+                                                {(selectedFormatFileType && (selectedFormatFileType === 'video' || selectedFormatFileType === 'video+audio')) || activeDownloadModeTab === 'combine' ? (
+                                                    <RadioGroup
+                                                    orientation="horizontal"
+                                                    className="flex items-center gap-4 flex-wrap"
+                                                    value={downloadConfiguration.output_format ?? 'auto'}
+                                                    onValueChange={(value) => setDownloadConfigurationKey('output_format', value)}
+                                                    disabled={useCustomCommands}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <RadioGroupItem value="auto" id="v-auto" />
+                                                            <Label htmlFor="v-auto">Follow Settings</Label>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <RadioGroupItem value="mp4" id="v-mp4" />
+                                                            <Label htmlFor="v-mp4">MP4</Label>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <RadioGroupItem value="webm" id="v-webm" />
+                                                            <Label htmlFor="v-webm">WEBM</Label>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <RadioGroupItem value="mkv" id="v-mkv" />
+                                                            <Label htmlFor="v-mkv">MKV</Label>
+                                                        </div>
+                                                    </RadioGroup>
+                                                ) : selectedFormatFileType && selectedFormatFileType === 'audio' ? (
+                                                    <RadioGroup
+                                                    orientation="horizontal"
+                                                    className="flex items-center gap-4 flex-wrap"
+                                                    value={downloadConfiguration.output_format ?? 'auto'}
+                                                    onValueChange={(value) => setDownloadConfigurationKey('output_format', value)}
+                                                    disabled={useCustomCommands}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <RadioGroupItem value="auto" id="a-auto" />
+                                                            <Label htmlFor="a-auto">Follow Settings</Label>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <RadioGroupItem value="m4a" id="a-m4a" />
+                                                            <Label htmlFor="a-m4a">M4A</Label>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <RadioGroupItem value="opus" id="a-opus" />
+                                                            <Label htmlFor="a-opus">OPUS</Label>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <RadioGroupItem value="mp3" id="a-mp3" />
+                                                            <Label htmlFor="a-mp3">MP3</Label>
+                                                        </div>
+                                                    </RadioGroup>
+                                                ) : (
+                                                    <RadioGroup
+                                                    orientation="horizontal"
+                                                    className="flex items-center gap-4 flex-wrap"
+                                                    value={downloadConfiguration.output_format ?? 'auto'}
+                                                    onValueChange={(value) => setDownloadConfigurationKey('output_format', value)}
+                                                    disabled={useCustomCommands}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <RadioGroupItem value="auto" id="u-auto" />
+                                                            <Label htmlFor="u-auto">Follow Settings</Label>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <RadioGroupItem value="mp4" id="u-mp4" />
+                                                            <Label htmlFor="u-mp4">MP4</Label>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <RadioGroupItem value="webm" id="u-webm" />
+                                                            <Label htmlFor="u-webm">WEBM</Label>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <RadioGroupItem value="mkv" id="u-mkv" />
+                                                            <Label htmlFor="u-mkv">MKV</Label>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <RadioGroupItem value="m4a" id="u-m4a" />
+                                                            <Label htmlFor="u-m4a">M4A</Label>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <RadioGroupItem value="opus" id="u-opus" />
+                                                            <Label htmlFor="u-opus">OPUS</Label>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <RadioGroupItem value="mp3" id="u-mp3" />
+                                                            <Label htmlFor="u-mp3">MP3</Label>
+                                                        </div>
+                                                    </RadioGroup>
+                                                )}
+                                            </div>
+                                            <div className="embeding-options">
+                                                <Label className="text-xs my-3">Embeding Options</Label>
+                                                <div className="flex items-center space-x-2 mt-3">
+                                                    <Switch
+                                                    id="embed-metadata"
+                                                    checked={downloadConfiguration.embed_metadata !== null ? downloadConfiguration.embed_metadata : (selectedFormatFileType && (selectedFormatFileType === 'video' || selectedFormatFileType === 'video+audio')) || activeDownloadModeTab === 'combine' ? embedVideoMetadata : selectedFormatFileType && selectedFormatFileType === 'audio' ? embedAudioMetadata : false}
+                                                    onCheckedChange={(checked) => setDownloadConfigurationKey('embed_metadata', checked)}
+                                                    disabled={useCustomCommands}
+                                                    />
+                                                    <Label htmlFor="embed-metadata">Embed Metadata</Label>
+                                                </div>
+                                                <div className="flex items-center space-x-2 mt-3">
+                                                    <Switch
+                                                    id="embed-thumbnail"
+                                                    checked={downloadConfiguration.embed_thumbnail !== null ? downloadConfiguration.embed_thumbnail : (selectedFormatFileType && (selectedFormatFileType === 'video' || selectedFormatFileType === 'video+audio')) || activeDownloadModeTab === 'combine' ? false : selectedFormatFileType && selectedFormatFileType === 'audio' ? embedAudioThumbnail : false}
+                                                    onCheckedChange={(checked) => setDownloadConfigurationKey('embed_thumbnail', checked)}
+                                                    disabled={useCustomCommands}
+                                                    />
+                                                    <Label htmlFor="embed-thumbnail">Embed Thumbnail</Label>
+                                                </div>
+                                            </div>
+                                        </TabsContent>
+                                        <TabsContent value="commands">
+                                            {!useCustomCommands ? (
+                                            <Alert className="mt-2 mb-3">
+                                                <AlertCircleIcon />
+                                                <AlertTitle className="text-sm">Enable Custom Commands!</AlertTitle>
+                                                <AlertDescription className="text-xs">
+                                                    To run custom commands for downloads, please enable it from the Settings.
+                                                </AlertDescription>
+                                            </Alert>
+                                            ) : null}
+                                            <div className="custom-commands">
+                                                <Label className="text-xs mb-3 mt-2">Run Custom Command</Label>
+                                                {customCommands.length === 0 ? (
+                                                    <p className="text-sm text-muted-foreground">NO CUSTOM COMMAND TEMPLATE ADDED YET!</p>
+                                                ) : (
+                                                    <RadioGroup
+                                                    orientation="vertical"
+                                                    className="flex flex-col gap-2"
+                                                    disabled={!useCustomCommands}
+                                                    value={downloadConfiguration.custom_command}
+                                                    onValueChange={(value) => setDownloadConfigurationKey('custom_command', value)}
+                                                    >
+                                                        {customCommands.map((command) => (
+                                                            <div className="flex items-center gap-3" key={command.id}>
+                                                                <RadioGroupItem value={command.id} id={`cmd-${command.id}`} />
+                                                                <Label htmlFor={`cmd-${command.id}`}>{command.label}</Label>
+                                                            </div>
+                                                        ))}
+                                                    </RadioGroup>
+                                                )}
+                                            </div>
+                                        </TabsContent>
+                                    </Tabs>
+                                </div>
+                            </DialogContent>
+                        </Dialog>
+                        <Button
+                        onClick={async () => {
+                            setIsStartingDownload(true);
+                            try {
+                                if (videoMetadata._type === 'playlist') {
+                                    await startDownload(
+                                        videoMetadata.original_url,
+                                        activeDownloadModeTab === 'combine' ? `${selectedCombinableVideoFormat}+${selectedCombinableAudioFormat}` : selectedDownloadFormat === 'best' ? videoMetadata.entries[Number(selectedPlaylistVideoIndex) - 1].requested_downloads[0].format_id : selectedDownloadFormat,
+                                        downloadConfiguration,
+                                        selectedSubtitles.length > 0 ? selectedSubtitles.join(',') : null,
+                                        undefined,
+                                        selectedPlaylistVideoIndex
+                                    );
+                                } else if (videoMetadata._type === 'video') {
+                                    await startDownload(
+                                        videoMetadata.webpage_url,
+                                        activeDownloadModeTab === 'combine' ? `${selectedCombinableVideoFormat}+${selectedCombinableAudioFormat}` : selectedDownloadFormat === 'best' ? videoMetadata.requested_downloads[0].format_id : selectedDownloadFormat,
+                                        downloadConfiguration,
+                                        selectedSubtitles.length > 0 ? selectedSubtitles.join(',') : null
+                                    );
+                                }
+                                // toast({
+                                //     title: 'Download Initiated',
+                                //     description: 'Download initiated, it will start shortly.',
+                                // });
+                            } catch (error) {
+                                console.error('Download failed to start:', error);
+                                toast.error("Failed to Start Download", {
+                                    description: "There was an error initiating the download."
+                                });
+                            } finally {
+                                setIsStartingDownload(false);
                             }
-                            // toast({
-                            //     title: 'Download Initiated',
-                            //     description: 'Download initiated, it will start shortly.',
-                            // });
-                        } catch (error) {
-                            console.error('Download failed to start:', error);
-                            toast.error("Failed to Start Download", {
-                                description: "There was an error initiating the download."
-                            });
-                        } finally {
-                            setIsStartingDownload(false);
-                        }
-                    }}
-                    disabled={isStartingDownload || !selectedDownloadFormat || (activeDownloadModeTab === 'combine' && (!selectedCombinableVideoFormat || !selectedCombinableAudioFormat))}
-                    >
-                        {isStartingDownload ? (
-                            <>
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                Starting Download
-                            </>
-                        ) : (
-                            'Start Download'
-                        )}
-                    </Button>
+                        }}
+                        disabled={isStartingDownload || !selectedDownloadFormat || (activeDownloadModeTab === 'combine' && (!selectedCombinableVideoFormat || !selectedCombinableAudioFormat)) || (useCustomCommands && !downloadConfiguration.custom_command)}
+                        >
+                            {isStartingDownload ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Starting Download
+                                </>
+                            ) : (
+                                'Start Download'
+                            )}
+                        </Button>
+                    </div>
                 </div>
             )}
         </div>

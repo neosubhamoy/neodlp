@@ -1,6 +1,6 @@
 import { DownloadState } from "@/types/download";
 import { RawVideoInfo } from "@/types/video";
-import { Settings } from "@/types/settings";
+import { DownloadConfiguration, Settings } from "@/types/settings";
 import { KvStore } from "@/types/kvStore";
 import { Update } from "@tauri-apps/plugin-updater";
 import { Log } from "@/types/logs";
@@ -37,22 +37,28 @@ export interface CurrentVideoMetadataStore {
 
 export interface DownloaderPageStatesStore {
     activeDownloadModeTab: string;
+    activeDownloadConfigurationTab: string;
     isStartingDownload: boolean;
     selectedDownloadFormat: string;
     selectedCombinableVideoFormat: string;
     selectedCombinableAudioFormat: string;
     selectedSubtitles: string[];
     selectedPlaylistVideoIndex: string;
+    downloadConfiguration: DownloadConfiguration;
     isErrored: boolean;
     isErrorExpected: boolean;
     erroredDownloadId: string | null;
     setActiveDownloadModeTab: (tab: string) => void;
+    setActiveDownloadConfigurationTab: (tab: string) => void;
     setIsStartingDownload: (isStarting: boolean) => void;
     setSelectedDownloadFormat: (format: string) => void;
     setSelectedCombinableVideoFormat: (format: string) => void;
     setSelectedCombinableAudioFormat: (format: string) => void;
     setSelectedSubtitles: (subtitles: string[]) => void;
     setSelectedPlaylistVideoIndex: (index: string) => void;
+    setDownloadConfigurationKey: (key: string, value: unknown) => void;
+    setDownloadConfiguration: (config: DownloadConfiguration) => void;
+    resetDownloadConfiguration: () => void;
     setIsErrored: (isErrored: boolean) => void;
     setIsErrorExpected: (isErrorExpected: boolean) => void;
     setErroredDownloadId: (downloadId: string | null) => void;
