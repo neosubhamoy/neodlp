@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { arch, exeExtension } from "@tauri-apps/plugin-os";
 import { downloadDir, join, resourceDir, tempDir } from "@tauri-apps/api/path";
 import { useBasePathsStore, useCurrentVideoMetadataStore, useDownloaderPageStatesStore, useDownloadStatesStore, useKvPairsStatesStore, useSettingsPageStatesStore } from "@/services/store";
-import { determineFileType, generateDownloadId, generateSafeFilePath, generateVideoId, isObjEmpty, parseProgressLine, sanitizeFilename } from "@/utils";
+import { determineFileType, generateVideoId, isObjEmpty, parseProgressLine } from "@/utils";
 import { Command } from "@tauri-apps/plugin-shell";
 import { RawVideoInfo } from "@/types/video";
 import { useDeleteDownloadState, useSaveDownloadState, useSavePlaylistInfo, useSaveVideoInfo, useUpdateDownloadFilePath, useUpdateDownloadStatus } from "@/services/mutations";
@@ -27,7 +27,8 @@ import useAppUpdater from "@/helpers/use-app-updater";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { useLogger } from "@/helpers/use-logger";
-import { DownloadConfiguration } from "./types/settings";
+import { DownloadConfiguration } from "@/types/settings";
+import { ulid } from "ulid";
 
 export default function App({ children }: { children: React.ReactNode }) {
   const { data: downloadStates, isSuccess: isSuccessFetchingDownloadStates } = useFetchAllDownloadStates();
@@ -45,7 +46,6 @@ export default function App({ children }: { children: React.ReactNode }) {
 
   const setSearchPid = useCurrentVideoMetadataStore((state) => state.setSearchPid);
 
-  // const isUsingDefaultSettings = useSettingsPageStatesStore((state) => state.isUsingDefaultSettings);
   const setIsUsingDefaultSettings = useSettingsPageStatesStore((state) => state.setIsUsingDefaultSettings);
   const setSettingsKey = useSettingsPageStatesStore((state) => state.setSettingsKey);
   const appVersion = useSettingsPageStatesStore(state => state.appVersion);
@@ -91,7 +91,6 @@ export default function App({ children }: { children: React.ReactNode }) {
   const isErrored = useDownloaderPageStatesStore((state) => state.isErrored);
   const isErrorExpected = useDownloaderPageStatesStore((state) => state.isErrorExpected);
   const erroredDownloadId = useDownloaderPageStatesStore((state) => state.erroredDownloadId);
-  const downloadConfiguration = useDownloaderPageStatesStore((state) => state.downloadConfiguration);
   const setIsErrored = useDownloaderPageStatesStore((state) => state.setIsErrored);
   const setIsErrorExpected = useDownloaderPageStatesStore((state) => state.setIsErrorExpected);
   const setErroredDownloadId = useDownloaderPageStatesStore((state) => state.setErroredDownloadId);
@@ -122,7 +121,7 @@ export default function App({ children }: { children: React.ReactNode }) {
   const hasRunYtDlpAutoUpdateRef = useRef(false);
   const isRegisteredToMacOsRef = useRef(false);
 
-  const fetchVideoMetadata = async (url: string, formatId?: string, playlistIndex?: string, selectedSubtitles?: string | null, resumeState?: DownloadState): Promise<RawVideoInfo | null> => {
+  const fetchVideoMetadata = async (url: string, formatId?: string, playlistIndex?: string, selectedSubtitles?: string | null, resumeState?: DownloadState, downloadConfig?: DownloadConfiguration): Promise<RawVideoInfo | null> => {
     try {
       const args = [url, '--dump-single-json', '--no-warnings'];
       if (formatId) args.push('-f', formatId);
@@ -131,6 +130,17 @@ export default function App({ children }: { children: React.ReactNode }) {
       if (PREFER_VIDEO_OVER_PLAYLIST && !playlistIndex) args.push('--no-playlist');
       if (STRICT_DOWNLOADABILITY_CHECK && !formatId) args.push('--check-all-formats');
       if (STRICT_DOWNLOADABILITY_CHECK && formatId) args.push('--check-formats');
+
+      if ((USE_CUSTOM_COMMANDS && CUSTOM_COMMANDS && downloadConfig?.custom_command) || resumeState?.custom_command) {
+        let customCommandArgs = null;
+        if (resumeState?.custom_command) {
+          customCommandArgs = resumeState.custom_command;
+        } else if (CUSTOM_COMMANDS.find(cmd => cmd.id === downloadConfig?.custom_command)) {
+          let customCommand = CUSTOM_COMMANDS.find(cmd => cmd.id === downloadConfig?.custom_command);
+          customCommandArgs = customCommand ? customCommand.args : '';
+        }
+        if (customCommandArgs && customCommandArgs.trim() !== '') args.push(...customCommandArgs.split(' '));
+      }
 
       if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && USE_PROXY && PROXY_URL) args.push('--proxy', PROXY_URL);
       if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && USE_FORCE_INTERNET_PROTOCOL && FORCE_INTERNET_PROTOCOL) {
@@ -145,6 +155,19 @@ export default function App({ children }: { children: React.ReactNode }) {
           args.push('--cookies-from-browser', COOKIES_BROWSER);
         } else if (IMPORT_COOKIES_FROM === 'file' && COOKIES_FILE) {
           args.push('--cookies', COOKIES_FILE);
+        }
+      }
+      if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && (USE_SPONSORBLOCK || (resumeState?.sponsorblock_remove || resumeState?.sponsorblock_mark))) {
+        if (SPONSORBLOCK_MODE === 'remove' || resumeState?.sponsorblock_remove) {
+          let sponsorblockRemove = resumeState?.sponsorblock_remove || (SPONSORBLOCK_REMOVE === 'custom' ? (
+          SPONSORBLOCK_REMOVE_CATEGORIES.length > 0 ? SPONSORBLOCK_REMOVE_CATEGORIES.join(',') : 'default'
+          ) : (SPONSORBLOCK_REMOVE));
+          args.push('--sponsorblock-remove', sponsorblockRemove);
+        } else if (SPONSORBLOCK_MODE === 'mark' || resumeState?.sponsorblock_mark) {
+          let sponsorblockMark = resumeState?.sponsorblock_mark || (SPONSORBLOCK_MARK === 'custom' ? (
+          SPONSORBLOCK_MARK_CATEGORIES.length > 0 ? SPONSORBLOCK_MARK_CATEGORIES.join(',') : 'default'
+          ) : (SPONSORBLOCK_MARK));
+          args.push('--sponsorblock-mark', sponsorblockMark);
         }
       };
       const command = Command.sidecar('binaries/yt-dlp', args);
@@ -246,20 +269,27 @@ export default function App({ children }: { children: React.ReactNode }) {
 
     const videoId = resumeState?.video_id || generateVideoId(videoMetadata.id, videoMetadata.webpage_url_domain);
     const playlistId = isPlaylist ? (resumeState?.playlist_id || generateVideoId(videoMetadata.playlist_id, videoMetadata.webpage_url_domain)) : null;
-    const downloadId = resumeState?.download_id || generateDownloadId(videoMetadata.id, videoMetadata.webpage_url_domain);
-    const tempDownloadPathForYtdlp = await join(tempDownloadDirPath, `${downloadId}_${selectedFormat}.%(ext)s`);
-    const tempDownloadPath = await join(tempDownloadDirPath, `${downloadId}_${selectedFormat}.${videoMetadata.ext}`);
-    let downloadFilePath = resumeState?.filepath || await join(downloadDirPath, sanitizeFilename(`${videoMetadata.title}_${videoMetadata.resolution || 'unknown'}[${videoMetadata.id}].${videoMetadata.ext}`));
+    const downloadId = resumeState?.download_id || ulid() /*generateDownloadId(videoMetadata.id, videoMetadata.webpage_url_domain)*/;
+    // const tempDownloadPathForYtdlp = await join(tempDownloadDirPath, `${downloadId}_${selectedFormat}.%(ext)s`);
+    // const tempDownloadPath = await join(tempDownloadDirPath, `${downloadId}_${selectedFormat}.${videoMetadata.ext}`);
+    // let downloadFilePath = resumeState?.filepath || await join(downloadDirPath, sanitizeFilename(`${videoMetadata.title}_${videoMetadata.resolution || 'unknown'}[${videoMetadata.id}].${videoMetadata.ext}`));
+    let downloadFilePath: string | null = null;
     let processPid: number | null = null;
     const args = [
       url,
       '--newline',
       '--progress-template',
       'status:%(progress.status)s,progress:%(progress._percent_str)s,speed:%(progress.speed)f,downloaded:%(progress.downloaded_bytes)d,total:%(progress.total_bytes)d,eta:%(progress.eta)d',
+      '--paths',
+      `temp:${tempDownloadDirPath}`,
+      '--paths',
+      `home:${downloadDirPath}`,
       '--output',
-      tempDownloadPathForYtdlp,
-      // '--ffmpeg-location',
-      // ffmpegPath,
+      `%(title)s_%(resolution|unknown)s[${downloadId}].%(ext)s`,
+      '--windows-filenames',
+      '--restrict-filenames',
+      '--exec',
+      'after_move:echo Finalpath: {}',
       '-f',
       selectedFormat,
       '--no-mtime',
@@ -277,11 +307,11 @@ export default function App({ children }: { children: React.ReactNode }) {
     }
 
     let customCommandArgs = null;
-    if ((USE_CUSTOM_COMMANDS && CUSTOM_COMMANDS && downloadConfiguration.custom_command) || resumeState?.custom_command) {
+    if ((USE_CUSTOM_COMMANDS && CUSTOM_COMMANDS && downloadConfig.custom_command) || resumeState?.custom_command) {
         if (resumeState?.custom_command) {
             customCommandArgs = resumeState.custom_command;
-        } else if (CUSTOM_COMMANDS.find(cmd => cmd.id === downloadConfiguration.custom_command)) {
-            let customCommand = CUSTOM_COMMANDS.find(cmd => cmd.id === downloadConfiguration.custom_command);
+        } else if (CUSTOM_COMMANDS.find(cmd => cmd.id === downloadConfig.custom_command)) {
+            let customCommand = CUSTOM_COMMANDS.find(cmd => cmd.id === downloadConfig.custom_command);
             customCommandArgs = customCommand ? customCommand.args : '';
         }
 
@@ -326,10 +356,10 @@ export default function App({ children }: { children: React.ReactNode }) {
     }
 
     let embedMetadata = 0;
-    if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && (downloadConfiguration.embed_metadata || resumeState?.embed_metadata || EMBED_VIDEO_METADATA || EMBED_AUDIO_METADATA)) {
-        const shouldEmbedForVideo = (fileType === 'video+audio' || fileType === 'video') && (downloadConfiguration.embed_metadata || resumeState?.embed_metadata || (EMBED_VIDEO_METADATA && downloadConfiguration.embed_metadata === null));
-        const shouldEmbedForAudio = fileType === 'audio' && (downloadConfiguration.embed_metadata || resumeState?.embed_metadata || (EMBED_AUDIO_METADATA && downloadConfiguration.embed_metadata === null));
-        const shouldEmbedForUnknown = fileType === 'unknown' && (downloadConfiguration.embed_metadata || resumeState?.embed_metadata);
+    if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && (downloadConfig.embed_metadata || resumeState?.embed_metadata || EMBED_VIDEO_METADATA || EMBED_AUDIO_METADATA)) {
+        const shouldEmbedForVideo = (fileType === 'video+audio' || fileType === 'video') && (downloadConfig.embed_metadata || resumeState?.embed_metadata || (EMBED_VIDEO_METADATA && downloadConfig.embed_metadata === null));
+        const shouldEmbedForAudio = fileType === 'audio' && (downloadConfig.embed_metadata || resumeState?.embed_metadata || (EMBED_AUDIO_METADATA && downloadConfig.embed_metadata === null));
+        const shouldEmbedForUnknown = fileType === 'unknown' && (downloadConfig.embed_metadata || resumeState?.embed_metadata);
 
         if (shouldEmbedForUnknown || shouldEmbedForVideo || shouldEmbedForAudio) {
             embedMetadata = 1;
@@ -338,7 +368,7 @@ export default function App({ children }: { children: React.ReactNode }) {
     }
 
     let embedThumbnail = 0;
-    if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && (downloadConfiguration.embed_thumbnail || resumeState?.embed_thumbnail || (fileType === 'audio' && EMBED_AUDIO_THUMBNAIL && downloadConfiguration.embed_thumbnail === null))) {
+    if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && (downloadConfig.embed_thumbnail || resumeState?.embed_thumbnail || (fileType === 'audio' && EMBED_AUDIO_THUMBNAIL && downloadConfig.embed_thumbnail === null))) {
       embedThumbnail = 1;
       args.push('--embed-thumbnail');
     }
@@ -412,32 +442,7 @@ export default function App({ children }: { children: React.ReactNode }) {
           setErroredDownloadId(downloadId);
         }
       } else {
-        if (await fs.exists(tempDownloadPath)) {
-          downloadFilePath = await generateSafeFilePath(downloadFilePath);
-          LOG.info('NEODLP', `yt-dlp download completed with id: ${downloadId}, moving downloaded file from: "${tempDownloadPath}" to final destination: "${downloadFilePath}"`);
-          await fs.copyFile(tempDownloadPath, downloadFilePath);
-          await fs.remove(tempDownloadPath);
-        }
-
-        downloadFilePathUpdater.mutate({ download_id: downloadId, filepath: downloadFilePath }, {
-          onSuccess: (data) => {
-            console.log("Download filepath updated successfully:", data);
-            queryClient.invalidateQueries({ queryKey: ['download-states'] });
-          },
-          onError: (error) => {
-            console.error("Failed to update download filepath:", error);
-          }
-        })
-
-        downloadStatusUpdater.mutate({ download_id: downloadId, download_status: 'completed' }, {
-          onSuccess: (data) => {
-            console.log("Download status updated successfully:", data);
-            queryClient.invalidateQueries({ queryKey: ['download-states'] });
-          },
-          onError: (error) => {
-            console.error("Failed to update download status:", error);
-          }
-        })
+        LOG.info(`YT-DLP Download ${downloadId}`, `yt-dlp exited with code ${data.code}`);
       }
     });
 
@@ -499,6 +504,7 @@ export default function App({ children }: { children: React.ReactNode }) {
           sponsorblock_mark: sponsorblockMark,
           use_aria2: useAria2,
           custom_command: customCommandArgs,
+          queue_config: null
         };
         downloadStateSaver.mutate(state, {
           onSuccess: (data) => {
@@ -512,6 +518,36 @@ export default function App({ children }: { children: React.ReactNode }) {
       } else {
         console.log(line);
         if (line.trim() !== '') LOG.info(`YT-DLP Download ${downloadId}`, line);
+
+        if (line.startsWith('Finalpath: ')) {
+            downloadFilePath = line.replace('Finalpath: ', '').trim().replace(/^"|"$/g, '');
+            const downloadedFileExt = downloadFilePath.split('.').pop();
+
+            // Update completion status after a short delay to ensure database states are propagated correctly
+            console.log(`Download completed with ID: ${downloadId}, updating filepath and status after 1s delay...`);
+            setTimeout(() => {
+                LOG.info('NEODLP', `yt-dlp download completed with id: ${downloadId}`);
+                downloadFilePathUpdater.mutate({ download_id: downloadId, filepath: downloadFilePath as string, ext: downloadedFileExt as string }, {
+                    onSuccess: (data) => {
+                        console.log("Download filepath updated successfully:", data);
+                        queryClient.invalidateQueries({ queryKey: ['download-states'] });
+                    },
+                    onError: (error) => {
+                        console.error("Failed to update download filepath:", error);
+                    }
+                });
+
+                downloadStatusUpdater.mutate({ download_id: downloadId, download_status: 'completed' }, {
+                    onSuccess: (data) => {
+                        console.log("Download status updated successfully:", data);
+                        queryClient.invalidateQueries({ queryKey: ['download-states'] });
+                    },
+                    onError: (error) => {
+                        console.error("Failed to update download status:", error);
+                    }
+                });
+            }, 1000);
+        }
       }
     });
 
@@ -591,7 +627,8 @@ export default function App({ children }: { children: React.ReactNode }) {
             sponsorblock_remove: resumeState?.sponsorblock_remove || null,
             sponsorblock_mark: resumeState?.sponsorblock_mark || null,
             use_aria2: resumeState?.use_aria2 || 0,
-            custom_command: resumeState?.custom_command || null
+            custom_command: resumeState?.custom_command || null,
+            queue_config: resumeState?.queue_config || ((!ongoingDownloads || ongoingDownloads && ongoingDownloads?.length < MAX_PARALLEL_DOWNLOADS) ? null : JSON.stringify(downloadConfig))
           }
           downloadStateSaver.mutate(state, {
             onSuccess: (data) => {
@@ -683,7 +720,7 @@ export default function App({ children }: { children: React.ReactNode }) {
       await startDownload(
         downloadState.playlist_id && downloadState.playlist_index ? downloadState.playlist_url : downloadState.url,
         downloadState.format_id,
-        {
+        downloadState.queue_config ? JSON.parse(downloadState.queue_config) : {
           output_format: null,
           embed_metadata: null,
           embed_thumbnail: null,
@@ -785,7 +822,12 @@ export default function App({ children }: { children: React.ReactNode }) {
       await startDownload(
         downloadToStart.url,
         downloadToStart.format_id,
-        downloadConfiguration,
+        downloadToStart.queue_config ? JSON.parse(downloadToStart.queue_config) : {
+          output_format: null,
+          embed_metadata: null,
+          embed_thumbnail: null,
+          custom_command: null
+        },
         downloadToStart.subtitle_id,
         downloadToStart
       );

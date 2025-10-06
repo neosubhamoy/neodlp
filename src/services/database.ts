@@ -203,7 +203,8 @@ export const saveDownloadState = async (downloadState: DownloadState) => {
                 sponsorblock_remove = $29,
                 sponsorblock_mark = $30,
                 use_aria2 = $31,
-                custom_command = $32
+                custom_command = $32,
+                queue_config = $33
             WHERE download_id = $1`,
             [
                 downloadState.download_id,
@@ -237,7 +238,8 @@ export const saveDownloadState = async (downloadState: DownloadState) => {
                 downloadState.sponsorblock_remove,
                 downloadState.sponsorblock_mark,
                 downloadState.use_aria2,
-                downloadState.custom_command
+                downloadState.custom_command,
+                downloadState.queue_config
             ]
         )
     }
@@ -273,8 +275,9 @@ export const saveDownloadState = async (downloadState: DownloadState) => {
             sponsorblock_remove,
             sponsorblock_mark,
             use_aria2,
-            custom_command
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32)`,
+            custom_command,
+            queue_config
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33)`,
         [
             downloadState.download_id,
             downloadState.download_status,
@@ -307,7 +310,8 @@ export const saveDownloadState = async (downloadState: DownloadState) => {
             downloadState.sponsorblock_remove,
             downloadState.sponsorblock_mark,
             downloadState.use_aria2,
-            downloadState.custom_command
+            downloadState.custom_command,
+            downloadState.queue_config
         ]
     )
 }
@@ -320,11 +324,11 @@ export const updateDownloadStatus = async (download_id: string, download_status:
     )
 }
 
-export const updateDownloadFilePath = async (download_id: string, filepath: string) => {
+export const updateDownloadFilePath = async (download_id: string, filepath: string, ext: string) => {
     const db = await Database.load('sqlite:database.db')
     return await db.execute(
-        'UPDATE downloads SET filepath = $2 WHERE download_id = $1',
-        [download_id, filepath]
+        'UPDATE downloads SET filepath = $2, ext = $3 WHERE download_id = $1',
+        [download_id, filepath, ext]
     )
 }
 

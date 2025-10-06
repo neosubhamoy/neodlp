@@ -31,8 +31,8 @@ export function useUpdateDownloadStatus() {
 
 export function useUpdateDownloadFilePath() {
     return useMutation({
-        mutationFn: (data: { download_id: string; filepath: string }) =>
-        updateDownloadFilePath(data.download_id, data.filepath)
+        mutationFn: (data: { download_id: string; filepath: string, ext: string }) =>
+        updateDownloadFilePath(data.download_id, data.filepath, data.ext)
     })
 }
 
