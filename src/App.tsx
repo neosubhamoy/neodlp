@@ -87,6 +87,7 @@ export default function App({ children }: { children: React.ReactNode }) {
   const FORCE_INTERNET_PROTOCOL = useSettingsPageStatesStore(state => state.settings.force_internet_protocol);
   const USE_CUSTOM_COMMANDS = useSettingsPageStatesStore(state => state.settings.use_custom_commands);
   const CUSTOM_COMMANDS = useSettingsPageStatesStore(state => state.settings.custom_commands);
+  const FILENAME_TEMPLATE = useSettingsPageStatesStore(state => state.settings.filename_template);
 
   const isErrored = useDownloaderPageStatesStore((state) => state.isErrored);
   const isErrorExpected = useDownloaderPageStatesStore((state) => state.isErrorExpected);
@@ -124,7 +125,7 @@ export default function App({ children }: { children: React.ReactNode }) {
   const fetchVideoMetadata = async (url: string, formatId?: string, playlistIndex?: string, selectedSubtitles?: string | null, resumeState?: DownloadState, downloadConfig?: DownloadConfiguration): Promise<RawVideoInfo | null> => {
     try {
       const args = [url, '--dump-single-json', '--no-warnings'];
-      if (formatId) args.push('-f', formatId);
+      if (formatId) args.push('--format', formatId);
       if (selectedSubtitles) args.push('--embed-subs', '--sub-lang', selectedSubtitles);
       if (playlistIndex) args.push('--playlist-items', playlistIndex);
       if (PREFER_VIDEO_OVER_PLAYLIST && !playlistIndex) args.push('--no-playlist');
@@ -285,12 +286,12 @@ export default function App({ children }: { children: React.ReactNode }) {
       '--paths',
       `home:${downloadDirPath}`,
       '--output',
-      `%(title)s_%(resolution|unknown)s[${downloadId}].%(ext)s`,
+      `${FILENAME_TEMPLATE}[${downloadId}].%(ext)s`,
       '--windows-filenames',
       '--restrict-filenames',
       '--exec',
       'after_move:echo Finalpath: {}',
-      '-f',
+      '--format',
       selectedFormat,
       '--no-mtime',
       '--no-warnings',

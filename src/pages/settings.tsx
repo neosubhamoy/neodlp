@@ -72,6 +72,10 @@ const addCustomCommandSchema = z.object({
     args: z.string().min(1, { message: "Arguments are required" }),
 });
 
+const filenameTemplateShcema = z.object({
+    template: z.string().min(1, { message: "Filename Template is required" }),
+});
+
 export default function SettingsPage() {
     const { setTheme } = useTheme();
 
@@ -118,6 +122,7 @@ export default function SettingsPage() {
     const forceInternetProtocol = useSettingsPageStatesStore(state => state.settings.force_internet_protocol);
     const useCustomCommands = useSettingsPageStatesStore(state => state.settings.use_custom_commands);
     const customCommands = useSettingsPageStatesStore(state => state.settings.custom_commands);
+    const filenameTemplate = useSettingsPageStatesStore(state => state.settings.filename_template);
 
     const websocketPort = useSettingsPageStatesStore(state => state.settings.websocket_port);
     const isChangingWebSocketPort = useSettingsPageStatesStore(state => state.isChangingWebSocketPort);
@@ -297,6 +302,30 @@ export default function SettingsPage() {
         }
     }
 
+    const filenameTemplateForm = useForm<z.infer<typeof filenameTemplateShcema>>({
+        resolver: zodResolver(filenameTemplateShcema),
+        defaultValues: {
+            template: filenameTemplate,
+        },
+        mode: "onChange",
+    });
+    const watchedFilenameTemplate = filenameTemplateForm.watch("template");
+    const { errors: filenameTemplateFormErrors } = filenameTemplateForm.formState;
+
+    function handleFilenameTemplateSubmit(values: z.infer<typeof filenameTemplateShcema>) {
+        try {
+            saveSettingsKey('filename_template', values.template);
+            toast.success("Filename Template updated", {
+                description: `Filename Template changed to ${values.template}`,
+            });
+        } catch (error) {
+            console.error("Error changing filename template:", error);
+            toast.error("Failed to change filename template", {
+                description: "An error occurred while trying to change the filename template. Please try again.",
+            });
+        }
+    }
+
     interface Config {
         port: number;
     }
@@ -372,7 +401,14 @@ export default function SettingsPage() {
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction onClick={
-                                    () => resetSettings()
+                                    () => {
+                                        resetSettings()
+                                        proxyUrlForm.reset();
+                                        rateLimitForm.reset();
+                                        addCustomCommandForm.reset();
+                                        filenameTemplateForm.reset();
+                                        websocketPortForm.reset();
+                                    }
                                 }>Reset</AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
@@ -628,6 +664,36 @@ export default function SettingsPage() {
                                             </AlertDialogContent>
                                         </AlertDialog>
                                     </div>
+                                </div>
+                                <div className="filename-template">
+                                    <h3 className="font-semibold">Filename Template</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Set the template for naming downloaded files (download id and file extension will be auto-appended at the end, changing template may cause paused downloads to re-start from begining)</p>
+                                    <Form {...filenameTemplateForm}>
+                                        <form onSubmit={filenameTemplateForm.handleSubmit(handleFilenameTemplateSubmit)} className="flex gap-4 w-full" autoComplete="off">
+                                            <FormField
+                                                control={filenameTemplateForm.control}
+                                                name="template"
+                                                render={({ field }) => (
+                                                    <FormItem className="w-full">
+                                                        <FormControl>
+                                                            <Input
+                                                            className="focus-visible:ring-0"
+                                                            placeholder="Enter filename template"
+                                                            {...field}
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <Button
+                                                type="submit"
+                                                disabled={!watchedFilenameTemplate || watchedFilenameTemplate === filenameTemplate || Object.keys(filenameTemplateFormErrors).length > 0}
+                                            >
+                                                Save
+                                            </Button>
+                                        </form>
+                                    </Form>
                                 </div>
                             </TabsContent>
                             <TabsContent key="formats" value="formats" className="flex flex-col gap-4 min-h-[350px]">

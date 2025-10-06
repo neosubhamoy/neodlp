@@ -43,6 +43,7 @@ export interface Settings {
     force_internet_protocol: string;
     use_custom_commands: boolean;
     custom_commands: CustomCommand[];
+    filename_template: string;
     // extension settings
     websocket_port: number;
 }

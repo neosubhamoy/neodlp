@@ -179,6 +179,7 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         force_internet_protocol: 'ipv4',
         use_custom_commands: false,
         custom_commands: [],
+        filename_template: '%(title)s_%(resolution|unknown)s',
         // extension settings
         websocket_port: 53511
     },
@@ -239,6 +240,7 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             force_internet_protocol: 'ipv4',
             use_custom_commands: false,
             custom_commands: [],
+            filename_template: '%(title)s_%(resolution|unknown)s',
             // extension settings
             websocket_port: 53511
         },
