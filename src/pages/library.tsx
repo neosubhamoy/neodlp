@@ -6,9 +6,9 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { useAppContext } from "@/providers/appContextProvider";
-import { useDownloadActionStatesStore, useDownloadStatesStore, useLibraryPageStatesStore } from "@/services/store";
+import { useCurrentVideoMetadataStore, useDownloadActionStatesStore, useDownloadStatesStore, useLibraryPageStatesStore } from "@/services/store";
 import { formatBitrate, formatCodec, formatDurationString, formatFileSize, formatSecToTimeString, formatSpeed } from "@/utils";
-import { AudioLines, Clock, File, FileAudio2, FileQuestion, FileVideo2, FolderInput, ListVideo, Loader2, Music, Pause, Play, Square, Trash2, Video, X } from "lucide-react";
+import { AudioLines, Clock, File, FileAudio2, FileQuestion, FileVideo2, FolderInput, ListVideo, Loader2, Music, Pause, Play, Search, Square, Trash2, Video, X } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import * as fs from "@tauri-apps/plugin-fs";
 import { DownloadState } from "@/types/download";
@@ -20,11 +20,13 @@ import { Label } from "@/components/ui/label";
 import Heading from "@/components/heading";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
+import { useLogger } from "@/helpers/use-logger";
 
 export default function LibraryPage() {
     const activeTab = useLibraryPageStatesStore(state => state.activeTab);
     const setActiveTab = useLibraryPageStatesStore(state => state.setActiveTab);
-    
+
     const downloadStates = useDownloadStatesStore(state => state.downloadStates);
     const downloadActions = useDownloadActionStatesStore(state => state.downloadActions);
     const setIsResumingDownload = useDownloadActionStatesStore(state => state.setIsResumingDownload);
@@ -36,10 +38,18 @@ export default function LibraryPage() {
 
     const queryClient = useQueryClient();
     const downloadStateDeleter = useDeleteDownloadState();
+    const navigate = useNavigate();
+    const LOG = useLogger();
 
     const incompleteDownloads = downloadStates.filter(state => state.download_status !== 'completed');
-    const completedDownloads = downloadStates.filter(state => state.download_status === 'completed');
-    const ongoingDownloads = downloadStates.filter(state => 
+    const completedDownloads = downloadStates.filter(state => state.download_status === 'completed')
+    .sort((a, b) => {
+        // Latest updated first
+        const dateA = a.updated_at ? new Date(a.updated_at).getTime() : 0;
+        const dateB = b.updated_at ? new Date(b.updated_at).getTime() : 0;
+        return dateB - dateA;
+    });
+    const ongoingDownloads = downloadStates.filter(state =>
         ['starting', 'downloading', 'queued'].includes(state.download_status)
     );
 
@@ -47,19 +57,19 @@ export default function LibraryPage() {
         if (filePath && await fs.exists(filePath)) {
             try {
                 await invoke('open_file_with_app', { filePath: filePath, appName: app }).then(() => {
-                    toast.info("Opening file", {
-                        description: `Opening the file with ${app ? app : 'default app'}.`,
+                    toast.info(`${app === 'explorer' ? 'Revealing' : 'Opening'} file`, {
+                        description: `${app === 'explorer' ? 'Revealing' : 'Opening'} the file ${app === 'explorer' ? 'in' : 'with'} ${app ? app : 'default app'}.`,
                     })
                 });
             } catch (e) {
                 console.error(e);
-                toast.error("Failed to open file", {
-                    description: "An error occurred while trying to open the file.",
+                toast.error(`Failed to ${app === 'explorer' ? 'reveal' : 'open'} file`, {
+                    description: `An error occurred while trying to ${app === 'explorer' ? 'reveal' : 'open'} the file.`,
                 })
             }
         } else {
             toast.info("File unavailable", {
-                description: "The file you are trying to open does not exist.",
+                description: `The file you are trying to ${app === 'explorer' ? 'reveal' : 'open'} does not exist.`,
             })
         }
     }
@@ -117,6 +127,24 @@ export default function LibraryPage() {
         } else {
             toast.info("No ongoing downloads", {
                 description: "There are no ongoing downloads to stop.",
+            });
+        }
+    }
+
+    const handleSearch = async (url: string, isPlaylist: boolean) => {
+        try {
+            LOG.info('NEODLP', `Received search request from library for URL: ${url}`);
+            navigate('/');
+            const { setRequestedUrl, setAutoSubmitSearch } = useCurrentVideoMetadataStore.getState();
+            setRequestedUrl(url);
+            setAutoSubmitSearch(true);
+            toast.info(`Initiating ${isPlaylist ? 'Playlist' : 'Video'} Search`, {
+                description: `Initiating search for the selected ${isPlaylist ? 'playlist' : 'video'}.`,
+            });
+        } catch (e) {
+            console.error(e);
+            toast.error("Failed to initiate search", {
+                description: "An error occurred while trying to initiate the search.",
             });
         }
     }
@@ -254,7 +282,11 @@ export default function LibraryPage() {
                                                 </Button>
                                                 <Button size="sm" variant="outline" onClick={() => openFile(state.filepath, 'explorer')}>
                                                     <FolderInput className="w-4 h-4" />
-                                                    Open in Explorer
+                                                    Reveal
+                                                </Button>
+                                                <Button size="sm" variant="outline" onClick={() => handleSearch(state.url, state.playlist_id ? true : false)}>
+                                                    <Search className="w-4 h-4" />
+                                                    Search
                                                 </Button>
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
@@ -347,7 +379,7 @@ export default function LibraryPage() {
                                                     </div>
                                                 )}
                                                 <div className="text-xs text-muted-foreground">{ state.download_status && (
-                                                    `${state.download_status === 'downloading' && state.status === 'finished' ? 'Processing' : state.download_status.charAt(0).toUpperCase() + state.download_status.slice(1)} ${state.download_status === 'downloading' && state.status !== 'finished' && state.speed ? `• Speed: ${formatSpeed(state.speed)}` : ""} ${state.download_status === 'downloading' && state.eta ? `• ETA: ${formatSecToTimeString(state.eta)}` : ""}`
+                                                    `${state.download_status === 'downloading' && state.status === 'finished' ? 'Processing' : state.download_status.charAt(0).toUpperCase() + state.download_status.slice(1)} ${state.download_status === 'downloading' && state.status !== 'finished' && state.speed ? `• Speed: ${formatSpeed(state.speed)}` : ""} ${state.download_status === 'downloading' && state.eta ? `• ETA: ${formatSecToTimeString(state.eta)}` : ""} • ID: ${state.download_id.toUpperCase()}`
                                                 )}</div>
                                             </div>
                                             <div className="w-full flex items-center gap-2 mt-2">
