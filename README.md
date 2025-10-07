@@ -47,9 +47,10 @@ After installing the extension you can do the following directly from the browse
 
 ### 🤝 External Dependencies
 
-- [YT-DLP](https://github.com/yt-dlp/yt-dlp) (Latest Nightly) - The core CLI tool used to download video/audio from the web (Hero of the show 😎)
-- [FFmpeg & FFprobe](https://www.ffmpeg.org) (v7.1.1) - Used for video/audio post-processing
-- [Aria2](https://aria2.github.io) (v1.37.0) - Used as an external downloader for blazing fast downloads with yt-dlp (Not included with NeoDLP MacOS builds)
+- [YT-DLP](https://github.com/yt-dlp/yt-dlp) - The core CLI tool used to download video/audio from the web (Hero of the show 😎)
+- [FFmpeg & FFprobe](https://www.ffmpeg.org) - Used for video/audio post-processing
+- [Aria2](https://aria2.github.io) - Used as an external downloader for blazing fast downloads with yt-dlp (Not included with NeoDLP MacOS builds)
+- [Deno](https://deno.com) - Provides sandboxed javascript runtime environment for yt-dlp (Required for YT downloads, as per the new yt-dlp [announcement](https://github.com/yt-dlp/yt-dlp/issues/14404))
 
 ### ⬇️ Download and Installation
 
@@ -132,7 +133,7 @@ Noticed any Bug? or Want to give me some suggetion? Always feel free to open a [
 ### 💫 Credits
 
 - NeoDLP's 'Format Selection' options are inspired from the [Seal](https://github.com/JunkFood02/Seal) app by [@JunkFood02](https://github.com/JunkFood02)
-- Aria2 Windows x86_64 and Linux x86_64 static binaries are built by [@q3aql](https://github.com/q3aql/aria2-static-builds)
+- Aria2 Windows x86_64 and Linux x86_64 static binaries are built by [@asdo92](https://github.com/asdo92/aria2-static-builds)
 
 ### 📝 License
 

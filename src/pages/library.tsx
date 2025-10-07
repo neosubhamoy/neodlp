@@ -379,7 +379,7 @@ export default function LibraryPage() {
                                                     </div>
                                                 )}
                                                 <div className="text-xs text-muted-foreground">{ state.download_status && (
-                                                    `${state.download_status === 'downloading' && state.status === 'finished' ? 'Processing' : state.download_status.charAt(0).toUpperCase() + state.download_status.slice(1)} ${state.download_status === 'downloading' && state.status !== 'finished' && state.speed ? `• Speed: ${formatSpeed(state.speed)}` : ""} ${state.download_status === 'downloading' && state.eta ? `• ETA: ${formatSecToTimeString(state.eta)}` : ""} • ID: ${state.download_id.toUpperCase()}`
+                                                    `${state.download_status === 'downloading' && state.status === 'finished' ? 'Processing' : state.download_status.charAt(0).toUpperCase() + state.download_status.slice(1)} ${state.download_id ? `• ID: ${state.download_id.toUpperCase()}` : ""} ${state.download_status === 'downloading' && state.status !== 'finished' && state.speed ? `• Speed: ${formatSpeed(state.speed)}` : ""} ${state.download_status === 'downloading' && state.eta ? `• ETA: ${formatSecToTimeString(state.eta)}` : ""}`
                                                 )}</div>
                                             </div>
                                             <div className="w-full flex items-center gap-2 mt-2">

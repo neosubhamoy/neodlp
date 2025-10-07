@@ -525,7 +525,7 @@ export default function App({ children }: { children: React.ReactNode }) {
             const downloadedFileExt = downloadFilePath.split('.').pop();
 
             // Update completion status after a short delay to ensure database states are propagated correctly
-            console.log(`Download completed with ID: ${downloadId}, updating filepath and status after 1s delay...`);
+            console.log(`Download completed with ID: ${downloadId}, updating filepath and status after 2s delay...`);
             setTimeout(() => {
                 LOG.info('NEODLP', `yt-dlp download completed with id: ${downloadId}`);
                 downloadFilePathUpdater.mutate({ download_id: downloadId, filepath: downloadFilePath as string, ext: downloadedFileExt as string }, {
@@ -547,7 +547,7 @@ export default function App({ children }: { children: React.ReactNode }) {
                         console.error("Failed to update download status:", error);
                     }
                 });
-            }, 1000);
+            }, 2000);
         }
       }
     });

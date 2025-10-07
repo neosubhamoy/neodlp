@@ -39,7 +39,8 @@
             "binaries/yt-dlp",
             "binaries/ffmpeg",
             "binaries/ffprobe",
-            "binaries/aria2c"
+            "binaries/aria2c",
+            "binaries/deno"
         ],
         "resources": {
             "target/release/neodlp-msghost.exe": "neodlp-msghost.exe",

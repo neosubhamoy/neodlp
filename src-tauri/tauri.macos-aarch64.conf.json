@@ -38,7 +38,8 @@
         "externalBin": [
             "binaries/yt-dlp",
             "binaries/ffmpeg",
-            "binaries/ffprobe"
+            "binaries/ffprobe",
+            "binaries/deno"
         ],
         "resources": {
             "target/aarch64-apple-darwin/release/neodlp-msghost": "neodlp-msghost",
