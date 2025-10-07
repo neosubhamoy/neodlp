@@ -2,7 +2,7 @@
     "identifier": "com.neosubhamoy.neodlp",
     "build": {
         "beforeDevCommand": "cargo build --manifest-path=./src-tauri/msghost/Cargo.toml && node makeFilesExecutable.js && npm run dev",
-        "beforeBuildCommand": "cargo build --release --manifest-path=./src-tauri/msghost/Cargo.toml && node makeFilesExecutable.js && node updateYtDlpBinary.js x86_64-unknown-linux-gnu && npm run build",
+        "beforeBuildCommand": "cargo build --release --manifest-path=./src-tauri/msghost/Cargo.toml && node makeFilesExecutable.js && npm run build",
         "devUrl": "http://localhost:1420",
         "frontendDist": "../dist"
     },

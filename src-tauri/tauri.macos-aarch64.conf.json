@@ -1,8 +1,8 @@
 {
     "identifier": "com.neosubhamoy.neodlp",
     "build": {
-        "beforeDevCommand": "[[ -n \"$TARGET_ARCH\" ]] && ARCH=\"$TARGET_ARCH\" || ARCH=\"$(uname -m | sed 's/^arm64$/aarch64/')-apple-darwin\" && cargo build --target=$ARCH --manifest-path=./src-tauri/msghost/Cargo.toml && node makeFilesExecutable.js && npm run dev",
-        "beforeBuildCommand": "[[ -n \"$TARGET_ARCH\" ]] && ARCH=\"$TARGET_ARCH\" || ARCH=\"$(uname -m | sed 's/^arm64$/aarch64/')-apple-darwin\" && cargo build --release --target=$ARCH --manifest-path=./src-tauri/msghost/Cargo.toml && node makeFilesExecutable.js && node updateYtDlpBinary.js aarch64-apple-darwin && npm run build",
+        "beforeDevCommand": "cargo build --target=aarch64-apple-darwin --manifest-path=./src-tauri/msghost/Cargo.toml && node makeFilesExecutable.js && npm run dev",
+        "beforeBuildCommand": "cargo build --release --target=aarch64-apple-darwin --manifest-path=./src-tauri/msghost/Cargo.toml && node makeFilesExecutable.js && npm run build",
         "devUrl": "http://localhost:1420",
         "frontendDist": "../dist"
     },

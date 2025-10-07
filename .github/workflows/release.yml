@@ -2,7 +2,7 @@ on:
   push:
     tags:
       - 'v*.*.*'
-  
+
 name: 🚀 Release on GitHub
 jobs:
   release:
@@ -14,16 +14,12 @@ jobs:
         include:
           - platform: 'macos-latest'
             args: '--target aarch64-apple-darwin --config ./src-tauri/tauri.macos-aarch64.conf.json'
-            arch: 'aarch64-apple-darwin'
           - platform: 'macos-latest'
             args: '--target x86_64-apple-darwin --config ./src-tauri/tauri.macos-x86_64.conf.json'
-            arch: 'x86_64-apple-darwin'
           - platform: 'ubuntu-22.04'
             args: ''
-            arch: ''
           - platform: 'windows-latest'
             args: ''
-            arch: ''
     runs-on: ${{ matrix.platform }}
     steps:
       - name: 🚚 Checkout repository
@@ -64,12 +60,12 @@ jobs:
             if [ -f CHANGELOG.md ]; then
                 # Extract version number from tag
                 VERSION_NUM=$(echo "${{ github.ref_name }}" | sed -E 's/^v([0-9]+\.[0-9]+\.[0-9]+)(-.*)?$/\1/')
-                
+
                 # Read and replace placeholders
                 CONTENT=$(cat CHANGELOG.md)
                 CONTENT=${CONTENT//<release_tag>/${{ github.ref_name }}}
                 CONTENT=${CONTENT//<version>/$VERSION_NUM}
-                
+
                 echo "content<<EOF" >> $GITHUB_OUTPUT
                 echo "$CONTENT" >> $GITHUB_OUTPUT
                 echo "EOF" >> $GITHUB_OUTPUT
@@ -85,12 +81,12 @@ jobs:
             if (Test-Path "CHANGELOG.md") {
                 # Extract version number from tag
                 $version_num = "${{ github.ref_name }}" -replace '^v([0-9]+\.[0-9]+\.[0-9]+)(-.*)?$','$1'
-                
+
                 # Read and replace placeholders
                 $content = Get-Content -Path CHANGELOG.md -Raw
                 $content = $content -replace '<release_tag>', "${{ github.ref_name }}"
                 $content = $content -replace '<version>', "$version_num"
-                
+
                 "content<<EOF" >> $env:GITHUB_OUTPUT
                 $content >> $env:GITHUB_OUTPUT
                 "EOF" >> $env:GITHUB_OUTPUT
@@ -102,7 +98,6 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TARGET_ARCH: ${{ matrix.arch }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
