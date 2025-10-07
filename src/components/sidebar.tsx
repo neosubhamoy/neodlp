@@ -14,10 +14,10 @@ import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Progress } from "@/components/ui/progress";
 import useAppUpdater from "@/helpers/use-app-updater";
- 
+
 export function AppSidebar() {
   const downloadStates = useDownloadStatesStore(state => state.downloadStates);
-  const ongoingDownloads = downloadStates.filter(state => 
+  const ongoingDownloads = downloadStates.filter(state =>
     ['starting', 'downloading', 'queued'].includes(state.download_status)
   );
   const appVersion = useSettingsPageStatesStore(state => state.appVersion);
@@ -63,12 +63,12 @@ export function AppSidebar() {
       setShowBadge(false);
       setShowUpdateCard(false);
     }
-    
+
     return () => {
       clearTimeout(timeout);
     };
   }, [open]);
-  
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -99,7 +99,7 @@ export function AppSidebar() {
                   {!open ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <SidebarMenuButton 
+                        <SidebarMenuButton
                           isActive={isActiveSidebarItem(item.url, location.pathname, item.starts_with ? item.starts_with : false)}
                           className="relative"
                           asChild
@@ -118,7 +118,7 @@ export function AppSidebar() {
                       </TooltipContent>
                     </Tooltip>
                   ) : (
-                    <SidebarMenuButton 
+                    <SidebarMenuButton
                       isActive={isActiveSidebarItem(item.url, location.pathname, item.starts_with ? item.starts_with : false)}
                       className="relative"
                       asChild
@@ -154,11 +154,11 @@ export function AppSidebar() {
         {appUpdate && open && showUpdateCard && (
           <Card className="gap-4 py-0">
             <CardHeader className="p-4 pb-0">
-              <CardTitle className="text-sm">Update Available (v{appUpdate.version})</CardTitle>
+              <CardTitle className="text-sm">Update Available (v{appUpdate?.version || '0.0.0'})</CardTitle>
               <CardDescription>
                 A newer version of {config.appName} is available. Please update to the latest version for the best experience.
               </CardDescription>
-              <a className="text-xs font-semibold cursor-pointer mt-1" href={`https://github.com/neosubhamoy/neodlp/releases/tag/v${appUpdate.version}`} target="_blank">✨ Read Changelog</a>
+              <a className="text-xs font-semibold cursor-pointer mt-1" href={`https://github.com/neosubhamoy/neodlp/releases/tag/v${appUpdate?.version || '0.0.0'}`} target="_blank">✨ Read Changelog</a>
             </CardHeader>
             <CardContent className="grid gap-2.5 p-4">
               <AlertDialog>
@@ -169,13 +169,14 @@ export function AppSidebar() {
                   disabled={ongoingDownloads.length > 0 || isUpdatingApp}
                   onClick={() => downloadAndInstallAppUpdate(appUpdate)}
                   >
-                    Download and Install
+                    Update Now
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader className="flex flex-col items-center text-center gap-2">
+                    <CircleArrowUp className="size-7 stroke-muted-foreground" />
                     <AlertDialogTitle>Updating {config.appName}</AlertDialogTitle>
-                    <AlertDialogDescription className="text-center">Updating {config.appName} to v{appUpdate.version}, Please be patience! Do not quit the app untill the update finishes. The app will auto re-launch to complete the update, Please allow all system prompts from {config.appName} if asked.</AlertDialogDescription>
+                    <AlertDialogDescription className="text-center text-xs mb-2">Updating {config.appName} to v{appUpdate?.version || '0.0.0'}, Please be patience! Do not quit the app untill the update finishes. The app will auto re-launch to complete the update, Please allow all system prompts from {config.appName} if asked.</AlertDialogDescription>
                     <Progress value={appUpdateDownloadProgress} className="w-full" />
                     <AlertDialogDescription className="text-center">Downloading update... {appUpdateDownloadProgress}%</AlertDialogDescription>
                   </AlertDialogHeader>
