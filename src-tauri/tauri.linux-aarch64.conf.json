@@ -1,0 +1,68 @@
+{
+    "identifier": "com.neosubhamoy.neodlp",
+    "build": {
+        "beforeDevCommand": "cargo build --target=aarch64-unknown-linux-gnu --manifest-path=./src-tauri/msghost/Cargo.toml && node makeFilesExecutable.js && npm run dev",
+        "beforeBuildCommand": "cargo build --release --target=aarch64-unknown-linux-gnu --manifest-path=./src-tauri/msghost/Cargo.toml && node makeFilesExecutable.js && npm run build",
+        "devUrl": "http://localhost:1420",
+        "frontendDist": "../dist"
+    },
+    "app": {
+        "windows": [
+            {
+                "title": "NeoDLP",
+                "width": 1067,
+                "height": 605,
+                "visible": false
+            }
+        ],
+        "security": {
+            "csp": null,
+            "capabilities": [
+                "default",
+                "shell-scope"
+            ]
+        }
+    },
+    "bundle": {
+        "active": true,
+        "targets": ["deb", "rpm"],
+        "createUpdaterArtifacts": true,
+        "licenseFile": "../LICENSE",
+        "icon": [
+            "icons/32x32.png",
+            "icons/128x128.png",
+            "icons/128x128@2x.png",
+            "icons/icon.icns",
+            "icons/icon.ico"
+        ],
+        "externalBin": [
+            "binaries/yt-dlp",
+            "binaries/ffmpeg",
+            "binaries/ffprobe",
+            "binaries/aria2c",
+            "binaries/deno"
+        ],
+        "linux": {
+            "deb": {
+                "files": {
+                    "/etc/opt/chrome/native-messaging-hosts/com.neosubhamoy.neodlp.json": "./resources/msghost-manifest/linux/chrome.json",
+                    "/etc/chromium/native-messaging-hosts/com.neosubhamoy.neodlp.json": "./resources/msghost-manifest/linux/chrome.json",
+                    "/usr/lib/mozilla/native-messaging-hosts/com.neosubhamoy.neodlp.json": "./resources/msghost-manifest/linux/firefox.json",
+                    "/usr/bin/neodlp-msghost": "./target/aarch64-unknown-linux-gnu/release/neodlp-msghost",
+                    "/etc/xdg/autostart/neodlp-autostart.desktop": "./resources/autostart/linux/autostart.desktop"
+                }
+            },
+            "rpm": {
+                "epoch": 0,
+                "release": "1",
+                "files": {
+                    "/etc/opt/chrome/native-messaging-hosts/com.neosubhamoy.neodlp.json": "./resources/msghost-manifest/linux/chrome.json",
+                    "/etc/chromium/native-messaging-hosts/com.neosubhamoy.neodlp.json": "./resources/msghost-manifest/linux/chrome.json",
+                    "/usr/lib/mozilla/native-messaging-hosts/com.neosubhamoy.neodlp.json": "./resources/msghost-manifest/linux/firefox.json",
+                    "/usr/bin/neodlp-msghost": "./target/aarch64-unknown-linux-gnu/release/neodlp-msghost",
+                    "/etc/xdg/autostart/neodlp-autostart.desktop": "./resources/autostart/linux/autostart.desktop"
+                }
+            }
+        }
+    }
+}

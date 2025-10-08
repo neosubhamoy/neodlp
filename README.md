@@ -59,7 +59,7 @@ After installing the extension you can do the following directly from the browse
 | Arch\OS | Windows | Linux | MacOS |
 | :----        | :----   | :---- | :---- |
 | x86_64 | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) |
-| ARM64 | ✅ Emulation | ❌ N/A | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) |
+| ARM64 | ✅ Emulation | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) |
 
 > 📌 **NOTE:** x86_64 Windows binary also works on ARM64 (Windows on ARM) devices with emulation (Not planning to release native Windows ARM64 build anytime soon as, x86_64 one works fine on ARM64 without noticeable performance impact)
 
@@ -113,9 +113,16 @@ Want to be part of this? Feel free to contribute...!! Pull Requests are always w
 5. Run development / build process
 > ⚠️ **IMPORTANT:** Make sure to run the build command once before running the dev command for the first time to avoid compile time errors
 ```code
-# for windows and linux users
+# for windows users
 npm run tauri dev      # for development
 npm run tauri build      # for production build
+
+# for linux users
+npm run tauri dev -- --config "./src-tauri/tauri.linux-aarch64.conf.json"     # for ARM64 devices, development
+npm run tauri build -- --config "./src-tauri/tauri.linux-aarch64.conf.json"     # for ARM64 devices, production build
+
+npm run tauri dev -- --config "./src-tauri/tauri.linux-x86_64.conf.json"     # for x64 devices, development
+npm run tauri build -- --config "./src-tauri/tauri.linux-x86_64.conf.json"     # for x64 devices, production build
 
 # for macOS users (based on cpu architecture)
 npm run tauri dev -- --config "./src-tauri/tauri.macos-aarch64.conf.json"     # for apple silicon macs, development
