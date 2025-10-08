@@ -21,6 +21,8 @@ Cross-platform Video/Audio Downloader Desktop App with Modern UI and Browser Int
 - Supports Combining Video, Audio streams of your choice
 - Supports Multi-Language Subtitle/Caption (CC) embeding
 - Different Video/Audio metadata embeding options (info, chapters, thumbnail etc.)
+- SponsorBlock support (mark/remove video segments)
+- Network controls (proxy, rate limit etc.)
 - Highly customizable and many more...😉
 
 ### 🧩 Browser Integration
@@ -41,7 +43,7 @@ After installing the extension you can do the following directly from the browse
 
 - Windows (10 / 11)
 - Linux (Debian / Fedora / Arch Linux base)
-- MacOS (>10.5)
+- MacOS (>11)
 
 > ⚠️ **NOTE:** Though most linux (debian/fedora/arch base) distros are supported but not all packages are tested on all these platforms, to save some time (and brain cells) and ship the software as fast as possible! (Currently only the debian package is tested on Ubuntu 24.04 LTS - So, other linux packages may have issues, test it yourself and feel free to report issues if you found one)
 
