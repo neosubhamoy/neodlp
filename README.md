@@ -42,10 +42,8 @@ After installing the extension you can do the following directly from the browse
 ### 💻 Supported Platforms
 
 - Windows (10 / 11)
-- Linux (Debian / Fedora / Arch Linux base)
+- Linux (Debian / Fedora / RHEL / SUSE / Arch Linux base)
 - MacOS (>11)
-
-> ⚠️ **NOTE:** Though most linux (debian/fedora/arch base) distros are supported but not all packages are tested on all these platforms, to save some time (and brain cells) and ship the software as fast as possible! (Currently only the debian package is tested on Ubuntu 24.04 LTS - So, other linux packages may have issues, test it yourself and feel free to report issues if you found one)
 
 ### 🤝 External Dependencies
 
@@ -53,6 +51,12 @@ After installing the extension you can do the following directly from the browse
 - [FFmpeg & FFprobe](https://www.ffmpeg.org) - Used for video/audio post-processing
 - [Aria2](https://aria2.github.io) - Used as an external downloader for blazing fast downloads with yt-dlp (Not included with NeoDLP MacOS builds)
 - [Deno](https://deno.com) - Provides sandboxed javascript runtime environment for yt-dlp (Required for YT downloads, as per the new yt-dlp [announcement](https://github.com/yt-dlp/yt-dlp/issues/14404))
+
+### ℹ️ System Pre-Requirements
+
+- **Windows:** [Microsoft Visual C++ Redistributable 2015+](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) `winget install Microsoft.VCRedist.2015+.x64` (Will be auto-installed if you install NeoDLP via winget)
+- **MacOS:** XCode Command Line Tools `xcode-select --install` (Mostly, comes pre-installed on modern macos, still if you encounter any issue then try installing it manually)
+- **Linux:** Most linux packages comes with pre-defined system dependencies which will be auto installed by your package manager (if you prefer to install manually [follow this](https://v2.tauri.app/start/prerequisites/#linux))
 
 ### ⬇️ Download and Installation
 
@@ -68,8 +72,26 @@ After installing the extension you can do the following directly from the browse
 | Platform (OS) | Distribution Channel | Installation Command / Instruction |
 | :---- | :---- | :---- |
 | Windows x86_64 / ARM64 | WinGet | `winget install neodlp` |
-| MacOS x86_64 / ARM64 | Curl-Bash Installer | `curl -sSL https://neodlp.neosubhamoy.com/neodlp_macos_installer.sh \| bash` |
-| Linux x86_64 (Arch Linux) | AUR | `yay -S neodlp` |
+| MacOS x86_64 / ARM64 | Curl-Bash Installer | `curl -sSL https://neodlp.neosubhamoy.com/macos_installer.sh \| bash` |
+| Linux x86_64 / ARM64 | Curl-Bash Installer | `curl -sSL https://neodlp.neosubhamoy.com/linux_installer.sh \| bash` |
+| Arch Linux x86_64 / ARM64 | AUR | `yay -S neodlp` |
+
+### 🧪 Package Testing Status
+
+Though NeoDLP is supported on most platforms but not all packages are tested on all platforms, to save some time (and brain cells) and ship the software as fast as possible! Current test coverage is given below. So, untested packages may have issues, test it yourself and always feel free to report any issue on github.
+
+| Platform | Status | Platform | Status |
+| :---- | :---- | :---- | :---- |
+| Windows 10 (x64) | ✅ Tested | Windows 10 (ARM64) | ⚠️ Untested |
+| Windows 11 (x64) | ✅ Tested | Windows 11 (ARM64) | ✅ Tested |
+| MacOS 14 (x64) | ✅ Tested | MacOS 14 (ARM64) | ⚠️ Untested |
+| MacOS 15 (x64) | ⚠️ Untested | MacOS 15 (ARM64) | ✅ Tested |
+| MacOS 26 (x64) | ⚠️ Untested | MacOS 26 (ARM64) | ✅ Tested |
+| Ubuntu 24.04 LTS (x64) | ✅ Tested | Ubuntu 24.04 LTS (ARM64) | ⚠️ Untested |
+| Fedora 42 (x64) | ✅ Tested | Fedora 42 (ARM64) | ⚠️ Untested |
+| Arch Linux (x64) | ✅ Tested | Arch Linux (ARM64) | ✅ Tested |
+| openSUSE 16 (x64) | ⚠️ Untested | openSUSE 16 (ARM64) | ⚠️ Untested |
+| RHEL 10 (x64) | ⚠️ Untested | RHEL 10 (ARM64) | ⚠️ Untested |
 
 ### 💝 Support the Development
 
