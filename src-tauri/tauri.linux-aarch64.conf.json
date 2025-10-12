@@ -25,7 +25,7 @@
     },
     "bundle": {
         "active": true,
-        "targets": ["deb", "rpm", "appimage"],
+        "targets": ["deb", "rpm"],
         "createUpdaterArtifacts": true,
         "licenseFile": "../LICENSE",
         "icon": [
@@ -61,12 +61,6 @@
                     "/usr/lib/mozilla/native-messaging-hosts/com.neosubhamoy.neodlp.json": "./resources/msghost-manifest/linux/firefox.json",
                     "/usr/bin/neodlp-msghost": "./target/aarch64-unknown-linux-gnu/release/neodlp-msghost",
                     "/etc/xdg/autostart/neodlp-autostart.desktop": "./resources/autostart/linux/autostart.desktop"
-                }
-            },
-            "appimage": {
-                "files": {
-                    "/usr/bin/ffmpeg": "./binaries/ffmpeg-aarch64-unknown-linux-gnu",
-                    "/usr/bin/ffprobe": "./binaries/ffprobe-aarch64-unknown-linux-gnu"
                 }
             }
         }
