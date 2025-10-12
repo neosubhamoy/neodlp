@@ -56,7 +56,7 @@ After installing the extension you can do the following directly from the browse
 
 - **Windows:** [Microsoft Visual C++ Redistributable 2015+](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) `winget install Microsoft.VCRedist.2015+.x64` (Will be auto-installed if you install NeoDLP via winget)
 - **MacOS:** XCode Command Line Tools `xcode-select --install` (Mostly, comes pre-installed on modern macos, still if you encounter any issue then try installing it manually)
-- **Linux:** Most linux packages comes with pre-defined system dependencies which will be auto installed by your package manager (if you prefer to install manually [follow this](https://v2.tauri.app/start/prerequisites/#linux))
+- **Linux:** Most linux packages comes with pre-defined system dependencies which will be auto installed by your package manager (if you are on `fedora` make sure to [enable rpmfusion free+nonfree repos](https://docs.fedoraproject.org/en-US/quick-docs/rpmfusion-setup/#_enabling_the_rpm_fusion_repositories_using_command_line_utilities) before installing the rpm package. also, if you prefer to install dependencies manually [follow this](https://v2.tauri.app/start/prerequisites/#linux))
 
 ### ⬇️ Download and Installation
 
