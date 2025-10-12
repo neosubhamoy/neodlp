@@ -99,6 +99,7 @@ export default function App({ children }: { children: React.ReactNode }) {
   const appWindow = getCurrentWebviewWindow()
   const navigate = useNavigate();
   const LOG = useLogger();
+  const currentPlatform = platform();
   const { updateYtDlp } = useYtDlpUpdater();
   const { registerToMac } = useMacOsRegisterer();
   const { checkForAppUpdate } = useAppUpdater();
@@ -298,6 +299,10 @@ export default function App({ children }: { children: React.ReactNode }) {
       '--retries',
       MAX_RETRIES.toString(),
     ];
+
+    if (currentPlatform === 'macos') {
+      args.push('--ffmpeg-location', '/Applications/NeoDLP.app/Contents/MacOS');
+    }
 
     if (selectedSubtitles) {
       args.push('--embed-subs', '--sub-lang', selectedSubtitles);
@@ -1054,7 +1059,6 @@ export default function App({ children }: { children: React.ReactNode }) {
       appVersion: appVersion,
       registeredVersion: macOsRegisteredVersion
     });
-    const currentPlatform = platform();
     if (currentPlatform === 'macos' && (!macOsRegisteredVersion || macOsRegisteredVersion !== appVersion)) {
       console.log("Running MacOS auto registration...");
       LOG.info('NEODLP', 'Running macOS registration');
