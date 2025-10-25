@@ -23,17 +23,17 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**OS Info (required):**
+**OS info (required):**
  - OS: [e.g. Windows 11]
  - OS Architecture: [e.g. x64]
  - OS Version: [e.g. 25H2 26200.6899]
 
-**App Info (required):**
+**App info (required):**
  - NeoDLP Version: [e.g. 0.3.1]
  - YT-DLP Version: [e.g. 2025.10.18.232824]
- - Installation Mode: [e.g. msi, exe, winget]
+ - NeoDLP Installation Mode: [e.g. msi, exe, winget]
 
-**App Logs (required):**
+**App logs (required):**
 Paste the full app session logs here
 
 **Additional context**
