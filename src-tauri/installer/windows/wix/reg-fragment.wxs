@@ -4,10 +4,10 @@
     <DirectoryRef Id="TARGETDIR">
       <Component Id="NeoDlpRegEntriesFragment" Guid="*">
         <RegistryKey Root="HKLM" Key="Software\Google\Chrome\NativeMessagingHosts\com.neosubhamoy.neodlp" Action="createAndRemoveOnUninstall">
-          <RegistryValue Type="string" Value="[INSTALLDIR]neodlp-msghost.json" KeyPath="no" />
+          <RegistryValue Type="string" Value="[INSTALLDIR]chrome.json" KeyPath="no" />
         </RegistryKey>
         <RegistryKey Root="HKLM" Key="Software\Mozilla\NativeMessagingHosts\com.neosubhamoy.neodlp" Action="createAndRemoveOnUninstall">
-          <RegistryValue Type="string" Value="[INSTALLDIR]neodlp-msghost-moz.json" KeyPath="no" />
+          <RegistryValue Type="string" Value="[INSTALLDIR]firefox.json" KeyPath="no" />
         </RegistryKey>
         <RegistryKey Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Run">
           <RegistryValue Name="NeoDLP" Type="string" Value="&quot;[INSTALLDIR]neodlp.exe&quot; --hidden" KeyPath="no" />

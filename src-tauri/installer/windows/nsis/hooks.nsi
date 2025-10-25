@@ -1,8 +1,8 @@
 !macro NSIS_HOOK_POSTINSTALL
   ; Add Registry Keys for Chrome Native Messaging Host
-  WriteRegStr HKCU "Software\Google\Chrome\NativeMessagingHosts\com.neosubhamoy.neodlp" "" "$INSTDIR\neodlp-msghost.json"
+  WriteRegStr HKCU "Software\Google\Chrome\NativeMessagingHosts\com.neosubhamoy.neodlp" "" "$INSTDIR\chrome.json"
   ; Add Registry Keys for Firefox Native Messaging Host
-  WriteRegStr HKCU "Software\Mozilla\NativeMessagingHosts\com.neosubhamoy.neodlp" "" "$INSTDIR\neodlp-msghost-moz.json"
+  WriteRegStr HKCU "Software\Mozilla\NativeMessagingHosts\com.neosubhamoy.neodlp" "" "$INSTDIR\firefox.json"
   ; Add entry for automatic startup with Windows
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "${PRODUCTNAME}" "$\"$INSTDIR\neodlp.exe$\" --hidden"
 !macroend

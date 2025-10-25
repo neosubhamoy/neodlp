@@ -44,8 +44,8 @@
         ],
         "resources": {
             "target/release/neodlp-msghost.exe": "neodlp-msghost.exe",
-            "resources/msghost-manifest/windows/chrome.json": "neodlp-msghost.json",
-            "resources/msghost-manifest/windows/firefox.json": "neodlp-msghost-moz.json"
+            "resources/msghost-manifest/windows/chrome.json": "chrome.json",
+            "resources/msghost-manifest/windows/firefox.json": "firefox.json"
         },
         "windows": {
             "wix": {
