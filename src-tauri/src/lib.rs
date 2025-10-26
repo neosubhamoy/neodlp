@@ -452,6 +452,7 @@ async fn pause_ongoing_downloads(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub async fn run() {
+    let _ = fix_path_env::fix();
     let migrations = migrations::get_migrations();
     let config = load_config();
     let port = config.port;

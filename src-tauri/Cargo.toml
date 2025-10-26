@@ -29,6 +29,7 @@ sqlx = { version = "0.8", features = [ "sqlite", "runtime-tokio", "tls-native-tl
 base64 = "0.22"
 directories = "6.0"
 futures-util = "0.3"
+fix-path-env = { git = "https://github.com/tauri-apps/fix-path-env-rs" }
 tauri-plugin-opener = "2"
 tauri-plugin-shell = "2"
 tauri-plugin-fs = "2"
