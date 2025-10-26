@@ -180,6 +180,10 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         use_custom_commands: false,
         custom_commands: [],
         filename_template: '%(title)s_%(resolution|unknown)s',
+        debug_mode: false,
+        log_verbose: true,
+        log_warning: true,
+        log_progress: false,
         // extension settings
         websocket_port: 53511
     },
@@ -241,6 +245,10 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             use_custom_commands: false,
             custom_commands: [],
             filename_template: '%(title)s_%(resolution|unknown)s',
+            debug_mode: false,
+            log_verbose: true,
+            log_warning: true,
+            log_progress: false,
             // extension settings
             websocket_port: 53511
         },

@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { ArrowDownToLine, ArrowRight, BrushCleaning, Cookie, EthernetPort, ExternalLink, FileVideo, Folder, FolderOpen, Info, Loader2, LucideIcon, Monitor, Moon, Radio, RotateCcw, RotateCw, ShieldMinus, SquareTerminal, Sun, Terminal, Trash, TriangleAlert, WandSparkles, Wifi, Wrench } from "lucide-react";
+import { ArrowDownToLine, ArrowRight, BrushCleaning, Bug, Cookie, EthernetPort, ExternalLink, FileVideo, Folder, FolderOpen, Info, Loader2, LucideIcon, Monitor, Moon, Radio, RotateCcw, RotateCw, ShieldMinus, SquareTerminal, Sun, Terminal, Trash, TriangleAlert, WandSparkles, Wifi, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { useTheme } from "@/providers/themeProvider";
@@ -123,6 +123,10 @@ export default function SettingsPage() {
     const useCustomCommands = useSettingsPageStatesStore(state => state.settings.use_custom_commands);
     const customCommands = useSettingsPageStatesStore(state => state.settings.custom_commands);
     const filenameTemplate = useSettingsPageStatesStore(state => state.settings.filename_template);
+    const debugMode = useSettingsPageStatesStore(state => state.settings.debug_mode);
+    const logVerbose = useSettingsPageStatesStore(state => state.settings.log_verbose);
+    const logWarning = useSettingsPageStatesStore(state => state.settings.log_warning);
+    const logProgress = useSettingsPageStatesStore(state => state.settings.log_progress);
 
     const websocketPort = useSettingsPageStatesStore(state => state.settings.websocket_port);
     const isChangingWebSocketPort = useSettingsPageStatesStore(state => state.isChangingWebSocketPort);
@@ -525,9 +529,14 @@ export default function SettingsPage() {
                                 value="commands"
                                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
                             ><SquareTerminal className="size-4" /> Commands</TabsTrigger>
+                            <TabsTrigger
+                                key="debug"
+                                value="debug"
+                                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
+                            ><Bug className="size-4" /> Debug</TabsTrigger>
                         </TabsList>
                         <div className="min-h-full flex flex-col max-w-[55%] w-full border-l border-border pl-4">
-                            <TabsContent key="general" value="general" className="flex flex-col gap-4 min-h-[350px]">
+                            <TabsContent key="general" value="general" className="flex flex-col gap-4 min-h-[385px]">
                                 <div className="max-parallel-downloads">
                                     <h3 className="font-semibold">Max Parallel Downloads</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Set maximum number of allowed parallel downloads</p>
@@ -583,7 +592,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                             </TabsContent>
-                            <TabsContent key="appearance" value="appearance" className="flex flex-col gap-4 min-h-[350px]">
+                            <TabsContent key="appearance" value="appearance" className="flex flex-col gap-4 min-h-[385px]">
                                 <div className="app-theme">
                                     <h3 className="font-semibold">Theme</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Choose app interface theme</p>
@@ -606,7 +615,7 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="folders" value="folders" className="flex flex-col gap-4 min-h-[350px]">
+                            <TabsContent key="folders" value="folders" className="flex flex-col gap-4 min-h-[385px]">
                                 <div className="download-dir">
                                     <h3 className="font-semibold">Download Folder</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Set default download folder (directory)</p>
@@ -696,7 +705,7 @@ export default function SettingsPage() {
                                     </Form>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="formats" value="formats" className="flex flex-col gap-4 min-h-[350px]">
+                            <TabsContent key="formats" value="formats" className="flex flex-col gap-4 min-h-[385px]">
                                 <div className="video-format">
                                     <h3 className="font-semibold">Video Format</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Choose in which format the final video file will be saved</p>
@@ -764,7 +773,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                             </TabsContent>
-                            <TabsContent key="metadata" value="metadata" className="flex flex-col gap-4 min-h-[350px]">
+                            <TabsContent key="metadata" value="metadata" className="flex flex-col gap-4 min-h-[385px]">
                                 <div className="embed-video-metadata">
                                     <h3 className="font-semibold">Embed Metadata</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Wheather to embed metadata in video/audio files (info, chapters)</p>
@@ -798,7 +807,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                             </TabsContent>
-                            <TabsContent key="network" value="network" className="flex flex-col gap-4 min-h-[350px]">
+                            <TabsContent key="network" value="network" className="flex flex-col gap-4 min-h-[385px]">
                                 <div className="proxy">
                                     <h3 className="font-semibold">Proxy</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Use proxy for downloads, Unblocks blocked sites in your region (download speed may affect, some sites may not work)</p>
@@ -893,7 +902,7 @@ export default function SettingsPage() {
                                         onCheckedChange={(checked) => saveSettingsKey('use_force_internet_protocol', checked)}
                                         disabled={useCustomCommands}
                                         />
-                                        <Label htmlFor="use-force-internet-protocol">Force</Label>
+                                        <Label htmlFor="use-force-internet-protocol">Force IPV</Label>
                                     </div>
                                     <RadioGroup
                                     orientation="horizontal"
@@ -914,7 +923,7 @@ export default function SettingsPage() {
                                     <Label className="text-xs text-muted-foreground">(Forced: {forceInternetProtocol === "ipv4" ? 'IPv4' : 'IPv6'}, Status: {useForceInternetProtocol && !useCustomCommands ? 'Enabled' : 'Disabled'})</Label>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="cookies" value="cookies" className="flex flex-col gap-4 min-h-[350px]">
+                            <TabsContent key="cookies" value="cookies" className="flex flex-col gap-4 min-h-[385px]">
                                 <div className="cookies">
                                     <h3 className="font-semibold">Cookies</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Use cookies to access exclusive/private (login-protected) contents from sites (use wisely, over-use can even block/ban your account)</p>
@@ -1003,7 +1012,7 @@ export default function SettingsPage() {
                                     <Label className="text-xs text-muted-foreground">(Configured: {importCookiesFrom === "browser" ? 'Yes' : cookiesFile ? 'Yes' : 'No'}, From: {importCookiesFrom === "browser" ? 'Browser' : 'Text'}, Status: {useCookies && !useCustomCommands ? 'Enabled' : 'Disabled'})</Label>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="sponsorblock" value="sponsorblock" className="flex flex-col gap-4 min-h-[350px]">
+                            <TabsContent key="sponsorblock" value="sponsorblock" className="flex flex-col gap-4 min-h-[385px]">
                                 <div className="sponsorblock">
                                     <h3 className="font-semibold">Sponsor Block</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Use sponsorblock to remove/mark unwanted segments in videos (sponsorships, intros, outros, etc.)</p>
@@ -1127,7 +1136,7 @@ export default function SettingsPage() {
                                     <Label className="text-xs text-muted-foreground">(Configured: {sponsorblockMode === "remove" && sponsorblockRemove === "custom" && sponsorblockRemoveCategories.length <= 0 ? 'No' : sponsorblockMode === "mark" && sponsorblockMark === "custom" && sponsorblockMarkCategories.length <= 0 ? 'No' : 'Yes'}, Mode: {sponsorblockMode === "remove" ? 'Remove' : 'Mark'}, Status: {useSponsorblock && !useCustomCommands ? 'Enabled' : 'Disabled'})</Label>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="commands" value="commands" className="flex flex-col gap-4 min-h-[350px]">
+                            <TabsContent key="commands" value="commands" className="flex flex-col gap-4 min-h-[385px]">
                                 <div className="custom-commands">
                                     <h3 className="font-semibold">Custom Commands</h3>
                                     <p className="text-xs text-muted-foreground mb-3"> Run custom yt-dlp commands for your downloads</p>
@@ -1226,6 +1235,50 @@ export default function SettingsPage() {
                                                 ))}
                                             </div>
                                         )}
+                                    </div>
+                                </div>
+                            </TabsContent>
+                            <TabsContent key="debug" value="debug" className="flex flex-col gap-4 min-h-[385px]">
+                                <div className="debug-mode">
+                                    <h3 className="font-semibold">Debug Mode</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Enable debug mode for troubleshooting issues (get debug logs, download ids, and more)</p>
+                                    <div className="flex items-center space-x-2 mb-4">
+                                        <Switch
+                                        id="debug-mode"
+                                        checked={debugMode}
+                                        onCheckedChange={(checked) => saveSettingsKey('debug_mode', checked)}
+                                        />
+                                        <Label htmlFor="debug-mode">Enable Debug Mode</Label>
+                                    </div>
+                                    <div className="flex flex-col gap-2 mt-5">
+                                        <Label className="text-xs mb-1">Logging Options</Label>
+                                        <div className="flex items-center space-x-2 mb-1">
+                                            <Switch
+                                            id="log-verbose"
+                                            checked={logVerbose}
+                                            onCheckedChange={(checked) => saveSettingsKey('log_verbose', checked)}
+                                            disabled={!debugMode}
+                                            />
+                                            <Label htmlFor="log-verbose">Verbose Logging</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2 mb-1">
+                                            <Switch
+                                            id="log-warning"
+                                            checked={logWarning}
+                                            onCheckedChange={(checked) => saveSettingsKey('log_warning', checked)}
+                                            disabled={!debugMode}
+                                            />
+                                            <Label htmlFor="log-warning">Log Warnings</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2 mb-1">
+                                            <Switch
+                                            id="log-progress"
+                                            checked={logProgress}
+                                            onCheckedChange={(checked) => saveSettingsKey('log_progress', checked)}
+                                            disabled={!debugMode}
+                                            />
+                                            <Label htmlFor="log-progress">Log Progress</Label>
+                                        </div>
                                     </div>
                                 </div>
                             </TabsContent>

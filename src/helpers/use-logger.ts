@@ -18,6 +18,9 @@ export function useLogger() {
         debug: (context: string, message: string) => {
             addLog({ timestamp: Date.now(), level: 'debug', context, message });
         },
+        progress: (context: string, message: string) => {
+            addLog({ timestamp: Date.now(), level: 'progress', context, message });
+        },
         getLogs: () => logs,
         clearLogs,
     };

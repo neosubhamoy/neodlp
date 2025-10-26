@@ -44,6 +44,10 @@ export interface Settings {
     use_custom_commands: boolean;
     custom_commands: CustomCommand[];
     filename_template: string;
+    debug_mode: boolean;
+    log_verbose: boolean;
+    log_warning: boolean;
+    log_progress: boolean;
     // extension settings
     websocket_port: number;
 }

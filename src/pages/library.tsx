@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { useAppContext } from "@/providers/appContextProvider";
-import { useCurrentVideoMetadataStore, useDownloadActionStatesStore, useDownloadStatesStore, useLibraryPageStatesStore } from "@/services/store";
+import { useCurrentVideoMetadataStore, useDownloadActionStatesStore, useDownloadStatesStore, useLibraryPageStatesStore, useSettingsPageStatesStore } from "@/services/store";
 import { formatBitrate, formatCodec, formatDurationString, formatFileSize, formatSecToTimeString, formatSpeed } from "@/utils";
 import { AudioLines, Clock, File, FileAudio2, FileQuestion, FileVideo2, FolderInput, ListVideo, Loader2, Music, Pause, Play, Search, Square, Trash2, Video, X } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
@@ -33,6 +33,8 @@ export default function LibraryPage() {
     const setIsPausingDownload = useDownloadActionStatesStore(state => state.setIsPausingDownload);
     const setIsCancelingDownload = useDownloadActionStatesStore(state => state.setIsCancelingDownload);
     const setIsDeleteFileChecked = useDownloadActionStatesStore(state => state.setIsDeleteFileChecked);
+
+    const debugMode = useSettingsPageStatesStore(state => state.settings.debug_mode);
 
     const { pauseDownload, resumeDownload, cancelDownload } = useAppContext()
 
@@ -379,7 +381,7 @@ export default function LibraryPage() {
                                                     </div>
                                                 )}
                                                 <div className="text-xs text-muted-foreground">{ state.download_status && (
-                                                    `${state.download_status === 'downloading' && state.status === 'finished' ? 'Processing' : state.download_status.charAt(0).toUpperCase() + state.download_status.slice(1)} ${state.download_id ? `• ID: ${state.download_id.toUpperCase()}` : ""} ${state.download_status === 'downloading' && state.status !== 'finished' && state.speed ? `• Speed: ${formatSpeed(state.speed)}` : ""} ${state.download_status === 'downloading' && state.eta ? `• ETA: ${formatSecToTimeString(state.eta)}` : ""}`
+                                                    `${state.download_status === 'downloading' && state.status === 'finished' ? 'Processing' : state.download_status.charAt(0).toUpperCase() + state.download_status.slice(1)} ${debugMode && state.download_id ? `• ID: ${state.download_id.toUpperCase()}` : ""} ${state.download_status === 'downloading' && state.status !== 'finished' && state.speed ? `• Speed: ${formatSpeed(state.speed)}` : ""} ${state.download_status === 'downloading' && state.eta ? `• ETA: ${formatSecToTimeString(state.eta)}` : ""}`
                                                 )}</div>
                                             </div>
                                             <div className="w-full flex items-center gap-2 mt-2">

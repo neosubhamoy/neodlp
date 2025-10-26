@@ -88,6 +88,10 @@ export default function App({ children }: { children: React.ReactNode }) {
   const USE_CUSTOM_COMMANDS = useSettingsPageStatesStore(state => state.settings.use_custom_commands);
   const CUSTOM_COMMANDS = useSettingsPageStatesStore(state => state.settings.custom_commands);
   const FILENAME_TEMPLATE = useSettingsPageStatesStore(state => state.settings.filename_template);
+  const DEBUG_MODE = useSettingsPageStatesStore(state => state.settings.debug_mode);
+  const LOG_VERBOSE = useSettingsPageStatesStore(state => state.settings.log_verbose);
+  const LOG_WARNING = useSettingsPageStatesStore(state => state.settings.log_warning);
+  const LOG_PROGRESS = useSettingsPageStatesStore(state => state.settings.log_progress);
 
   const isErrored = useDownloaderPageStatesStore((state) => state.isErrored);
   const isErrorExpected = useDownloaderPageStatesStore((state) => state.isErrorExpected);
@@ -295,13 +299,20 @@ export default function App({ children }: { children: React.ReactNode }) {
       '--format',
       selectedFormat,
       '--no-mtime',
-      '--no-warnings',
       '--retries',
       MAX_RETRIES.toString(),
     ];
 
     if (currentPlatform === 'macos') {
       args.push('--ffmpeg-location', '/Applications/NeoDLP.app/Contents/MacOS');
+    }
+
+    if (!DEBUG_MODE || (DEBUG_MODE && !LOG_WARNING)) {
+      args.push('--no-warnings');
+    }
+
+    if (DEBUG_MODE && LOG_VERBOSE) {
+      args.push('--verbose');
     }
 
     if (selectedSubtitles) {
@@ -462,7 +473,7 @@ export default function App({ children }: { children: React.ReactNode }) {
     command.stdout.on('data', line => {
       if (line.startsWith('status:') || line.startsWith('[#')) {
         console.log(line);
-        LOG.info(`YT-DLP Download ${downloadId}`, line);
+        if (DEBUG_MODE && LOG_PROGRESS) LOG.progress(`YT-DLP Download ${downloadId}`, line);
         const currentProgress = parseProgressLine(line);
         const state: DownloadState = {
           download_id: downloadId,
@@ -653,6 +664,7 @@ export default function App({ children }: { children: React.ReactNode }) {
 
       if (!ongoingDownloads || ongoingDownloads && ongoingDownloads?.length < MAX_PARALLEL_DOWNLOADS) {
         LOG.info('NEODLP', `Starting yt-dlp download with args: ${args.join(' ')}`);
+        if(!DEBUG_MODE || (DEBUG_MODE && !LOG_PROGRESS)) LOG.warning('NEODLP', `Progress logs are hidden. Enable 'Debug Mode > Log Progress' in Settings to unhide.`);
         const child = await command.spawn();
         processPid = child.pid;
         return Promise.resolve();

@@ -41,7 +41,7 @@ export default function Navbar() {
                                 <p className="text-sm text-muted-foreground">NO LOGS TO SHOW!</p>
                             ) : (
                                 logs.slice().reverse().map((log, index) => (
-                                    <div key={index} className={`flex flex-col ${log.level === 'error' ? 'text-red-500' : log.level === 'warning' ? 'text-amber-500' : log.level === 'debug' ? 'text-sky-500' : 'text-foreground'}`}>
+                                    <div key={index} className={`flex flex-col ${log.level === 'error' ? 'text-red-500' : log.level === 'warning' ? 'text-amber-500' : log.level === 'debug' ? 'text-sky-500' : log.level === 'progress' ? 'text-emerald-500' : 'text-foreground'}`}>
                                         <p className="text-xs"><strong>{new Date(log.timestamp).toLocaleTimeString()}</strong> [{log.level.toUpperCase()}] <em>{log.context}</em> :</p>
                                         <p className="text-xs font-mono break-all">{log.message}</p>
                                     </div>
