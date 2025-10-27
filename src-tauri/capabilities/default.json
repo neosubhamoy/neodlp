@@ -22,6 +22,8 @@
     "fs:allow-app-write-recursive",
     "updater:default",
     "process:default",
+    "clipboard-manager:allow-read-text",
+    "clipboard-manager:allow-write-text",
     {
       "identifier": "opener:allow-open-path",
       "allow": [

@@ -12,7 +12,7 @@ export default function Navbar() {
     const logs = useLogger().getLogs();
 
     return (
-        <nav className="flex justify-between items-center py-3 px-4 sticky top-0 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-50">
+        <nav className="flex justify-between items-center py-3 px-4 sticky top-0 backdrop-blur supports-backdrop-filter:bg-background/60 border-b z-50">
             <div className="flex justify-center">
                 <SidebarTrigger />
                 <h1 className="text-lg text-primary font-semibold ml-4">{getRouteName(location.pathname)}</h1>

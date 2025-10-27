@@ -472,7 +472,7 @@ export default function App({ children }: { children: React.ReactNode }) {
 
     command.stdout.on('data', line => {
       if (line.startsWith('status:') || line.startsWith('[#')) {
-        console.log(line);
+        // console.log(line);
         if (DEBUG_MODE && LOG_PROGRESS) LOG.progress(`YT-DLP Download ${downloadId}`, line);
         const currentProgress = parseProgressLine(line);
         const state: DownloadState = {
@@ -533,7 +533,7 @@ export default function App({ children }: { children: React.ReactNode }) {
           }
         })
       } else {
-        console.log(line);
+        // console.log(line);
         if (line.trim() !== '') LOG.info(`YT-DLP Download ${downloadId}`, line);
 
         if (line.startsWith('Finalpath: ')) {

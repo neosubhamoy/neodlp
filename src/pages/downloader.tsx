@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { useAppContext } from "@/providers/appContextProvider";
 import { useCurrentVideoMetadataStore, useDownloaderPageStatesStore, useSettingsPageStatesStore } from "@/services/store";
 import { determineFileType, fileFormatFilter, formatBitrate, formatDurationString, formatFileSize, formatReleaseDate, formatYtStyleCount, isObjEmpty, sortByBitrate } from "@/utils";
-import { Calendar, Clock, DownloadCloud, Eye, Info, Loader2, Music, ThumbsUp, Video, File, ListVideo, PackageSearch, AlertCircleIcon, X, Settings2 } from "lucide-react";
+import { Calendar, Clock, DownloadCloud, Eye, Info, Loader2, Music, ThumbsUp, Video, File, ListVideo, PackageSearch, AlertCircleIcon, X, Settings2, Clipboard } from "lucide-react";
 import { FormatSelectionGroup, FormatSelectionGroupItem } from "@/components/custom/formatSelectionGroup";
 import { useEffect, useRef } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/custom/legacyToggleGroup";
@@ -29,6 +29,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { readText } from '@tauri-apps/plugin-clipboard-manager';
 
 const searchFormSchema = z.object({
     url: z.url({
@@ -387,6 +388,36 @@ export default function DownloaderPage() {
                                 size="icon"
                                 disabled={!isMetadataLoading}
                                 onClick={() => cancelSearch(searchPid)}
+                                >
+                                    <X className="size-4" />
+                                </Button>
+                            )}
+                            {!isMetadataLoading && !videoUrl && (
+                                <Button
+                                type="button"
+                                size="icon"
+                                disabled={isMetadataLoading}
+                                onClick={async () => {
+                                    const text = await readText();
+                                    if (text) {
+                                        searchForm.setValue("url", text);
+                                        setVideoUrl(text);
+                                    }
+                                }}
+                                >
+                                    <Clipboard className="size-4" />
+                                </Button>
+                            )}
+                            {!isMetadataLoading && videoUrl && (
+                                <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                disabled={isMetadataLoading}
+                                onClick={() => {
+                                    searchForm.setValue("url", '');
+                                    setVideoUrl('');
+                                }}
                                 >
                                     <X className="size-4" />
                                 </Button>
@@ -945,7 +976,7 @@ export default function DownloaderPage() {
                             )}
                         </div>
                         <div className="flex flex-col gap-1">
-                            <span className="text-sm text-nowrap max-w-[30rem] xl:max-w-[50rem] overflow-hidden text-ellipsis">{videoMetadata._type === 'video' ? videoMetadata.title : videoMetadata._type === 'playlist' ? videoMetadata.entries[Number(selectedPlaylistVideoIndex) - 1].title : 'Unknown' }</span>
+                            <span className="text-sm text-nowrap max-w-120 xl:max-w-200 overflow-hidden text-ellipsis">{videoMetadata._type === 'video' ? videoMetadata.title : videoMetadata._type === 'playlist' ? videoMetadata.entries[Number(selectedPlaylistVideoIndex) - 1].title : 'Unknown' }</span>
                             <span className="text-xs text-muted-foreground">{selectedFormatFinalMsg}</span>
                         </div>
                     </div>
