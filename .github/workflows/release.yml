@@ -24,6 +24,12 @@ jobs:
             args: ''
     runs-on: ${{ matrix.platform }}
     steps:
+      - name: 🔐 Configure Git LFS
+        shell: bash
+        run: |
+            echo "machine lfs.neosubhamoy.com login ${{ secrets.LFS_USERNAME }} password ${{ secrets.LFS_PASSWORD }}" > ~/.netrc
+            chmod 600 ~/.netrc || true
+
       - name: 🚚 Checkout repository
         uses: actions/checkout@v4
         with:
