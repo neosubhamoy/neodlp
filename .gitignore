@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 .github/workflows/.secrets
+/target/
 
 # Editor directories and files
 .vscode/*

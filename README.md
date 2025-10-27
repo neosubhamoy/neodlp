@@ -93,7 +93,7 @@ Though NeoDLP is supported on most platforms but not all packages are tested on 
 | :---- | :---- | :---- | :---- |
 | Windows 10 (x64) | ✅ Tested | Windows 10 (ARM64) | ⚠️ Untested |
 | Windows 11 (x64) | ✅ Tested | Windows 11 (ARM64) | ✅ Tested |
-| MacOS 14 (x64) | ✅ Tested | MacOS 14 (ARM64) | ⚠️ Untested |
+| MacOS 14 (x64) | ✅ Tested | MacOS 14 (ARM64) | ✅ Tested |
 | MacOS 15 (x64) | ⚠️ Untested | MacOS 15 (ARM64) | ✅ Tested |
 | MacOS 26 (x64) | ⚠️ Untested | MacOS 26 (ARM64) | ✅ Tested |
 | Ubuntu 24.04 LTS (x64) | ✅ Tested | Ubuntu 24.04 LTS (ARM64) | ⚠️ Untested |
@@ -153,7 +153,7 @@ Want to be part of this? Feel free to contribute...!! Pull Requests are always w
 npm run tauri dev        # for development
 npm run tauri build      # for production build
 
-# for linux users
+# for linux users (based on cpu architecture)
 npm run tauri dev -- --config "./src-tauri/tauri.linux-aarch64.conf.json"       # for ARM64 devices, development
 npm run tauri build -- --config "./src-tauri/tauri.linux-aarch64.conf.json"     # for ARM64 devices, production build
 

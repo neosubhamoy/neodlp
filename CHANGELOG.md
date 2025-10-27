@@ -1,15 +1,18 @@
 ### ✨ Changelog
 
-- Fixed audio video not merging on macOS
-- Removed bundling ffmpeg and ffprobe with linux (deb, rpm) builds as it conflicts (comes pre-installed) on lots of distros (ffmpeg is a dependency now which will be auto installed by your package manager)
-- Added experimental linux appimage builds (appimage builds does not support neodlp browser integration features due to their sandboxed nature)
+- Added Debug Mode (with log customization)
+- Added quick paste and clear buttons on downloader
+- Fixed browser integration not working on Windows MSI install
+- Fixed the occasional freezing issue on macOS while downloading large files
 - Other minor fixes and improvements
 
 ### 📝 Notes
 
-> **🔴 DANGER:** This is a breaking update if you are coming from older version than `v0.3.0`. Users are adviced to complete/cancel all paused downloads before updating to this version, otherwise paused downloads may not resume properly or re-start from the begining.
+> [!CAUTION]
+> This is a breaking update if you are coming from older version than `v0.3.0`. Users are adviced to complete/cancel all paused downloads before updating to this version, otherwise paused downloads may not resume properly or re-start from the begining.
 
-> **⚠️ WARNING:** Linux users make sure `yt-dlp` and `deno` is not installed in your distro (otherwise you will get package installation conflict). Don't worry, You can still use yt-dlp cli as before (the only difference is that now it will be installed and auto-updated by neo-dlp, which You can also disable from neo-dlp Settings if you don't want to auto-update yt-dlp)
+> [!WARNING]
+> Linux users make sure `yt-dlp` and `deno` is not installed in your distro (otherwise you will get package installation conflict). Don't worry, You can still use yt-dlp cli as before (the only difference is that now it will be installed and auto-updated by neo-dlp, which You can also disable from neo-dlp Settings if you don't want to auto-update yt-dlp)
 
 > This is an Un-Signed Build (Windows doesn't trust this Certificate so, it may flag this as malicious software, in that case, disable Windows SmartScreen and Defender, install it, and then re-enable them)
 
@@ -19,7 +22,7 @@
 
 | yt-dlp (updateable) | ffmpeg | ffprobe | aria2c | deno |
 | :---- | :---- | :---- | :---- | :---- |
-| v2025.10.11.232807 (nightly) | v7.1.1 | v7.1.1 | v1.37.0 | v2.5.4 |
+| v2025.10.25.232842 (nightly) | v7.1.1 | v7.1.1 | v1.37.0 | v2.5.4 |
 
 > ‼️ Linux builds (deb, rpm) does not ships with `ffmpeg` and `ffprobe` (though it will be auto installed as a dependency by your package manager, if you are on fedora make sure to [enable rpmfusion free+nonfree repos](https://docs.fedoraproject.org/en-US/quick-docs/rpmfusion-setup/#_enabling_the_rpm_fusion_repositories_using_command_line_utilities) before installing the rpm package)
 
