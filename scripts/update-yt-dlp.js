@@ -5,8 +5,9 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const projectRoot = path.resolve(__dirname, '..');
 
-console.log(`RUNNING: 🛠️ Build Script updateYtDlpBinary.js`);
+console.log(`RUNNING: 🛠️ Build Script --> update-yt-dlp.js`);
 
 // Get the platform triple from command line arguments
 const platformTriple = process.argv[2];
@@ -17,7 +18,7 @@ if (!platformTriple) {
 }
 
 // Define the binaries directory
-const binariesDir = path.join(__dirname, 'src-tauri', 'binaries');
+const binariesDir = path.join(projectRoot, 'src-tauri', 'binaries');
 
 // Construct the binary filename based on platform triple
 let binaryName = `yt-dlp-${platformTriple}`;
@@ -50,7 +51,7 @@ execFile(binaryPath, ['--update-to', 'nightly'], (error, stdout, stderr) => {
     if (stderr) console.error(stderr);
     process.exit(1);
   }
-  
+
   console.log(`Update successful for ${platformTriple}:`);
   console.log(stdout);
 });

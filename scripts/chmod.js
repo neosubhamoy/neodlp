@@ -5,10 +5,11 @@ import { execSync } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const projectRoot = path.resolve(__dirname, '..');
 
 // Define array of binary source directories
 const binSrcDirs = [
-    path.join(__dirname, 'src-tauri', 'binaries'),
+    path.join(projectRoot, 'src-tauri', 'binaries'),
 ];
 
 function makeFilesExecutable() {
@@ -34,7 +35,7 @@ function makeFilesExecutable() {
                     count++;
                 }
             }
-            
+
             console.log(`Successfully made ${count} files executable in ${binSrc}`);
             totalCount += count;
             successDirs++;
@@ -46,5 +47,5 @@ function makeFilesExecutable() {
     console.log(`\nSummary: Made ${totalCount} files executable across ${successDirs} directories`);
 }
 
-console.log(`RUNNING: 🛠️ Build Script makeFilesExecutable.js`);
+console.log(`RUNNING: 🛠️ Build Script --> chmod.js`);
 makeFilesExecutable();
