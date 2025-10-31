@@ -27,18 +27,6 @@ jobs:
       - name: 🚚 Checkout repository
         uses: actions/checkout@v5
 
-      - name: 🔐 Configure Git LFS
-        shell: bash
-        run: |
-            git config --global credential.helper store
-            echo "https://${{ secrets.LFS_USERNAME }}:${{ secrets.LFS_PASSWORD }}@lfs.neosubhamoy.com" > ~/.git-credentials
-
-      - name: 📥 Pull LFS objects
-        shell: bash
-        run: |
-            git lfs install
-            git lfs pull
-
       - name: 🛠️ Install dependencies
         if: matrix.platform == 'ubuntu-22.04' || matrix.platform == 'ubuntu-22.04-arm'
         run: |
@@ -63,6 +51,9 @@ jobs:
 
       - name: 🛠️ Install frontend dependencies
         run: npm install
+
+      - name: 📥 Download binaries
+        run: npm run download
 
       - name: 📄 Read and Process CHANGELOG (Unix)
         if: matrix.platform != 'windows-latest'

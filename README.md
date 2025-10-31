@@ -139,13 +139,14 @@ NeoDLP is and will be always FREE to Use and Open-Sourced for Everyone. On the o
 
 Want to be part of this? Feel free to contribute...!! Pull Requests are always welcome...!! (^_^) Follow these simple steps to start building:
 
-* Make sure to install [Rust](https://www.rust-lang.org/tools/install), [Node.js](https://nodejs.org/en), [Git](https://git-scm.com/downloads) and [Git-LFS](https://git-lfs.com/) before proceeding.
+* Make sure to install [Rust](https://www.rust-lang.org/tools/install), [Node.js](https://nodejs.org/en), and [Git](https://git-scm.com/downloads) before proceeding.
 * Install [Tauri Prerequisites](https://v2.tauri.app/start/prerequisites/) for your OS / platform
 1. Fork this repo in your github account.
-2. Git clone the forked repo in your local machine. (**NOTE:** I've recently switched from GitHub LFS Server to my own self-hosted LFS Server! Cause GitHub LFS Storage is too expencive for me and NeoDLP requires a lots of LFS bandwidth. So, If you currently clone the repo it will clone the codebase but not the LFS Objects, If you want to clone the LFS Objects unfortunately you have to ask me for auth credentials - which will be only provided to you in certain conditions)
+2. Git clone the forked repo in your local machine.
 3. Create a git branch (related to the feature you are working on) (Optional - Recommended)
 4. Install Node.js dependencies: `npm install`
-5. Run development / build process
+5. Download binaries (for current platform): `npm run download`
+6. Run development / build process
 > [!WARNING]
 > Make sure to run the `build` command once before running the `dev` command for the first time to avoid compile time errors
 ```code
@@ -176,7 +177,7 @@ Noticed any Bug? or Want to give me some suggetion? Always feel free to open a [
 ## 💫 Credits
 
 - NeoDLP's 'Format Selection' options are inspired from the [Seal](https://github.com/JunkFood02/Seal) app by [@JunkFood02](https://github.com/JunkFood02)
-- Aria2 Windows x86_64 and Linux x86_64 static binaries are built by [@asdo92](https://github.com/asdo92/aria2-static-builds)
+- Aria2 Linux x86_64 static binaries are built by [@asdo92](https://github.com/asdo92/aria2-static-builds)
 
 ## 📝 License
 

@@ -170,7 +170,7 @@ const binaries = {
         {
             name: 'ffprobe-universal-apple-darwin',
             platform: 'darwin',
-            url: `https://evermeet.cx/ffmpeg/getrelease/ffprobe/zip`,
+            url: `https://evermeet.cx/ffmpeg/get/ffprobe/zip`,
             src: path.join(downloadDir, 'ffprobe-universal-apple-darwin.zip'),
             dest: null,
             archive: {
@@ -356,6 +356,7 @@ const binaries = {
     ]
 }
 
+
 function downloadAndProcess(bin) {
     console.log(`=> Processing: ${bin.name}`);
     console.log(`Downloading: ${bin.url}`);
@@ -406,8 +407,6 @@ function downloadAndProcess(bin) {
             }
         }
     });
-
-    console.log(`\n`);
 }
 
 
@@ -424,7 +423,7 @@ if (targetBin && !binaries.hasOwnProperty(targetBin) && targetBin !== 'all') {
 const effectivePlatform = targetPlatform || platform;
 const effectiveBin = targetBin || 'all';
 
-console.log(`RUNNING: ⚙️ Binary Download (platform: ${effectivePlatform} | binary: ${effectiveBin})`);
+console.log(`RUNNING: 📦 Binary Downloader (platform: ${effectivePlatform} | binary: ${effectiveBin})`);
 
 Object.keys(binaries).forEach((binKey) => {
     if (effectiveBin !== 'all' && binKey !== effectiveBin) {

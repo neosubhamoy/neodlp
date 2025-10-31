@@ -1,8 +1,8 @@
 {
     "identifier": "com.neosubhamoy.neodlp",
     "build": {
-        "beforeDevCommand": "cargo build --target=aarch64-unknown-linux-gnu --manifest-path=./src-tauri/msghost/Cargo.toml && node scripts/chmod.js && npm run dev",
-        "beforeBuildCommand": "cargo build --release --target=aarch64-unknown-linux-gnu --manifest-path=./src-tauri/msghost/Cargo.toml && node scripts/chmod.js && npm run build",
+        "beforeDevCommand": "cargo build --target=aarch64-unknown-linux-gnu --manifest-path=./src-tauri/msghost/Cargo.toml && npm run dev",
+        "beforeBuildCommand": "cargo build --release --target=aarch64-unknown-linux-gnu --manifest-path=./src-tauri/msghost/Cargo.toml && npm run build",
         "devUrl": "http://localhost:1420",
         "frontendDist": "../dist"
     },
