@@ -1047,7 +1047,6 @@ export default function App({ children }: { children: React.ReactNode }) {
     const YTDLP_UPDATE_INTERVAL = 86400000   // 24H;
     if (YTDLP_AUTO_UPDATE && (ytDlpUpdateLastCheck === null || currentTimestamp - ytDlpUpdateLastCheck > YTDLP_UPDATE_INTERVAL)) {
       console.log("Running auto-update for yt-dlp...");
-      LOG.info('NEODLP', 'Updating yt-dlp to latest version (triggered because auto-update is enabled)');
       updateYtDlp();
     } else {
       console.log("Skipping yt-dlp auto-update, either disabled or recently updated.");

@@ -175,6 +175,16 @@ fn get_config_file_path() -> Result<String, String> {
 }
 
 #[tauri::command]
+fn get_current_app_path() -> Result<String, String> {
+    let exe_path = std::env::current_exe().map_err(|e| e.to_string())?;
+    Ok(exe_path
+        .parent()
+        .ok_or("Failed to get parent directory")?
+        .to_string_lossy()
+        .into_owned())
+}
+
+#[tauri::command]
 async fn update_config(
     new_config: Config,
     state: tauri::State<'_, Arc<Mutex<WebSocketState>>>,
@@ -588,6 +598,7 @@ pub async fn run() {
             reset_config,
             get_config_file_path,
             restart_websocket_server,
+            get_current_app_path,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

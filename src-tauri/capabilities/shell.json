@@ -49,6 +49,11 @@
           "name": "pkexec",
           "cmd": "pkexec",
           "args": true
+        },
+        {
+          "name": "powershell",
+          "cmd": "powershell",
+          "args": true
         }
       ]
     },
