@@ -1,10 +1,10 @@
 ### ✨ Changelog
 
-- Added Debug Mode (with log customization)
-- Added quick paste and clear buttons on downloader
-- Fixed browser integration not working on Windows MSI install
-- Fixed the occasional freezing issue on macOS while downloading large files
-- Now Linux (deb, rpm) packages supports in-built app-updater
+- Added desktop notification settings (download completion, app updates)
+- Added per-download sponsorblock config
+- Added thumbnail embeding option for video files
+- Fixed yt-dlp failing to update on Windows MSI install
+- Fixed yt-dlp not resolving deno on macOS
 - Other minor fixes and improvements
 
 ### 📝 Notes
@@ -23,7 +23,7 @@
 
 | yt-dlp (updateable) | ffmpeg | ffprobe | aria2c | deno |
 | :---- | :---- | :---- | :---- | :---- |
-| v2025.10.25.232842 (nightly) | v7.1.1 | v7.1.1 | v1.37.0 | v2.5.4 |
+| v2025.11.03.233024 (nightly) | v7.1.1 | v7.1.1 | v1.37.0 | v2.5.6 |
 
 > ‼️ Linux builds (deb, rpm) does not ships with `ffmpeg` and `ffprobe` (though it will be auto installed as a dependency by your package manager, if you are on fedora make sure to [enable rpmfusion free+nonfree repos](https://docs.fedoraproject.org/en-US/quick-docs/rpmfusion-setup/#_enabling_the_rpm_fusion_repositories_using_command_line_utilities) before installing the rpm package)
 
@@ -36,7 +36,7 @@
 | x86_64 | [Download](https://github.com/neosubhamoy/neodlp/releases/download/<release_tag>/NeoDLP_<version>_x64_en-US_windows.msi) | [Download](https://github.com/neosubhamoy/neodlp/releases/download/<release_tag>/NeoDLP_<version>_x64-setup_windows.exe) | [Download](https://github.com/neosubhamoy/neodlp/releases/download/<release_tag>/NeoDLP_<version>_amd64_linux.deb) | [Download](https://github.com/neosubhamoy/neodlp/releases/download/<release_tag>/NeoDLP-<version>-1.x86_64_linux.rpm) | 🚫 [Download](https://github.com/neosubhamoy/neodlp/releases/download/<release_tag>/NeoDLP_<version>_amd64_linux.AppImage) | [Download](https://github.com/neosubhamoy/neodlp/releases/download/<release_tag>/NeoDLP_<version>_x64_darwin.dmg) | [Download](https://github.com/neosubhamoy/neodlp/releases/download/<release_tag>/NeoDLP_darwin_x64.app.tar.gz) |
 | ARM64 | N/A | 🪟 [Download](https://github.com/neosubhamoy/neodlp/releases/download/<release_tag>/NeoDLP_<version>_x64-setup_windows.exe) | [Download](https://github.com/neosubhamoy/neodlp/releases/download/<release_tag>/NeoDLP_<version>_arm64_linux.deb) | [Download](https://github.com/neosubhamoy/neodlp/releases/download/<release_tag>/NeoDLP-<version>-1.aarch64_linux.rpm) | N/A | ⚠️ [Download](https://github.com/neosubhamoy/neodlp/releases/download/<release_tag>/NeoDLP_<version>_aarch64_darwin.dmg) | ⚠️ [Download](https://github.com/neosubhamoy/neodlp/releases/download/<release_tag>/NeoDLP_darwin_aarch64.app.tar.gz) |
 
-> ⬆️ Now, all packages supports in-built app-updater
+> ⬆️ All packages supports in-built app-updater
 
 > 🪟 Windows x86_64 binary also works on ARM64 (Windows on ARM) devices with emulation (Not planning to release native Windows ARM64 build anytime soon as, x86_64 one works fine on ARM64 without noticeable performance impact)
 
