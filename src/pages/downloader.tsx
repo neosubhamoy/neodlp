@@ -496,6 +496,7 @@ export default function DownloaderPage() {
                         setDownloadConfigurationKey('output_format', null);
                         setDownloadConfigurationKey('embed_metadata', null);
                         setDownloadConfigurationKey('embed_thumbnail', null);
+                        setDownloadConfigurationKey('sponsorblock', null);
                     }}
                     >
                         <div className="flex items-center justify-between">
@@ -545,6 +546,7 @@ export default function DownloaderPage() {
                                     setDownloadConfigurationKey('output_format', null);
                                     setDownloadConfigurationKey('embed_metadata', null);
                                     setDownloadConfigurationKey('embed_thumbnail', null);
+                                    setDownloadConfigurationKey('sponsorblock', null);
                                 }}
                                 >
                                     <p className="text-xs">Suggested</p>
@@ -648,6 +650,7 @@ export default function DownloaderPage() {
                                     setDownloadConfigurationKey('output_format', null);
                                     setDownloadConfigurationKey('embed_metadata', null);
                                     setDownloadConfigurationKey('embed_thumbnail', null);
+                                    setDownloadConfigurationKey('sponsorblock', null);
                                 }}
                                 >
                                     {videoOnlyFormats && videoOnlyFormats.length > 0 && audioOnlyFormats && audioOnlyFormats.length > 0 && (
@@ -672,6 +675,7 @@ export default function DownloaderPage() {
                                     setDownloadConfigurationKey('output_format', null);
                                     setDownloadConfigurationKey('embed_metadata', null);
                                     setDownloadConfigurationKey('embed_thumbnail', null);
+                                    setDownloadConfigurationKey('sponsorblock', null);
                                 }}
                                 >
                                     {audioOnlyFormats && audioOnlyFormats.length > 0 && videoOnlyFormats && videoOnlyFormats.length > 0 && (
@@ -1113,6 +1117,29 @@ export default function DownloaderPage() {
                                                         </div>
                                                     </RadioGroup>
                                                 )}
+                                            </div>
+                                            <div className="sponsorblock">
+                                                <Label className="text-xs my-3">Sponsorblock Mode</Label>
+                                                <RadioGroup
+                                                orientation="horizontal"
+                                                className="flex items-center gap-4 flex-wrap"
+                                                value={downloadConfiguration.sponsorblock ?? 'auto'}
+                                                onValueChange={(value) => setDownloadConfigurationKey('sponsorblock', value)}
+                                                disabled={useCustomCommands}
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <RadioGroupItem value="auto" id="sb-auto" />
+                                                        <Label htmlFor="sb-auto">Follow Settings</Label>
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <RadioGroupItem value="remove" id="sb-remove" />
+                                                        <Label htmlFor="sb-remove">Remove</Label>
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <RadioGroupItem value="mark" id="sb-mark" />
+                                                        <Label htmlFor="sb-mark">Mark</Label>
+                                                    </div>
+                                                </RadioGroup>
                                             </div>
                                             <div className="embeding-options">
                                                 <Label className="text-xs my-3">Embeding Options</Label>

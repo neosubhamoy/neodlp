@@ -1057,7 +1057,7 @@ export default function SettingsPage() {
                                         className="flex items-center gap-4"
                                         value={sponsorblockRemove}
                                         onValueChange={(value) => saveSettingsKey('sponsorblock_remove', value)}
-                                        disabled={!useSponsorblock || sponsorblockMode !== "remove" || useCustomCommands}
+                                        disabled={/*!useSponsorblock || sponsorblockMode !== "remove" ||*/ useCustomCommands}
                                         >
                                             <div className="flex items-center gap-3">
                                                 <RadioGroupItem value="default" id="sponsorblock-remove-default" />
@@ -1078,7 +1078,7 @@ export default function SettingsPage() {
                                         className="flex flex-col items-start gap-2 mt-1"
                                         value={sponsorblockRemove === "custom" ? sponsorblockRemoveCategories : sponsorblockRemove === "default" ? sponsorblockCategories.filter((cat) => cat.code !== 'poi_highlight' && cat.code !== 'filler').map((cat) => cat.code) : sponsorblockRemove === "all" ? sponsorblockCategories.filter((cat) => cat.code !== 'poi_highlight').map((cat) => cat.code) : []}
                                         onValueChange={(value) => saveSettingsKey('sponsorblock_remove_categories', value)}
-                                        disabled={!useSponsorblock || sponsorblockMode !== "remove" || sponsorblockRemove !== "custom" || useCustomCommands}
+                                        disabled={/*!useSponsorblock || sponsorblockMode !== "remove" ||*/ sponsorblockRemove !== "custom" || useCustomCommands}
                                         >
                                             <div className="flex gap-2 flex-wrap items-center">
                                                 {sponsorblockCategories.map((category) => (
@@ -1104,7 +1104,7 @@ export default function SettingsPage() {
                                         className="flex items-center gap-4"
                                         value={sponsorblockMark}
                                         onValueChange={(value) => saveSettingsKey('sponsorblock_mark', value)}
-                                        disabled={!useSponsorblock || sponsorblockMode !== "mark" || useCustomCommands}
+                                        disabled={/*!useSponsorblock || sponsorblockMode !== "mark" ||*/ useCustomCommands}
                                         >
                                             <div className="flex items-center gap-3">
                                                 <RadioGroupItem value="default" id="sponsorblock-mark-default" />
@@ -1125,7 +1125,7 @@ export default function SettingsPage() {
                                         className="flex flex-col items-start gap-2 mt-1 mb-2"
                                         value={sponsorblockMark === "custom" ? sponsorblockMarkCategories : sponsorblockMark === "default" ? sponsorblockCategories.map((cat) => cat.code) : sponsorblockMark === "all" ? sponsorblockCategories.map((cat) => cat.code) : []}
                                         onValueChange={(value) => saveSettingsKey('sponsorblock_mark_categories', value)}
-                                        disabled={!useSponsorblock || sponsorblockMode !== "mark" || sponsorblockMark !== "custom" || useCustomCommands}
+                                        disabled={/*!useSponsorblock || sponsorblockMode !== "mark" ||*/ sponsorblockMark !== "custom" || useCustomCommands}
                                         >
                                             <div className="flex gap-2 flex-wrap items-center">
                                                 {sponsorblockCategories.map((category) => (

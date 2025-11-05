@@ -59,5 +59,6 @@ export interface DownloadConfiguration {
     output_format: string | null;
     embed_metadata: boolean | null;
     embed_thumbnail: boolean | null;
+    sponsorblock: string | null;
     custom_command: string | null;
 }

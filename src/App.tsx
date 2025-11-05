@@ -420,13 +420,13 @@ export default function App({ children }: { children: React.ReactNode }) {
 
     let sponsorblockRemove = null;
     let sponsorblockMark = null;
-    if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && (USE_SPONSORBLOCK || (resumeState?.sponsorblock_remove || resumeState?.sponsorblock_mark))) {
-      if (SPONSORBLOCK_MODE === 'remove' || resumeState?.sponsorblock_remove) {
+    if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && ((downloadConfig.sponsorblock && downloadConfig.sponsorblock !== 'auto') || resumeState?.sponsorblock_remove || resumeState?.sponsorblock_mark || USE_SPONSORBLOCK)) {
+      if (downloadConfig?.sponsorblock === 'remove' || resumeState?.sponsorblock_remove || (SPONSORBLOCK_MODE === 'remove' && !downloadConfig.sponsorblock)) {
         sponsorblockRemove = resumeState?.sponsorblock_remove || (SPONSORBLOCK_REMOVE === 'custom' ? (
           SPONSORBLOCK_REMOVE_CATEGORIES.length > 0 ? SPONSORBLOCK_REMOVE_CATEGORIES.join(',') : 'default'
         ) : (SPONSORBLOCK_REMOVE));
         args.push('--sponsorblock-remove', sponsorblockRemove);
-      } else if (SPONSORBLOCK_MODE === 'mark' || resumeState?.sponsorblock_mark) {
+      } else if (downloadConfig?.sponsorblock === 'mark' || resumeState?.sponsorblock_mark || (SPONSORBLOCK_MODE === 'mark' && !downloadConfig.sponsorblock)) {
         sponsorblockMark = resumeState?.sponsorblock_mark || (SPONSORBLOCK_MARK === 'custom' ? (
           SPONSORBLOCK_MARK_CATEGORIES.length > 0 ? SPONSORBLOCK_MARK_CATEGORIES.join(',') : 'default'
         ) : (SPONSORBLOCK_MARK));
@@ -757,6 +757,7 @@ export default function App({ children }: { children: React.ReactNode }) {
           output_format: null,
           embed_metadata: null,
           embed_thumbnail: null,
+          sponsorblock: null,
           custom_command: null
         },
         downloadState.subtitle_id,
@@ -859,6 +860,7 @@ export default function App({ children }: { children: React.ReactNode }) {
           output_format: null,
           embed_metadata: null,
           embed_thumbnail: null,
+          sponsorblock: null,
           custom_command: null
         },
         downloadToStart.subtitle_id,
