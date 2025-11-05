@@ -80,6 +80,7 @@ export default function DownloaderPage() {
     const audioFormat = useSettingsPageStatesStore(state => state.settings.audio_format);
     const embedVideoMetadata = useSettingsPageStatesStore(state => state.settings.embed_video_metadata);
     const embedAudioMetadata = useSettingsPageStatesStore(state => state.settings.embed_audio_metadata);
+    const embedVideoThumbnail = useSettingsPageStatesStore(state => state.settings.embed_video_thumbnail);
     const embedAudioThumbnail = useSettingsPageStatesStore(state => state.settings.embed_audio_thumbnail);
     const useCustomCommands = useSettingsPageStatesStore(state => state.settings.use_custom_commands);
     const customCommands = useSettingsPageStatesStore(state => state.settings.custom_commands);
@@ -1155,7 +1156,7 @@ export default function DownloaderPage() {
                                                 <div className="flex items-center space-x-2 mt-3">
                                                     <Switch
                                                     id="embed-thumbnail"
-                                                    checked={downloadConfiguration.embed_thumbnail !== null ? downloadConfiguration.embed_thumbnail : (selectedFormatFileType && (selectedFormatFileType === 'video' || selectedFormatFileType === 'video+audio')) || activeDownloadModeTab === 'combine' ? false : selectedFormatFileType && selectedFormatFileType === 'audio' ? embedAudioThumbnail : false}
+                                                    checked={downloadConfiguration.embed_thumbnail !== null ? downloadConfiguration.embed_thumbnail : (selectedFormatFileType && (selectedFormatFileType === 'video' || selectedFormatFileType === 'video+audio')) || activeDownloadModeTab === 'combine' ? embedVideoThumbnail : selectedFormatFileType && selectedFormatFileType === 'audio' ? embedAudioThumbnail : false}
                                                     onCheckedChange={(checked) => setDownloadConfigurationKey('embed_thumbnail', checked)}
                                                     disabled={useCustomCommands}
                                                     />

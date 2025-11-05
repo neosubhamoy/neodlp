@@ -72,6 +72,7 @@ export default function App({ children }: { children: React.ReactNode }) {
   const ALWAYS_REENCODE_VIDEO = useSettingsPageStatesStore(state => state.settings.always_reencode_video);
   const EMBED_VIDEO_METADATA = useSettingsPageStatesStore(state => state.settings.embed_video_metadata);
   const EMBED_AUDIO_METADATA = useSettingsPageStatesStore(state => state.settings.embed_audio_metadata);
+  const EMBED_VIDEO_THUMBNAIL = useSettingsPageStatesStore(state => state.settings.embed_video_thumbnail);
   const EMBED_AUDIO_THUMBNAIL = useSettingsPageStatesStore(state => state.settings.embed_audio_thumbnail);
   const USE_COOKIES = useSettingsPageStatesStore(state => state.settings.use_cookies);
   const IMPORT_COOKIES_FROM = useSettingsPageStatesStore(state => state.settings.import_cookies_from);
@@ -378,20 +379,26 @@ export default function App({ children }: { children: React.ReactNode }) {
 
     let embedMetadata = 0;
     if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && (downloadConfig.embed_metadata || resumeState?.embed_metadata || EMBED_VIDEO_METADATA || EMBED_AUDIO_METADATA)) {
-        const shouldEmbedForVideo = (fileType === 'video+audio' || fileType === 'video') && (downloadConfig.embed_metadata || resumeState?.embed_metadata || (EMBED_VIDEO_METADATA && downloadConfig.embed_metadata === null));
-        const shouldEmbedForAudio = fileType === 'audio' && (downloadConfig.embed_metadata || resumeState?.embed_metadata || (EMBED_AUDIO_METADATA && downloadConfig.embed_metadata === null));
-        const shouldEmbedForUnknown = fileType === 'unknown' && (downloadConfig.embed_metadata || resumeState?.embed_metadata);
+        const shouldEmbedMetaForVideo = (fileType === 'video+audio' || fileType === 'video') && (downloadConfig.embed_metadata || resumeState?.embed_metadata || (EMBED_VIDEO_METADATA && downloadConfig.embed_metadata === null));
+        const shouldEmbedMetaForAudio = fileType === 'audio' && (downloadConfig.embed_metadata || resumeState?.embed_metadata || (EMBED_AUDIO_METADATA && downloadConfig.embed_metadata === null));
+        const shouldEmbedMetaForUnknown = fileType === 'unknown' && (downloadConfig.embed_metadata || resumeState?.embed_metadata);
 
-        if (shouldEmbedForUnknown || shouldEmbedForVideo || shouldEmbedForAudio) {
+        if (shouldEmbedMetaForUnknown || shouldEmbedMetaForVideo || shouldEmbedMetaForAudio) {
             embedMetadata = 1;
             args.push('--embed-metadata');
         }
     }
 
     let embedThumbnail = 0;
-    if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && (downloadConfig.embed_thumbnail || resumeState?.embed_thumbnail || (fileType === 'audio' && EMBED_AUDIO_THUMBNAIL && downloadConfig.embed_thumbnail === null))) {
-      embedThumbnail = 1;
-      args.push('--embed-thumbnail');
+    if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && (downloadConfig.embed_thumbnail || resumeState?.embed_thumbnail || EMBED_VIDEO_THUMBNAIL || EMBED_AUDIO_THUMBNAIL)) {
+        const shouldEmbedThumbForVideo = (fileType === 'video+audio' || fileType === 'video') && (downloadConfig.embed_thumbnail || resumeState?.embed_thumbnail || (EMBED_VIDEO_THUMBNAIL && downloadConfig.embed_thumbnail === null));
+        const shouldEmbedThumbForAudio = fileType === 'audio' && (downloadConfig.embed_thumbnail || resumeState?.embed_thumbnail || (EMBED_AUDIO_THUMBNAIL && downloadConfig.embed_thumbnail === null));
+        const shouldEmbedThumbForUnknown = fileType === 'unknown' && (downloadConfig.embed_thumbnail || resumeState?.embed_thumbnail);
+
+        if (shouldEmbedThumbForUnknown || shouldEmbedThumbForVideo || shouldEmbedThumbForAudio) {
+            embedThumbnail = 1;
+            args.push('--embed-thumbnail');
+        }
     }
 
     if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && USE_PROXY && PROXY_URL) {

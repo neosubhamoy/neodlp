@@ -27,6 +27,7 @@ export interface Settings {
     always_reencode_video: boolean;
     embed_video_metadata: boolean;
     embed_audio_metadata: boolean;
+    embed_video_thumbnail: boolean;
     embed_audio_thumbnail: boolean;
     use_cookies: boolean;
     import_cookies_from: string;

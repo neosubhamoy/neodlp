@@ -107,6 +107,7 @@ export default function SettingsPage() {
     const alwaysReencodeVideo = useSettingsPageStatesStore(state => state.settings.always_reencode_video);
     const embedVideoMetadata = useSettingsPageStatesStore(state => state.settings.embed_video_metadata);
     const embedAudioMetadata = useSettingsPageStatesStore(state => state.settings.embed_audio_metadata);
+    const embedVideoThumbnail = useSettingsPageStatesStore(state => state.settings.embed_video_thumbnail);
     const embedAudioThumbnail = useSettingsPageStatesStore(state => state.settings.embed_audio_thumbnail);
     const useCookies = useSettingsPageStatesStore(state => state.settings.use_cookies);
     const importCookiesFrom = useSettingsPageStatesStore(state => state.settings.import_cookies_from);
@@ -783,7 +784,7 @@ export default function SettingsPage() {
                                 </div>
                             </TabsContent>
                             <TabsContent key="metadata" value="metadata" className="flex flex-col gap-4 min-h-[425px]">
-                                <div className="embed-video-metadata">
+                                <div className="embed-metadata">
                                     <h3 className="font-semibold">Embed Metadata</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Wheather to embed metadata in video/audio files (info, chapters)</p>
                                     <div className="flex items-center space-x-2 mb-3">
@@ -805,15 +806,27 @@ export default function SettingsPage() {
                                         <Label htmlFor="embed-audio-metadata">Audio</Label>
                                     </div>
                                 </div>
-                                <div className="embed-audio-thumbnail">
-                                    <h3 className="font-semibold">Embed Thumbnail in Audio</h3>
-                                    <p className="text-xs text-muted-foreground mb-3">Wheather to embed thumbnail in audio files (as cover art)</p>
-                                    <Switch
-                                    id="embed-audio-thumbnail"
-                                    checked={embedAudioThumbnail}
-                                    onCheckedChange={(checked) => saveSettingsKey('embed_audio_thumbnail', checked)}
-                                    disabled={useCustomCommands}
-                                    />
+                                <div className="embed-thumbnail">
+                                    <h3 className="font-semibold">Embed Thumbnail</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Wheather to embed thumbnail in video/audio files (as cover art)</p>
+                                    <div className="flex items-center space-x-2 mb-3">
+                                        <Switch
+                                        id="embed-video-thumbnail"
+                                        checked={embedVideoThumbnail}
+                                        onCheckedChange={(checked) => saveSettingsKey('embed_video_thumbnail', checked)}
+                                        disabled={useCustomCommands}
+                                        />
+                                        <Label htmlFor="embed-video-thumbnail">Video</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <Switch
+                                        id="embed-audio-thumbnail"
+                                        checked={embedAudioThumbnail}
+                                        onCheckedChange={(checked) => saveSettingsKey('embed_audio_thumbnail', checked)}
+                                        disabled={useCustomCommands}
+                                        />
+                                        <Label htmlFor="embed-audio-thumbnail">Audio</Label>
+                                    </div>
                                 </div>
                             </TabsContent>
                             <TabsContent key="network" value="network" className="flex flex-col gap-4 min-h-[425px]">
