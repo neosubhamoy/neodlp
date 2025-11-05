@@ -184,6 +184,9 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         log_verbose: true,
         log_warning: true,
         log_progress: false,
+        enable_notifications: false,
+        update_notification: true,
+        download_completion_notification: false,
         // extension settings
         websocket_port: 53511
     },
@@ -249,6 +252,9 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             log_verbose: true,
             log_warning: true,
             log_progress: false,
+            enable_notifications: false,
+            update_notification: true,
+            download_completion_notification: false,
             // extension settings
             websocket_port: 53511
         },

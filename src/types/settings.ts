@@ -48,6 +48,9 @@ export interface Settings {
     log_verbose: boolean;
     log_warning: boolean;
     log_progress: boolean;
+    enable_notifications: boolean;
+    update_notification: boolean;
+    download_completion_notification: boolean;
     // extension settings
     websocket_port: number;
 }

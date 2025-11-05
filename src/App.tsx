@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { useLogger } from "@/helpers/use-logger";
 import { DownloadConfiguration } from "@/types/settings";
 import { ulid } from "ulid";
+import { sendNotification } from '@tauri-apps/plugin-notification';
 
 export default function App({ children }: { children: React.ReactNode }) {
   const { data: downloadStates, isSuccess: isSuccessFetchingDownloadStates } = useFetchAllDownloadStates();
@@ -92,6 +93,8 @@ export default function App({ children }: { children: React.ReactNode }) {
   const LOG_VERBOSE = useSettingsPageStatesStore(state => state.settings.log_verbose);
   const LOG_WARNING = useSettingsPageStatesStore(state => state.settings.log_warning);
   const LOG_PROGRESS = useSettingsPageStatesStore(state => state.settings.log_progress);
+  const ENABLE_NOTIFICATIONS = useSettingsPageStatesStore(state => state.settings.enable_notifications);
+  const DOWNLOAD_COMPLETION_NOTIFICATION = useSettingsPageStatesStore(state => state.settings.download_completion_notification);
 
   const isErrored = useDownloaderPageStatesStore((state) => state.isErrored);
   const isErrorExpected = useDownloaderPageStatesStore((state) => state.isErrorExpected);
@@ -125,6 +128,7 @@ export default function App({ children }: { children: React.ReactNode }) {
   const isProcessingQueueRef = useRef(false);
   const lastProcessedDownloadIdRef = useRef<string | null>(null);
   const hasRunYtDlpAutoUpdateRef = useRef(false);
+  const hasRunAppUpdateCheckRef = useRef(false);
   const isRegisteredToMacOsRef = useRef(false);
 
   const fetchVideoMetadata = async (url: string, formatId?: string, playlistIndex?: string, selectedSubtitles?: string | null, resumeState?: DownloadState, downloadConfig?: DownloadConfiguration): Promise<RawVideoInfo | null> => {
@@ -541,8 +545,8 @@ export default function App({ children }: { children: React.ReactNode }) {
             const downloadedFileExt = downloadFilePath.split('.').pop();
 
             // Update completion status after a short delay to ensure database states are propagated correctly
-            console.log(`Download completed with ID: ${downloadId}, updating filepath and status after 2s delay...`);
-            setTimeout(() => {
+            console.log(`Download completed with ID: ${downloadId}, updating filepath and status after 1.5s delay...`);
+            setTimeout(async () => {
                 LOG.info('NEODLP', `yt-dlp download completed with id: ${downloadId}`);
                 downloadFilePathUpdater.mutate({ download_id: downloadId, filepath: downloadFilePath as string, ext: downloadedFileExt as string }, {
                     onSuccess: (data) => {
@@ -563,7 +567,18 @@ export default function App({ children }: { children: React.ReactNode }) {
                         console.error("Failed to update download status:", error);
                     }
                 });
-            }, 2000);
+
+                toast.success("Download Completed", {
+                    description: `The download for "${videoMetadata.title}" has completed successfully.`,
+                });
+
+                if (ENABLE_NOTIFICATIONS && DOWNLOAD_COMPLETION_NOTIFICATION) {
+                    sendNotification({
+                        title: "Download Completed",
+                        body: `The download for "${videoMetadata.title}" has completed successfully.`,
+                    });
+                }
+            }, 1500);
         }
       }
     });
@@ -869,13 +884,6 @@ export default function App({ children }: { children: React.ReactNode }) {
     }
   }
 
-  // Check for App updates
-  useEffect(() => {
-    checkForAppUpdate().catch((error) => {
-      console.error("Error checking for app update:", error);
-    });
-  }, []);
-
   // Prevent app from closing
   useEffect(() => {
     const handleCloseRequested = (event: any) => {
@@ -1024,6 +1032,24 @@ export default function App({ children }: { children: React.ReactNode }) {
     };
     fetchYtDlpVersion();
   }, [ytDlpVersion, setYtDlpVersion]);
+
+  // Check for app update
+  useEffect(() => {
+    // Only run once when both settings and KV pairs are loaded
+    if (!isSettingsStatePropagated || !isKvPairsStatePropagated) {
+      console.log("Skipping app update check, waiting for configs to load...");
+      return;
+    }
+    // Skip if we've already run the update check once
+    if (hasRunAppUpdateCheckRef.current) {
+      console.log("App update check already performed in this session, skipping");
+      return;
+    }
+    hasRunAppUpdateCheckRef.current = true;
+    checkForAppUpdate().catch((error) => {
+      console.error("Error checking for app update:", error);
+    });
+  }, [isSettingsStatePropagated, isKvPairsStatePropagated]);
 
   // Check for yt-dlp auto-update
   useEffect(() => {

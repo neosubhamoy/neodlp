@@ -497,6 +497,7 @@ pub async fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_notification::init())
         .manage(ImageCache(StdMutex::new(HashMap::new())))
         .manage(websocket_state.clone())
         .setup(move |app| {

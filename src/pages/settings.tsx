@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { ArrowDownToLine, ArrowRight, BrushCleaning, Bug, Cookie, EthernetPort, ExternalLink, FileVideo, Folder, FolderOpen, Info, Loader2, LucideIcon, Monitor, Moon, Radio, RotateCcw, RotateCw, ShieldMinus, SquareTerminal, Sun, Terminal, Trash, TriangleAlert, WandSparkles, Wifi, Wrench } from "lucide-react";
+import { ArrowDownToLine, ArrowRight, BellRing, BrushCleaning, Bug, Cookie, EthernetPort, ExternalLink, FileVideo, Folder, FolderOpen, Info, Loader2, LucideIcon, Monitor, Moon, Radio, RotateCcw, RotateCw, ShieldMinus, SquareTerminal, Sun, Terminal, Trash, TriangleAlert, WandSparkles, Wifi, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { useTheme } from "@/providers/themeProvider";
@@ -30,6 +30,7 @@ import { formatSpeed, generateID } from "@/utils";
 import { ToggleGroup, ToggleGroupItem } from "@/components/custom/legacyToggleGroup";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { isPermissionGranted, requestPermission } from '@tauri-apps/plugin-notification';
 
 const websocketPortSchema = z.object({
     port: z.coerce.number<number>({
@@ -127,6 +128,9 @@ export default function SettingsPage() {
     const logVerbose = useSettingsPageStatesStore(state => state.settings.log_verbose);
     const logWarning = useSettingsPageStatesStore(state => state.settings.log_warning);
     const logProgress = useSettingsPageStatesStore(state => state.settings.log_progress);
+    const enableNotifications = useSettingsPageStatesStore(state => state.settings.enable_notifications);
+    const updateNotification = useSettingsPageStatesStore(state => state.settings.update_notification);
+    const downloadCompletionNotification = useSettingsPageStatesStore(state => state.settings.download_completion_notification);
 
     const websocketPort = useSettingsPageStatesStore(state => state.settings.websocket_port);
     const isChangingWebSocketPort = useSettingsPageStatesStore(state => state.isChangingWebSocketPort);
@@ -525,6 +529,11 @@ export default function SettingsPage() {
                                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
                             ><ShieldMinus className="size-4" /> Sponsorblock</TabsTrigger>
                             <TabsTrigger
+                                key="notifications"
+                                value="notifications"
+                                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
+                            ><BellRing className="size-4" /> Notifications</TabsTrigger>
+                            <TabsTrigger
                                 key="commands"
                                 value="commands"
                                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
@@ -536,7 +545,7 @@ export default function SettingsPage() {
                             ><Bug className="size-4" /> Debug</TabsTrigger>
                         </TabsList>
                         <div className="min-h-full flex flex-col max-w-[55%] w-full border-l border-border pl-4">
-                            <TabsContent key="general" value="general" className="flex flex-col gap-4 min-h-[385px]">
+                            <TabsContent key="general" value="general" className="flex flex-col gap-4 min-h-[425px]">
                                 <div className="max-parallel-downloads">
                                     <h3 className="font-semibold">Max Parallel Downloads</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Set maximum number of allowed parallel downloads</p>
@@ -592,7 +601,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                             </TabsContent>
-                            <TabsContent key="appearance" value="appearance" className="flex flex-col gap-4 min-h-[385px]">
+                            <TabsContent key="appearance" value="appearance" className="flex flex-col gap-4 min-h-[425px]">
                                 <div className="app-theme">
                                     <h3 className="font-semibold">Theme</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Choose app interface theme</p>
@@ -615,7 +624,7 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="folders" value="folders" className="flex flex-col gap-4 min-h-[385px]">
+                            <TabsContent key="folders" value="folders" className="flex flex-col gap-4 min-h-[425px]">
                                 <div className="download-dir">
                                     <h3 className="font-semibold">Download Folder</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Set default download folder (directory)</p>
@@ -705,7 +714,7 @@ export default function SettingsPage() {
                                     </Form>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="formats" value="formats" className="flex flex-col gap-4 min-h-[385px]">
+                            <TabsContent key="formats" value="formats" className="flex flex-col gap-4 min-h-[425px]">
                                 <div className="video-format">
                                     <h3 className="font-semibold">Video Format</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Choose in which format the final video file will be saved</p>
@@ -773,7 +782,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                             </TabsContent>
-                            <TabsContent key="metadata" value="metadata" className="flex flex-col gap-4 min-h-[385px]">
+                            <TabsContent key="metadata" value="metadata" className="flex flex-col gap-4 min-h-[425px]">
                                 <div className="embed-video-metadata">
                                     <h3 className="font-semibold">Embed Metadata</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Wheather to embed metadata in video/audio files (info, chapters)</p>
@@ -807,7 +816,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                             </TabsContent>
-                            <TabsContent key="network" value="network" className="flex flex-col gap-4 min-h-[385px]">
+                            <TabsContent key="network" value="network" className="flex flex-col gap-4 min-h-[425px]">
                                 <div className="proxy">
                                     <h3 className="font-semibold">Proxy</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Use proxy for downloads, Unblocks blocked sites in your region (download speed may affect, some sites may not work)</p>
@@ -923,7 +932,7 @@ export default function SettingsPage() {
                                     <Label className="text-xs text-muted-foreground">(Forced: {forceInternetProtocol === "ipv4" ? 'IPv4' : 'IPv6'}, Status: {useForceInternetProtocol && !useCustomCommands ? 'Enabled' : 'Disabled'})</Label>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="cookies" value="cookies" className="flex flex-col gap-4 min-h-[385px]">
+                            <TabsContent key="cookies" value="cookies" className="flex flex-col gap-4 min-h-[425px]">
                                 <div className="cookies">
                                     <h3 className="font-semibold">Cookies</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Use cookies to access exclusive/private (login-protected) contents from sites (use wisely, over-use can even block/ban your account)</p>
@@ -1012,7 +1021,7 @@ export default function SettingsPage() {
                                     <Label className="text-xs text-muted-foreground">(Configured: {importCookiesFrom === "browser" ? 'Yes' : cookiesFile ? 'Yes' : 'No'}, From: {importCookiesFrom === "browser" ? 'Browser' : 'Text'}, Status: {useCookies && !useCustomCommands ? 'Enabled' : 'Disabled'})</Label>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="sponsorblock" value="sponsorblock" className="flex flex-col gap-4 min-h-[385px]">
+                            <TabsContent key="sponsorblock" value="sponsorblock" className="flex flex-col gap-4 min-h-[425px]">
                                 <div className="sponsorblock">
                                     <h3 className="font-semibold">Sponsor Block</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Use sponsorblock to remove/mark unwanted segments in videos (sponsorships, intros, outros, etc.)</p>
@@ -1136,7 +1145,56 @@ export default function SettingsPage() {
                                     <Label className="text-xs text-muted-foreground">(Configured: {sponsorblockMode === "remove" && sponsorblockRemove === "custom" && sponsorblockRemoveCategories.length <= 0 ? 'No' : sponsorblockMode === "mark" && sponsorblockMark === "custom" && sponsorblockMarkCategories.length <= 0 ? 'No' : 'Yes'}, Mode: {sponsorblockMode === "remove" ? 'Remove' : 'Mark'}, Status: {useSponsorblock && !useCustomCommands ? 'Enabled' : 'Disabled'})</Label>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="commands" value="commands" className="flex flex-col gap-4 min-h-[385px]">
+                            <TabsContent key="notifications" value="notifications" className="flex flex-col gap-4 min-h-[425px]">
+                                <div className="notifications">
+                                    <h3 className="font-semibold">Desktop Notifications</h3>
+                                    <p className="text-xs text-muted-foreground mb-3">Enable desktop notifications for app events (updates, download completions, etc.)</p>
+                                    <div className="flex items-center space-x-2 mb-4">
+                                        <Switch
+                                        id="enable-notifications"
+                                        checked={enableNotifications}
+                                        onCheckedChange={async (checked) => {
+                                            if (checked) {
+                                                const granted = await isPermissionGranted();
+                                                if (!granted) {
+                                                    const permission = await requestPermission();
+                                                    if (permission !== 'granted') {
+                                                        toast.error("Notification Permission Denied", {
+                                                            description: "You have denied the notification permission. Please enable it from your system settings to receive notifications.",
+                                                        });
+                                                        return;
+                                                    }
+                                                }
+                                            }
+                                            saveSettingsKey('enable_notifications', checked)
+                                        }}
+                                        />
+                                        <Label htmlFor="enable-notifications">Enable Notifications</Label>
+                                    </div>
+                                    <div className="flex flex-col gap-2 mt-5">
+                                        <Label className="text-xs mb-1">Notification Categories</Label>
+                                        <div className="flex items-center space-x-2 mb-1">
+                                            <Switch
+                                            id="update-notification"
+                                            checked={updateNotification}
+                                            onCheckedChange={(checked) => saveSettingsKey('update_notification', checked)}
+                                            disabled={!enableNotifications}
+                                            />
+                                            <Label htmlFor="update-notification">App Updates</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2 mb-1">
+                                            <Switch
+                                            id="download-completion-notification"
+                                            checked={downloadCompletionNotification}
+                                            onCheckedChange={(checked) => saveSettingsKey('download_completion_notification', checked)}
+                                            disabled={!enableNotifications}
+                                            />
+                                            <Label htmlFor="download-completion-notification">Download Completion</Label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </TabsContent>
+                            <TabsContent key="commands" value="commands" className="flex flex-col gap-4 min-h-[425px]">
                                 <div className="custom-commands">
                                     <h3 className="font-semibold">Custom Commands</h3>
                                     <p className="text-xs text-muted-foreground mb-3"> Run custom yt-dlp commands for your downloads</p>
@@ -1238,7 +1296,7 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             </TabsContent>
-                            <TabsContent key="debug" value="debug" className="flex flex-col gap-4 min-h-[385px]">
+                            <TabsContent key="debug" value="debug" className="flex flex-col gap-4 min-h-[425px]">
                                 <div className="debug-mode">
                                     <h3 className="font-semibold">Debug Mode</h3>
                                     <p className="text-xs text-muted-foreground mb-3">Enable debug mode for troubleshooting issues (get debug logs, download ids, and more)</p>
