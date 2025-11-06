@@ -309,7 +309,7 @@ export default function App({ children }: { children: React.ReactNode }) {
     ];
 
     if (currentPlatform === 'macos') {
-      args.push('--ffmpeg-location', '/Applications/NeoDLP.app/Contents/MacOS', '--js-runtimes deno:/Applications/NeoDLP.app/Contents/MacOS/deno');
+      args.push('--ffmpeg-location', '/Applications/NeoDLP.app/Contents/MacOS', '--js-runtimes', 'deno:/Applications/NeoDLP.app/Contents/MacOS/deno');
     }
 
     if (!DEBUG_MODE || (DEBUG_MODE && !LOG_WARNING)) {

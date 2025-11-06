@@ -67,7 +67,7 @@ After installing the extension you can do the following directly from the browse
 
 1. Download the latest [NeoDLP](https://github.com/neosubhamoy/neodlp/releases/latest) release based on your OS and CPU Architecture, then install it! -OR- Install it directly from an available distribution channel (listed below)
 
-| Arch\OS | Windows | Linux | MacOS |
+| Architecture | Windows | Linux | MacOS |
 | :----        | :----   | :---- | :---- |
 | x86_64 | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) |
 | ARM64 | ✅ Emulation | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) |
