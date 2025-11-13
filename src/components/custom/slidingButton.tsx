@@ -23,7 +23,7 @@ export const SlidingButton = ({
     return (
       <Tag
         className={cn(
-          "px-4 py-2 rounded-md bg-black dark:bg-white dark:text-black text-white text-center relative overflow-hidden cursor-pointer flex justify-center",
+          "px-4 py-2 rounded-md bg-primary text-primary-foreground text-center relative overflow-hidden cursor-pointer flex justify-center",
           `group/sliding-button`,
           className
         )}
@@ -41,7 +41,7 @@ export const SlidingButton = ({
         </span>
         <div
           className={cn(
-            'flex items-center justify-center absolute inset-0 transition duration-500 text-white z-20',
+            'flex items-center justify-center absolute inset-0 transition duration-500 text-primary-foreground z-20',
             `-translate-x-60 group-hover/sliding-button:translate-x-0`
           )}
         >

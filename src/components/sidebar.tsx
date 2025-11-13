@@ -77,7 +77,7 @@ export function AppSidebar() {
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <NeoDlpLogo className="size-full rounded-lg border border-border" />
+                  <NeoDlpLogo className="size-full rounded-md border border-border [--logo-stop-color-1:#4444FF] [--logo-stop-color-2:#FF43D0] customscheme:[--logo-stop-color-1:var(--color-chart-5)] customscheme:[--logo-stop-color-2:var(--color-chart-1)]" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">Neo Downloader Plus</span>
@@ -105,7 +105,7 @@ export function AppSidebar() {
                           asChild
                         >
                           <Link to={item.url}>
-                            <item.icon />
+                            <item.icon className="stroke-primary" />
                             <span>{item.title}</span>
                             {item.title === "Library" && ongoingDownloads.length > 0 && showBadge && (
                               <Badge className="absolute right-2 inset-y-auto rounded-full font-bold bg-foreground/80">{ongoingDownloads.length}</Badge>
@@ -124,10 +124,12 @@ export function AppSidebar() {
                       asChild
                     >
                       <Link to={item.url}>
-                        <item.icon />
+                        <item.icon className="stroke-primary" />
                         <span>{item.title}</span>
                         {item.title === "Library" && ongoingDownloads.length > 0 && showBadge && (
-                          <Badge className="absolute right-2 inset-y-auto h-5 min-w-5 rounded-full px-1 font-mono tabular-nums">{ongoingDownloads.length}</Badge>
+                          <Badge className="absolute right-2 inset-y-auto h-5 min-w-5 rounded-full px-1 font-mono tabular-nums flex items-center justify-center">
+                            <span className="mt-0.5">{ongoingDownloads.length}</span>
+                          </Badge>
                         )}
                       </Link>
                     </SidebarMenuButton>
@@ -196,7 +198,7 @@ export function AppSidebar() {
                       asChild
                     >
                       <Link to={item.url}>
-                        <item.icon />
+                        <item.icon className="stroke-primary" />
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
@@ -211,7 +213,7 @@ export function AppSidebar() {
                   asChild
                 >
                   <Link to={item.url}>
-                    <item.icon />
+                    <item.icon className="stroke-primary" />
                     <span>{item.title}</span>
                   </Link>
                 </SidebarMenuButton>

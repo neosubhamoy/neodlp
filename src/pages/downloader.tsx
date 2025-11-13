@@ -12,7 +12,7 @@ import { determineFileType, fileFormatFilter, formatBitrate, formatDurationStrin
 import { Calendar, Clock, DownloadCloud, Eye, Info, Loader2, Music, ThumbsUp, Video, File, ListVideo, PackageSearch, AlertCircleIcon, X, Settings2, Clipboard } from "lucide-react";
 import { FormatSelectionGroup, FormatSelectionGroupItem } from "@/components/custom/formatSelectionGroup";
 import { useEffect, useRef } from "react";
-import { ToggleGroup, ToggleGroupItem } from "@/components/custom/legacyToggleGroup";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { VideoFormat } from "@/types/video";
 // import { PlaylistToggleGroup, PlaylistToggleGroupItem } from "@/components/custom/playlistToggleGroup";
 import { PlaylistSelectionGroup, PlaylistSelectionGroupItem } from "@/components/custom/playlistSelectionGroup";
@@ -360,7 +360,7 @@ export default function DownloaderPage() {
         <div className="container mx-auto p-4 space-y-4 relative" ref={containerRef}>
             <Card className="gap-4">
                 <CardHeader>
-                    <CardTitle className="flex items-center"><PackageSearch className="size-5 mr-3" />{config.appName} Search</CardTitle>
+                    <CardTitle className="flex items-center"><PackageSearch className="size-5 mr-3 stroke-primary" />{config.appName} Search</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Form {...searchForm}>
@@ -370,7 +370,7 @@ export default function DownloaderPage() {
                                 name="url"
                                 disabled={isMetadataLoading}
                                 render={({ field }) => (
-                                    <FormItem className="w-full">
+                                    <FormItem className="grow">
                                         <FormControl>
                                             <Input
                                             className="focus-visible:ring-0"
@@ -396,6 +396,7 @@ export default function DownloaderPage() {
                             {!isMetadataLoading && !videoUrl && (
                                 <Button
                                 type="button"
+                                variant="outline"
                                 size="icon"
                                 disabled={isMetadataLoading}
                                 onClick={async () => {
@@ -485,7 +486,7 @@ export default function DownloaderPage() {
                             <Info className="w-3 h-3 mr-2" />
                             <span className="text-xs">Extracted from {videoMetadata.extractor ? videoMetadata.extractor.charAt(0).toUpperCase() + videoMetadata.extractor.slice(1) : 'Unknown'}</span>
                         </div>
-                        <div className="spacer mb-10"></div>
+                        <div className="spacer mb-12"></div>
                     </div>
                 </div>
                 <div className="flex flex-col w-full pl-4">
@@ -525,7 +526,7 @@ export default function DownloaderPage() {
                                         <div className="flex gap-2 flex-wrap items-center">
                                             {subtitleLanguages.map((lang) => (
                                                 <ToggleGroupItem
-                                                className="text-xs text-nowrap border-2 data-[state=on]:border-2 data-[state=on]:border-primary data-[state=on]:bg-muted/70 hover:bg-muted/70"
+                                                className="text-xs text-nowrap border-2 data-[state=on]:border-2 data-[state=on]:border-primary data-[state=on]:bg-primary/10 hover:bg-muted/70"
                                                 value={lang.code}
                                                 size="sm"
                                                 aria-label={lang.lang}
@@ -615,7 +616,7 @@ export default function DownloaderPage() {
                                     </>
                                     )}
                                 </FormatSelectionGroup>
-                                <div className="spacer mb-10"></div>
+                                <div className="spacer mb-12"></div>
                             </div>
                         </TabsContent>
                         <TabsContent value="combine">
@@ -632,7 +633,7 @@ export default function DownloaderPage() {
                                         <div className="flex gap-2 flex-wrap items-center">
                                             {subtitleLanguages.map((lang) => (
                                                 <ToggleGroupItem
-                                                className="text-xs text-nowrap border-2 data-[state=on]:border-2 data-[state=on]:border-primary data-[state=on]:bg-muted/70 hover:bg-muted/70"
+                                                className="text-xs text-nowrap border-2 data-[state=on]:border-2 data-[state=on]:border-primary data-[state=on]:bg-primary/10 hover:bg-muted/70"
                                                 value={lang.code}
                                                 size="sm"
                                                 aria-label={lang.lang}
@@ -696,14 +697,14 @@ export default function DownloaderPage() {
                                 </FormatSelectionGroup>
                                 {(!videoOnlyFormats || videoOnlyFormats.length === 0 || !audioOnlyFormats || audioOnlyFormats.length === 0) && (
                                     <Alert>
-                                        <AlertCircleIcon />
+                                        <AlertCircleIcon className="size-4 stroke-primary" />
                                         <AlertTitle>Unable to use Combine Mode!</AlertTitle>
                                         <AlertDescription>
                                             Cannot use combine mode for this video as it does not have both audio and video formats available. Use Selective Mode or try another video.
                                         </AlertDescription>
                                     </Alert>
                                 )}
-                                <div className="spacer mb-10"></div>
+                                <div className="spacer mb-12"></div>
                             </div>
                         </TabsContent>
                     </Tabs>
@@ -758,7 +759,7 @@ export default function DownloaderPage() {
                                 <Info className="w-3 h-3 mr-2" />
                                 <span className="text-xs">Extracted from {videoMetadata.entries[0].extractor ? videoMetadata.entries[0].extractor.charAt(0).toUpperCase() + videoMetadata.entries[0].extractor.slice(1) : 'Unknown'}</span>
                             </div>
-                            <div className="spacer mb-10"></div>
+                            <div className="spacer mb-12"></div>
                         </div>
                     </div>
                     <div className="flex flex-col w-full pl-4">
@@ -792,7 +793,7 @@ export default function DownloaderPage() {
                                             <div className="flex gap-2 flex-wrap items-center">
                                                 {subtitleLanguages.map((lang) => (
                                                     <ToggleGroupItem
-                                                    className="text-xs text-nowrap border-2 data-[state=on]:border-2 data-[state=on]:border-primary data-[state=on]:bg-muted/70 hover:bg-muted/70"
+                                                    className="text-xs text-nowrap border-2 data-[state=on]:border-2 data-[state=on]:border-primary data-[state=on]:bg-primary/10 hover:bg-muted/70"
                                                     value={lang.code}
                                                     size="sm"
                                                     aria-label={lang.lang}
@@ -878,7 +879,7 @@ export default function DownloaderPage() {
                                         </>
                                         )}
                                     </FormatSelectionGroup>
-                                    <div className="spacer mb-10"></div>
+                                    <div className="spacer mb-12"></div>
                                 </div>
                             </TabsContent>
                             <TabsContent value="combine">
@@ -896,7 +897,7 @@ export default function DownloaderPage() {
                                             <div className="flex gap-2 flex-wrap items-center">
                                                 {subtitleLanguages.map((lang) => (
                                                     <ToggleGroupItem
-                                                    className="text-xs text-nowrap border-2 data-[state=on]:border-2 data-[state=on]:border-primary data-[state=on]:bg-muted/70 hover:bg-muted/70"
+                                                    className="text-xs text-nowrap border-2 data-[state=on]:border-2 data-[state=on]:border-primary data-[state=on]:bg-primary/10 hover:bg-muted/70"
                                                     value={lang.code}
                                                     size="sm"
                                                     aria-label={lang.lang}
@@ -952,14 +953,14 @@ export default function DownloaderPage() {
                                     </FormatSelectionGroup>
                                     {(!videoOnlyFormats || videoOnlyFormats.length === 0 || !audioOnlyFormats || audioOnlyFormats.length === 0) && (
                                         <Alert>
-                                            <AlertCircleIcon />
+                                            <AlertCircleIcon className="size-4 stroke-primary" />
                                             <AlertTitle>Unable to use Combine Mode!</AlertTitle>
                                             <AlertDescription>
                                                 Cannot use combine mode for this video as it does not have both audio and video formats available. Use Selective Mode or try another video.
                                             </AlertDescription>
                                         </Alert>
                                     )}
-                                    <div className="spacer mb-10"></div>
+                                    <div className="spacer mb-12"></div>
                                 </div>
                             </TabsContent>
                         </Tabs>
@@ -971,13 +972,13 @@ export default function DownloaderPage() {
                     <div className="flex items-center gap-4">
                         <div className="flex justify-center items-center p-3 rounded-md border border-border">
                             {selectedFormatFileType && (selectedFormatFileType === 'video' || selectedFormatFileType === 'video+audio') && (
-                                <Video className="w-4 h-4" />
+                                <Video className="w-4 h-4 stroke-primary" />
                             )}
                             {selectedFormatFileType && selectedFormatFileType === 'audio' && (
-                                <Music className="w-4 h-4" />
+                                <Music className="w-4 h-4 stroke-primary" />
                             )}
                             {(!selectedFormatFileType) || (selectedFormatFileType && selectedFormatFileType !== 'video' && selectedFormatFileType !== 'audio' && selectedFormatFileType !== 'video+audio') && (
-                                <File className="w-4 h-4" />
+                                <File className="w-4 h-4 stroke-primary" />
                             )}
                         </div>
                         <div className="flex flex-col gap-1">
@@ -1021,7 +1022,7 @@ export default function DownloaderPage() {
                                         <TabsContent value="options">
                                             {useCustomCommands ? (
                                             <Alert className="mt-2 mb-3">
-                                                <AlertCircleIcon />
+                                                <AlertCircleIcon className="size-4 stroke-primary" />
                                                 <AlertTitle className="text-sm">Options Unavailable!</AlertTitle>
                                                 <AlertDescription className="text-xs">
                                                     You cannot use these options when custom commands are enabled. To use these options, disable custom commands from Settings.
@@ -1033,7 +1034,7 @@ export default function DownloaderPage() {
                                                 {(selectedFormatFileType && (selectedFormatFileType === 'video' || selectedFormatFileType === 'video+audio')) || activeDownloadModeTab === 'combine' ? (
                                                     <RadioGroup
                                                     orientation="horizontal"
-                                                    className="flex items-center gap-4 flex-wrap"
+                                                    className="flex items-center gap-4 flex-wrap my-2"
                                                     value={downloadConfiguration.output_format ?? 'auto'}
                                                     onValueChange={(value) => setDownloadConfigurationKey('output_format', value)}
                                                     disabled={useCustomCommands}
@@ -1058,7 +1059,7 @@ export default function DownloaderPage() {
                                                 ) : selectedFormatFileType && selectedFormatFileType === 'audio' ? (
                                                     <RadioGroup
                                                     orientation="horizontal"
-                                                    className="flex items-center gap-4 flex-wrap"
+                                                    className="flex items-center gap-4 flex-wrap my-2"
                                                     value={downloadConfiguration.output_format ?? 'auto'}
                                                     onValueChange={(value) => setDownloadConfigurationKey('output_format', value)}
                                                     disabled={useCustomCommands}
@@ -1083,7 +1084,7 @@ export default function DownloaderPage() {
                                                 ) : (
                                                     <RadioGroup
                                                     orientation="horizontal"
-                                                    className="flex items-center gap-4 flex-wrap"
+                                                    className="flex items-center gap-4 flex-wrap my-2"
                                                     value={downloadConfiguration.output_format ?? 'auto'}
                                                     onValueChange={(value) => setDownloadConfigurationKey('output_format', value)}
                                                     disabled={useCustomCommands}
@@ -1123,7 +1124,7 @@ export default function DownloaderPage() {
                                                 <Label className="text-xs my-3">Sponsorblock Mode</Label>
                                                 <RadioGroup
                                                 orientation="horizontal"
-                                                className="flex items-center gap-4 flex-wrap"
+                                                className="flex items-center gap-4 flex-wrap my-2"
                                                 value={downloadConfiguration.sponsorblock ?? 'auto'}
                                                 onValueChange={(value) => setDownloadConfigurationKey('sponsorblock', value)}
                                                 disabled={useCustomCommands}
@@ -1167,7 +1168,7 @@ export default function DownloaderPage() {
                                         <TabsContent value="commands">
                                             {!useCustomCommands ? (
                                             <Alert className="mt-2 mb-3">
-                                                <AlertCircleIcon />
+                                                <AlertCircleIcon className="size-4 stroke-primary" />
                                                 <AlertTitle className="text-sm">Enable Custom Commands!</AlertTitle>
                                                 <AlertDescription className="text-xs">
                                                     To run custom commands for downloads, please enable it from the Settings.
@@ -1181,7 +1182,7 @@ export default function DownloaderPage() {
                                                 ) : (
                                                     <RadioGroup
                                                     orientation="vertical"
-                                                    className="flex flex-col gap-2"
+                                                    className="flex flex-col gap-2 my-2"
                                                     disabled={!useCustomCommands}
                                                     value={downloadConfiguration.custom_command}
                                                     onValueChange={(value) => setDownloadConfigurationKey('custom_command', value)}

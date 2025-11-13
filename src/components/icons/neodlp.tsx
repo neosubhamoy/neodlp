@@ -6,8 +6,8 @@ export function NeoDlpLogo({ className }: { className?: string }) {
             <rect x="355" y="222" width="313" height="346" rx="25" fill="#FAFAFA"/>
             <defs>
                 <linearGradient id="paint0_linear_10_2" x1="129.5" y1="148.5" x2="921" y2="863" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#4444FF"/>
-                    <stop offset="1" stopColor="#FF43D0"/>
+                    <stop stopColor="var(--logo-stop-color-1)"/>
+                    <stop offset="1" stopColor="var(--logo-stop-color-2)"/>
                 </linearGradient>
             </defs>
         </svg>

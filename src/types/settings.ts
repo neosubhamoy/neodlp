@@ -1,3 +1,5 @@
+import { ColorScheme, Theme } from "@/providers/themeProvider";
+
 export interface SettingsTable {
     key: string;
     value: string;
@@ -12,7 +14,8 @@ export interface CustomCommand {
 export interface Settings {
     ytdlp_update_channel: string;
     ytdlp_auto_update: boolean;
-    theme: 'dark' | 'light' | 'system';
+    theme: Theme;
+    color_scheme: ColorScheme;
     download_dir: string;
     max_parallel_downloads: number;
     max_retries: number;

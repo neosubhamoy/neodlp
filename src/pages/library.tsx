@@ -158,7 +158,7 @@ export default function LibraryPage() {
                 <div className="w-full flex items-center justify-between mb-4">
                     <TabsList>
                         <TabsTrigger value="completed">Completed {completedDownloads.length > 0 && (`(${completedDownloads.length})`)}</TabsTrigger>
-                        <TabsTrigger value="incomplete">Incomplete {(incompleteDownloads.length > 0 && ongoingDownloads.length <= 0) && (`(${incompleteDownloads.length})`)} {ongoingDownloads.length > 0 && (<Badge className="h-4 min-w-4 rounded-full px-1 font-mono tabular-nums ml-1">{ongoingDownloads.length}</Badge>)}</TabsTrigger>
+                        <TabsTrigger value="incomplete">Incomplete {(incompleteDownloads.length > 0 && ongoingDownloads.length <= 0) && (`(${incompleteDownloads.length})`)} {ongoingDownloads.length > 0 && (<Badge className="h-4 min-w-4 rounded-full px-1 font-mono tabular-nums ml-1.5 mt-0.5">{ongoingDownloads.length}</Badge>)}</TabsTrigger>
                     </TabsList>
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -206,13 +206,13 @@ export default function LibraryPage() {
                                             </AspectRatio>
                                             <span className="w-full flex items-center justify-center text-xs border border-border py-1 px-2 rounded">
                                                 {state.filetype && (state.filetype === 'video' || state.filetype === 'video+audio') && (
-                                                    <Video className="w-4 h-4 mr-2" />
+                                                    <Video className="w-4 h-4 mr-2 stroke-primary" />
                                                 )}
                                                 {state.filetype && state.filetype === 'audio' && (
-                                                    <Music className="w-4 h-4 mr-2" />
+                                                    <Music className="w-4 h-4 mr-2 stroke-primary" />
                                                 )}
                                                 {(!state.filetype) || (state.filetype && state.filetype !== 'video' && state.filetype !== 'audio' && state.filetype !== 'video+audio') && (
-                                                    <File className="w-4 h-4 mr-2" />
+                                                    <File className="w-4 h-4 mr-2 stroke-primary" />
                                                 )}
                                                 {state.ext?.toUpperCase()} {state.resolution ? `(${state.resolution})` : null}
                                             </span>
@@ -220,7 +220,7 @@ export default function LibraryPage() {
                                         <div className="w-full flex flex-col justify-between gap-2">
                                             <div className="flex flex-col gap-1">
                                                 <h4 className="">{state.title}</h4>
-                                                <p className="text-xs text-muted-foreground">{state.channel ? state.channel : 'unknown'} {state.host ? `• ${state.host}` : 'unknown'}</p>
+                                                <p className="text-xs text-muted-foreground">{state.channel ? state.channel : 'unknown'} {state.host ? <><span className="text-primary">•</span> {state.host}</> : 'unknown'}</p>
                                                 <div className="flex items-center mt-1">
                                                     <span className="text-xs text-muted-foreground flex items-center pr-3"><Clock className="w-4 h-4 mr-2"/> {state.duration_string ? formatDurationString(state.duration_string) : 'unknown'}</span>
                                                     <Separator orientation="vertical" />
@@ -351,13 +351,13 @@ export default function LibraryPage() {
                                             {state.ext && (
                                                 <span className="w-full flex items-center justify-center text-xs border border-border py-1 px-2 rounded">
                                                     {state.filetype && (state.filetype === 'video' || state.filetype === 'video+audio') && (
-                                                        <Video className="w-4 h-4 mr-2" />
+                                                        <Video className="w-4 h-4 mr-2 stroke-primary" />
                                                     )}
                                                     {state.filetype && state.filetype === 'audio' && (
-                                                        <Music className="w-4 h-4 mr-2" />
+                                                        <Music className="w-4 h-4 mr-2 stroke-primary" />
                                                     )}
                                                     {(!state.filetype) || (state.filetype && state.filetype !== 'video' && state.filetype !== 'audio' && state.filetype !== 'video+audio') && (
-                                                        <File className="w-4 h-4 mr-2" />
+                                                        <File className="w-4 h-4 mr-2 stroke-primary" />
                                                     )}
                                                     {state.ext.toUpperCase()} {state.resolution ? `(${state.resolution})` : null}
                                                 </span>
@@ -380,9 +380,9 @@ export default function LibraryPage() {
                                                         }</span>
                                                     </div>
                                                 )}
-                                                <div className="text-xs text-muted-foreground">{ state.download_status && (
-                                                    `${state.download_status === 'downloading' && state.status === 'finished' ? 'Processing' : state.download_status.charAt(0).toUpperCase() + state.download_status.slice(1)} ${debugMode && state.download_id ? `• ID: ${state.download_id.toUpperCase()}` : ""} ${state.download_status === 'downloading' && state.status !== 'finished' && state.speed ? `• Speed: ${formatSpeed(state.speed)}` : ""} ${state.download_status === 'downloading' && state.eta ? `• ETA: ${formatSecToTimeString(state.eta)}` : ""}`
-                                                )}</div>
+                                                <div className="text-xs text-muted-foreground">
+                                                    {state.download_status && state.download_status === 'downloading' && state.status === 'finished' ? 'Processing' : state.download_status.charAt(0).toUpperCase() + state.download_status.slice(1)} {debugMode && state.download_id ? <><span className="text-primary">•</span> ID: {state.download_id.toUpperCase()}</> : ""} {state.download_status === 'downloading' && state.status !== 'finished' && state.speed ? <><span className="text-primary">•</span> Speed: {formatSpeed(state.speed)}</> : ""} {state.download_status === 'downloading' && state.eta ? <><span className="text-primary">•</span> ETA: {formatSecToTimeString(state.eta)}</> : ""}
+                                                </div>
                                             </div>
                                             <div className="w-full flex items-center gap-2 mt-2">
                                                 {state.download_status === 'paused' ? (

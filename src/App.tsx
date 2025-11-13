@@ -58,6 +58,7 @@ export default function App({ children }: { children: React.ReactNode }) {
   const YTDLP_AUTO_UPDATE = useSettingsPageStatesStore(state => state.settings.ytdlp_auto_update);
   const YTDLP_UPDATE_CHANNEL = useSettingsPageStatesStore(state => state.settings.ytdlp_update_channel);
   const APP_THEME = useSettingsPageStatesStore(state => state.settings.theme);
+  const APP_COLOR_SCHEME = useSettingsPageStatesStore(state => state.settings.color_scheme);
   const MAX_PARALLEL_DOWNLOADS = useSettingsPageStatesStore(state => state.settings.max_parallel_downloads);
   const MAX_RETRIES = useSettingsPageStatesStore(state => state.settings.max_retries);
   const DOWNLOAD_DIR = useSettingsPageStatesStore(state => state.settings.download_dir);
@@ -1178,7 +1179,7 @@ export default function App({ children }: { children: React.ReactNode }) {
 
   return (
     <AppContext.Provider value={{ fetchVideoMetadata, startDownload, pauseDownload, resumeDownload, cancelDownload }}>
-      <ThemeProvider defaultTheme={APP_THEME || "system"} storageKey="vite-ui-theme">
+      <ThemeProvider defaultTheme={APP_THEME || "system"} defaultColorScheme={APP_COLOR_SCHEME || "default"}>
           <TooltipProvider delayDuration={1000}>
             {children}
             <Sonner closeButton />
