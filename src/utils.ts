@@ -82,7 +82,7 @@ export const parseProgressLine = (line: string): DownloadProgress => {
   // Check if line is aria2c format only
   if (line.startsWith('[#') && line.includes('MiB') && line.includes('%')) {
     // Parse aria2c format: [#99f72b 2.5MiB/3.4MiB(75%) CN:1 DL:503KiB ETA:1s]
-    
+
     // Extract progress percentage
     const progressMatch = line.match(/\((\d+(?:\.\d+)?)%\)/);
     if (progressMatch) {
@@ -118,7 +118,7 @@ export const parseProgressLine = (line: string): DownloadProgress => {
 
     return progress as DownloadProgress;
   }
-  
+
   // Original yt-dlp format: status:downloading,progress: 75.1%,speed:1022692.427018,downloaded:30289474,total:40331784,eta:9
   line.split(',').forEach(pair => {
     const [key, value] = pair.split(':');
@@ -337,14 +337,14 @@ export const determineFileType = (
 ) => {
   const videoCodec = (vcodec || '').toLowerCase();
   const audioCodec = (acodec || '').toLowerCase();
-  
+
   const isNone = (str: string): boolean => {
     return ['none', 'n/a', '-', ''].includes(str);
   };
-  
+
   const hasVideo = !isNone(videoCodec);
   const hasAudio = !isNone(audioCodec);
-  
+
   if (hasVideo && hasAudio) {
     return 'video+audio';
   } else if (hasVideo) {
@@ -362,14 +362,14 @@ export const fileFormatFilter = (filterType: 'video+audio' | 'video' | 'audio' |
     const audioExt = (format.audio_ext || '').toLowerCase();
     const videoCodec = (format.vcodec || '').toLowerCase();
     const audioCodec = (format.acodec || '').toLowerCase();
-    
+
     const isNone = (str: string): boolean => {
       return ['none', 'n/a', '-', ''].includes(str);
     };
 
     const subtitleExts = ['srt', 'vtt', 'ass', 'ssa', 'sub', 'sbv'];
     const isSubtitle = subtitleExts.includes(format.ext);
-    
+
     const hasVideo = !isNone(videoExt) || !isNone(videoCodec);
     const hasAudio = !isNone(audioExt) || !isNone(audioCodec);
 

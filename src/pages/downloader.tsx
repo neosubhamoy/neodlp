@@ -244,7 +244,7 @@ export default function DownloaderPage() {
         setSelectedPlaylistVideoIndex('1');
         resetDownloadConfiguration();
 
-        fetchVideoMetadata(values.url).then((metadata) => {
+        fetchVideoMetadata({ url: values.url }).then((metadata) => {
             if (!metadata || (metadata._type !== 'video' && metadata._type !== 'playlist') || (metadata && metadata._type === 'video' && metadata.formats.length <= 0) || (metadata && metadata._type === 'playlist' && metadata.entries.length <= 0)) {
                 const showSearchError = useCurrentVideoMetadataStore.getState().showSearchError;
                 if (showSearchError) {
@@ -1206,21 +1206,20 @@ export default function DownloaderPage() {
                             setIsStartingDownload(true);
                             try {
                                 if (videoMetadata._type === 'playlist') {
-                                    await startDownload(
-                                        videoMetadata.original_url,
-                                        activeDownloadModeTab === 'combine' ? `${selectedCombinableVideoFormat}+${selectedCombinableAudioFormat}` : selectedDownloadFormat === 'best' ? videoMetadata.entries[Number(selectedPlaylistVideoIndex) - 1].requested_downloads[0].format_id : selectedDownloadFormat,
-                                        downloadConfiguration,
-                                        selectedSubtitles.length > 0 ? selectedSubtitles.join(',') : null,
-                                        undefined,
-                                        selectedPlaylistVideoIndex
-                                    );
+                                    await startDownload({
+                                        url: videoMetadata.original_url,
+                                        selectedFormat: activeDownloadModeTab === 'combine' ? `${selectedCombinableVideoFormat}+${selectedCombinableAudioFormat}` : selectedDownloadFormat === 'best' ? videoMetadata.entries[Number(selectedPlaylistVideoIndex) - 1].requested_downloads[0].format_id : selectedDownloadFormat,
+                                        downloadConfig: downloadConfiguration,
+                                        selectedSubtitles: selectedSubtitles.length > 0 ? selectedSubtitles.join(',') : null,
+                                        playlistItems: selectedPlaylistVideoIndex
+                                    });
                                 } else if (videoMetadata._type === 'video') {
-                                    await startDownload(
-                                        videoMetadata.webpage_url,
-                                        activeDownloadModeTab === 'combine' ? `${selectedCombinableVideoFormat}+${selectedCombinableAudioFormat}` : selectedDownloadFormat === 'best' ? videoMetadata.requested_downloads[0].format_id : selectedDownloadFormat,
-                                        downloadConfiguration,
-                                        selectedSubtitles.length > 0 ? selectedSubtitles.join(',') : null
-                                    );
+                                    await startDownload({
+                                        url: videoMetadata.webpage_url,
+                                        selectedFormat: activeDownloadModeTab === 'combine' ? `${selectedCombinableVideoFormat}+${selectedCombinableAudioFormat}` : selectedDownloadFormat === 'best' ? videoMetadata.requested_downloads[0].format_id : selectedDownloadFormat,
+                                        downloadConfig: downloadConfiguration,
+                                        selectedSubtitles: selectedSubtitles.length > 0 ? selectedSubtitles.join(',') : null
+                                    });
                                 }
                                 // toast({
                                 //     title: 'Download Initiated',

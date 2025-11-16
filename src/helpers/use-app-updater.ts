@@ -62,8 +62,5 @@ export default function useAppUpdater() {
         await relaunchApp();
     }
 
-    return {
-        checkForAppUpdate,
-        downloadAndInstallAppUpdate
-    }
+    return { checkForAppUpdate, downloadAndInstallAppUpdate };
 }
