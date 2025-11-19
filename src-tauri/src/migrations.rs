@@ -148,5 +148,16 @@ pub fn get_migrations() -> Vec<Migration> {
             END;
             ",
         kind: MigrationKind::Up,
+    },
+    Migration {
+        version: 3,
+        description: "add_performance_indexes",
+        sql: "
+            CREATE INDEX IF NOT EXISTS idx_downloads_video_id ON downloads(video_id);
+            CREATE INDEX IF NOT EXISTS idx_downloads_playlist_id ON downloads(playlist_id);
+            CREATE INDEX IF NOT EXISTS idx_downloads_status_updated ON downloads(download_status, updated_at DESC);
+            CREATE INDEX IF NOT EXISTS idx_downloads_id_desc ON downloads(id DESC);
+        ",
+        kind: MigrationKind::Up,
     }]
 }
