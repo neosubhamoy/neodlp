@@ -1,6 +1,4 @@
-on:
-  release:
-    types: [published]
+on: workflow_dispatch
 
 name: 🚀 Publish to AUR
 jobs:
@@ -27,11 +25,11 @@ jobs:
           # If manually triggered, fetch latest release
           RELEASE_TAG=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r '.tag_name')
         fi
-        
+
         # Extract version number from tag
         VERSION=$(echo "$RELEASE_TAG" | sed -E 's/^v([0-9]+\.[0-9]+\.[0-9]+)(-.*)?$/\1/')
         SUFFIX=$(echo "$RELEASE_TAG" | sed -E 's/^v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$/\1/')
-        
+
         echo "release_tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "suffix=$SUFFIX" >> $GITHUB_OUTPUT
@@ -39,15 +37,15 @@ jobs:
     - name: 🔑 Setup SSH for AUR
       run: |
         mkdir -p ~/.ssh
-        
+
         # Write key with proper newline handling
         echo "${{ secrets.AUR_SSH_PRIVATE_KEY }}" | sed 's/\\n/\n/g' > ~/.ssh/id_rsa
-        
+
         # Set proper permissions
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan aur.archlinux.org >> ~/.ssh/known_hosts
         chmod 600 ~/.ssh/known_hosts
-        
+
         # Create SSH config file
         cat > ~/.ssh/config << EOF
         Host aur.archlinux.org
@@ -66,7 +64,7 @@ jobs:
         git config --global user.name "${{ secrets.AUR_USER }}"
         git config --global user.email "${{ secrets.AUR_EMAIL }}"
         git config --global --add safe.directory '*'
-        
+
         # Clone AUR repository
         GIT_SSH_COMMAND="ssh -v -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new" \
           git clone "ssh://aur@aur.archlinux.org/neodlp.git" aur-repo
@@ -77,21 +75,21 @@ jobs:
 
         # Update PKGBUILD version
         sed -i "s/pkgver=.*/pkgver=${VERSION}/" PKGBUILD
-        
+
         # Create non-root user for makepkg (which refuses to run as root)
         useradd -m builder
         chown -R builder:builder .
-        
+
         # Generate .SRCINFO using makepkg
         su builder -c "makepkg --printsrcinfo" > .SRCINFO
-        
+
         # Debug output
         echo "PKGBUILD:"
         cat PKGBUILD
-        
+
         echo ".SRCINFO:"
         cat .SRCINFO
-        
+
         # Check if there are any changes to commit
         if [ -n "$(git status --porcelain)" ]; then
           echo "Changes detected, committing and pushing..."
