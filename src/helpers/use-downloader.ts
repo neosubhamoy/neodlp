@@ -7,7 +7,6 @@ import { Command } from "@tauri-apps/plugin-shell";
 import { RawVideoInfo } from "@/types/video";
 import { useDeleteDownloadState, useSaveDownloadState, useSavePlaylistInfo, useSaveVideoInfo, useUpdateDownloadFilePath, useUpdateDownloadStatus } from "@/services/mutations";
 import { useQueryClient } from "@tanstack/react-query";
-import { useFetchAllDownloadStates } from "@/services/queries";
 import { platform } from "@tauri-apps/plugin-os";
 import { toast } from "sonner";
 import { useLogger } from "@/helpers/use-logger";
@@ -17,7 +16,6 @@ import { FetchVideoMetadataParams, StartDownloadParams } from "@/providers/appCo
 import { debounce } from "es-toolkit";
 
 export default function useDownloader() {
-    const { data: downloadStates, isSuccess: isSuccessFetchingDownloadStates } = useFetchAllDownloadStates();
     const globalDownloadStates = useDownloadStatesStore((state) => state.downloadStates);
 
     const ffmpegPath = useBasePathsStore((state) => state.ffmpegPath);
@@ -60,7 +58,6 @@ export default function useDownloader() {
         filename_template: FILENAME_TEMPLATE,
         debug_mode: DEBUG_MODE,
         log_verbose: LOG_VERBOSE,
-        log_warning: LOG_WARNING,
         log_progress: LOG_PROGRESS,
         enable_notifications: ENABLE_NOTIFICATIONS,
         download_completion_notification: DOWNLOAD_COMPLETION_NOTIFICATION
@@ -292,12 +289,10 @@ export default function useDownloader() {
             args.push('--ffmpeg-location', '/Applications/NeoDLP.app/Contents/MacOS', '--js-runtimes', 'deno:/Applications/NeoDLP.app/Contents/MacOS/deno');
         }
 
-        if (!DEBUG_MODE || (DEBUG_MODE && !LOG_WARNING)) {
-            args.push('--no-warnings');
-        }
-
         if (DEBUG_MODE && LOG_VERBOSE) {
             args.push('--verbose');
+        } else {
+            args.push('--no-warnings');
         }
 
         if (selectedSubtitles) {
@@ -479,7 +474,7 @@ export default function useDownloader() {
                     url: url,
                     host: videoMetadata.webpage_url_domain,
                     thumbnail: videoMetadata.thumbnail || null,
-                    channel: videoMetadata.channel || null,
+                    channel: videoMetadata.creator || videoMetadata.channel || videoMetadata.uploader || null,
                     duration_string: videoMetadata.duration_string || null,
                     release_date: videoMetadata.release_date || null,
                     view_count: videoMetadata.view_count || null,
@@ -569,7 +564,7 @@ export default function useDownloader() {
                 url: url,
                 host: videoMetadata.webpage_url_domain,
                 thumbnail: videoMetadata.thumbnail || null,
-                channel: videoMetadata.channel || videoMetadata.uploader || null,
+                channel: videoMetadata.creator || videoMetadata.channel || videoMetadata.uploader || null,
                 duration_string: videoMetadata.duration_string || null,
                 release_date: videoMetadata.release_date || null,
                 view_count: videoMetadata.view_count || null,
@@ -583,7 +578,7 @@ export default function useDownloader() {
                             playlist_title: videoMetadata.playlist_title,
                             playlist_url: videoMetadata.playlist_webpage_url,
                             playlist_n_entries: videoMetadata.playlist_count || videoMetadata.n_entries,
-                            playlist_channel: videoMetadata.playlist_channel || null
+                            playlist_channel: videoMetadata.playlist_creator || videoMetadata.playlist_channel || videoMetadata.playlist_uploader || null
                         }, {
                             onSuccess: (data) => {
                                 console.log("Playlist Info saved successfully:", data);
@@ -606,7 +601,7 @@ export default function useDownloader() {
                         url: url,
                         host: videoMetadata.webpage_url_domain,
                         thumbnail: videoMetadata.thumbnail || null,
-                        channel: videoMetadata.channel || null,
+                        channel: videoMetadata.creator || videoMetadata.channel || videoMetadata.uploader || null,
                         duration_string: videoMetadata.duration_string || null,
                         release_date: videoMetadata.release_date || null,
                         view_count: videoMetadata.view_count || null,
@@ -682,42 +677,29 @@ export default function useDownloader() {
                 console.log("Killing process with PID:", downloadState.process_id);
                 await invoke('kill_all_process', { pid: downloadState.process_id });
             }
-            downloadStatusUpdater.mutate({ download_id: downloadState.download_id, download_status: 'paused' }, {
-                onSuccess: (data) => {
-                    console.log("Download status updated successfully:", data);
-                    queryClient.invalidateQueries({ queryKey: ['download-states'] });
 
-                    /* re-check if the download is properly paused (if not try again after a small delay)
-                    as the pause opertion happens within high throughput of operations and have a high chgance of failure.
-                    */
-                    if (isSuccessFetchingDownloadStates && downloadStates.find(state => state.download_id === downloadState.download_id)?.download_status !== 'paused') {
-                        console.log("Download status not updated to paused yet, retrying...");
-                        setTimeout(() => {
-                            downloadStatusUpdater.mutate({ download_id: downloadState.download_id, download_status: 'paused' }, {
-                                onSuccess: (data) => {
-                                    console.log("Download status updated successfully on retry:", data);
-                                    queryClient.invalidateQueries({ queryKey: ['download-states'] });
-                                },
-                                onError: (error) => {
-                                    console.error("Failed to update download status:", error);
-                                }
-                            });
-                        }, 200);
-                    }
-
-                    // Reset the processing flag to ensure queue can be processed
-                    isProcessingQueueRef.current = false;
-
-                    // Process the queue after a short delay to ensure state is updated
-                    setTimeout(() => {
-                        processQueuedDownloads();
-                    }, 1000);
-                },
-                onError: (error) => {
-                    console.error("Failed to update download status:", error);
-                }
+            return new Promise<void>((resolve, reject) => {
+                setTimeout(() => {
+                    downloadStatusUpdater.mutate({ download_id: downloadState.download_id, download_status: 'paused' }, {
+                        onSuccess: (data) => {
+                            console.log("Download status updated successfully:", data);
+                            queryClient.invalidateQueries({ queryKey: ['download-states'] });
+                            // Reset the processing flag to ensure queue can be processed
+                            isProcessingQueueRef.current = false;
+                            // Process the queue after a short delay to ensure state is updated
+                            setTimeout(() => {
+                                processQueuedDownloads();
+                            }, 1000);
+                            resolve();
+                        },
+                        onError: (error) => {
+                            console.error("Failed to update download status:", error);
+                            isProcessingQueueRef.current = false;
+                            reject(error);
+                        }
+                    });
+                }, 1000);
             });
-            return Promise.resolve();
         } catch (e) {
             console.error(`Failed to pause download: ${e}`);
             LOG.error('NEODLP', `Failed to pause download with id: ${downloadState.download_id} with error: ${e}`);

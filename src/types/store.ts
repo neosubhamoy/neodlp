@@ -48,6 +48,8 @@ export interface DownloaderPageStatesStore {
     isErrored: boolean;
     isErrorExpected: boolean;
     erroredDownloadId: string | null;
+    videoPanelSizes: number[];
+    playlistPanelSizes: number[];
     setActiveDownloadModeTab: (tab: string) => void;
     setActiveDownloadConfigurationTab: (tab: string) => void;
     setIsStartingDownload: (isStarting: boolean) => void;
@@ -62,6 +64,8 @@ export interface DownloaderPageStatesStore {
     setIsErrored: (isErrored: boolean) => void;
     setIsErrorExpected: (isErrorExpected: boolean) => void;
     setErroredDownloadId: (downloadId: string | null) => void;
+    setVideoPanelSizes: (sizes: number[]) => void;
+    setPlaylistPanelSizes: (sizes: number[]) => void;
 }
 
 export interface LibraryPageStatesStore {
@@ -101,6 +105,8 @@ export interface SettingsPageStatesStore {
     appUpdate: Update | null;
     isUpdatingApp: boolean;
     appUpdateDownloadProgress: number;
+    formResetTrigger: number;
+    resetAcknowledgements: number;
     setActiveTab: (tab: string) => void;
     setActiveSubAppTab: (tab: string) => void;
     setActiveSubExtTab: (tab: string) => void;
@@ -119,6 +125,8 @@ export interface SettingsPageStatesStore {
     setAppUpdate: (update: Update | null) => void;
     setIsUpdatingApp: (isUpdating: boolean) => void;
     setAppUpdateDownloadProgress: (progress: number) => void;
+    triggerFormReset: () => void;
+    acknowledgeFormReset: () => void;
 }
 
 export interface KvPairsStatesStore {

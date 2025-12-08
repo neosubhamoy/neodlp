@@ -64,6 +64,8 @@ export const useDownloaderPageStatesStore = create<DownloaderPageStatesStore>((s
     isErrored: false,
     isErrorExpected: false,
     erroredDownloadId: null,
+    videoPanelSizes: [35, 65],
+    playlistPanelSizes: [45, 55],
     setActiveDownloadModeTab: (tab) => set(() => ({ activeDownloadModeTab: tab })),
     setActiveDownloadConfigurationTab: (tab) => set(() => ({ activeDownloadConfigurationTab: tab })),
     setIsStartingDownload: (isStarting) => set(() => ({ isStartingDownload: isStarting })),
@@ -91,6 +93,8 @@ export const useDownloaderPageStatesStore = create<DownloaderPageStatesStore>((s
     setIsErrored: (isErrored) => set(() => ({ isErrored: isErrored })),
     setIsErrorExpected: (isErrorExpected) => set(() => ({ isErrorExpected: isErrorExpected })),
     setErroredDownloadId: (downloadId) => set(() => ({ erroredDownloadId: downloadId })),
+    setVideoPanelSizes: (sizes) => set(() => ({ videoPanelSizes: sizes })),
+    setPlaylistPanelSizes: (sizes) => set(() => ({ playlistPanelSizes: sizes }))
 }));
 
 export const useLibraryPageStatesStore = create<LibraryPageStatesStore>((set) => ({
@@ -165,9 +169,9 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         audio_format: 'auto',
         always_reencode_video: false,
         embed_video_metadata: false,
-        embed_audio_metadata: true,
+        embed_audio_metadata: false,
         embed_video_thumbnail: false,
-        embed_audio_thumbnail: true,
+        embed_audio_thumbnail: false,
         use_cookies: false,
         import_cookies_from: 'browser',
         cookies_browser: 'firefox',
@@ -186,7 +190,6 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         filename_template: '%(title)s_%(resolution|unknown)s',
         debug_mode: false,
         log_verbose: true,
-        log_warning: true,
         log_progress: false,
         enable_notifications: false,
         update_notification: true,
@@ -201,6 +204,8 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
     appUpdate: null,
     isUpdatingApp: false,
     appUpdateDownloadProgress: 0,
+    formResetTrigger: 0,
+    resetAcknowledgements: 0,
     setActiveTab: (tab) => set(() => ({ activeTab: tab })),
     setActiveSubAppTab: (tab) => set(() => ({ activeSubAppTab: tab })),
     setActiveSubExtTab: (tab) => set(() => ({ activeSubExtTab: tab })),
@@ -235,9 +240,9 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             audio_format: 'auto',
             always_reencode_video: false,
             embed_video_metadata: false,
-            embed_audio_metadata: true,
+            embed_audio_metadata: false,
             embed_video_thumbnail: false,
-            embed_audio_thumbnail: true,
+            embed_audio_thumbnail: false,
             use_cookies: false,
             import_cookies_from: 'browser',
             cookies_browser: 'firefox',
@@ -256,7 +261,6 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             filename_template: '%(title)s_%(resolution|unknown)s',
             debug_mode: false,
             log_verbose: true,
-            log_warning: true,
             log_progress: false,
             enable_notifications: false,
             update_notification: true,
@@ -272,7 +276,14 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
     setIsCheckingAppUpdate: (isChecking) => set(() => ({ isCheckingAppUpdate: isChecking })),
     setAppUpdate: (update) => set(() => ({ appUpdate: update })),
     setIsUpdatingApp: (isUpdating) => set(() => ({ isUpdatingApp: isUpdating })),
-    setAppUpdateDownloadProgress: (progress) => set(() => ({ appUpdateDownloadProgress: progress }))
+    setAppUpdateDownloadProgress: (progress) => set(() => ({ appUpdateDownloadProgress: progress })),
+    triggerFormReset: () => set((state) => ({
+        formResetTrigger: state.formResetTrigger + 1,
+        resetAcknowledgements: 0
+    })),
+    acknowledgeFormReset: () => set((state) => ({
+        resetAcknowledgements: state.resetAcknowledgements + 1
+    })),
 }));
 
 export const useKvPairsStatesStore = create<KvPairsStatesStore>((set) => ({

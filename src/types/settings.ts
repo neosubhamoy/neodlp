@@ -50,7 +50,6 @@ export interface Settings {
     filename_template: string;
     debug_mode: boolean;
     log_verbose: boolean;
-    log_warning: boolean;
     log_progress: boolean;
     enable_notifications: boolean;
     update_notification: boolean;

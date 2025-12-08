@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/tooltip"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
+const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 30 // 30 days
 const SIDEBAR_WIDTH = "16rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
@@ -69,9 +69,25 @@ function SidebarProvider({
   const isMobile = useIsMobile()
   const [openMobile, setOpenMobile] = React.useState(false)
 
+  // Helper to read cookie value
+  const getCookieValue = (name: string): boolean | null => {
+    if (typeof document === "undefined") return null
+    const value = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith(`${name}=`))
+      ?.split("=")[1]
+    return value === "true" ? true : value === "false" ? false : null
+  }
+
+  // Read initial state from cookie, fallback to defaultOpen
+  const getInitialState = () => {
+    const cookieValue = getCookieValue(SIDEBAR_COOKIE_NAME)
+    return cookieValue !== null ? cookieValue : defaultOpen
+  }
+
   // This is the internal state of the sidebar.
   // We use openProp and setOpenProp for control from outside the component.
-  const [_open, _setOpen] = React.useState(defaultOpen)
+  const [_open, _setOpen] = React.useState(getInitialState)
   const open = openProp ?? _open
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {

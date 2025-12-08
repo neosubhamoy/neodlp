@@ -7,6 +7,7 @@ export interface RawVideoInfo {
     thumbnail: string;
     channel: string;
     uploader: string;
+    creator: string;
     duration_string: string;
     release_date: string;
     upload_date: string;
@@ -39,6 +40,7 @@ export interface RawVideoInfo {
     playlist_title: string;
     playlist_channel: string;
     playlist_uploader: string;
+    playlist_creator: string;
     playlist_webpage_url: string;
     entries: RawVideoInfo[];
     n_entries: number;

@@ -8,6 +8,7 @@ export function useSettings() {
   const queryClient = useQueryClient();
   const setSettingsKey = useSettingsPageStatesStore(state => state.setSettingsKey);
   const resetSettingsState = useSettingsPageStatesStore(state => state.resetSettings);
+  const triggerFormReset = useSettingsPageStatesStore(state => state.triggerFormReset);
   const settingsKeySaver = useSaveSettingsKey();
   const settingsReseter = useResetSettings();
 
@@ -34,6 +35,7 @@ export function useSettings() {
         try {
           await invoke("reset_config");
           resetSettingsState();
+          triggerFormReset();
           console.log("Settings reset successfully");
           queryClient.invalidateQueries({ queryKey: ["settings"] });
           toast.success("Settings reset successfully", {
