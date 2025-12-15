@@ -284,8 +284,9 @@ export default function DownloaderPage() {
                             {!isMetadataLoading && !videoUrl && (
                                 <Button
                                 type="button"
-                                variant="outline"
+                                variant="ghost"
                                 size="icon"
+                                className="border border-input"
                                 disabled={isMetadataLoading}
                                 onClick={async () => {
                                     const text = await readText();
@@ -301,8 +302,9 @@ export default function DownloaderPage() {
                             {!isMetadataLoading && videoUrl && (
                                 <Button
                                 type="button"
-                                variant="outline"
+                                variant="ghost"
                                 size="icon"
+                                className="border border-input"
                                 disabled={isMetadataLoading}
                                 onClick={() => {
                                     searchForm.setValue("url", '');

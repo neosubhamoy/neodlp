@@ -14,6 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { invoke } from "@tauri-apps/api/core";
 import { SlidingButton } from "@/components/custom/slidingButton";
+import clsx from "clsx";
 
 const websocketPortSchema = z.object({
     port: z.coerce.number<number>({
@@ -205,6 +206,11 @@ export function ExtensionSettings() {
     const isRestartingWebSocketServer = useSettingsPageStatesStore(state => state.isRestartingWebSocketServer);
     const setIsRestartingWebSocketServer = useSettingsPageStatesStore(state => state.setIsRestartingWebSocketServer);
 
+    const tabsList = [
+        { key: "install", label: "Install", icon: ArrowDownToLine, component: <ExtInstallSettings /> },
+        { key: "port", label: "Port", icon: EthernetPort, component: <ExtPortSettings /> },
+    ];
+
     return (
         <>
         <Card className="p-4 space-y-4 my-4">
@@ -266,28 +272,22 @@ export function ExtensionSettings() {
         onValueChange={setActiveSubExtTab}
         >
             <TabsList className="shrink-0 grid grid-cols-1 gap-1 p-0 bg-background min-w-45">
-                <TabsTrigger
-                    key="install"
-                    value="install"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
-                >
-                    <ArrowDownToLine className="size-4" /> Install
-                </TabsTrigger>
-                <TabsTrigger
-                    key="port"
-                    value="port"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
-                >
-                    <EthernetPort className="size-4" /> Port
-                </TabsTrigger>
+                {tabsList.map((tab) => (
+                    <TabsTrigger
+                        key={tab.key}
+                        value={tab.key}
+                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
+                    >
+                        <tab.icon className="size-4" /> {tab.label}
+                    </TabsTrigger>
+                ))}
             </TabsList>
             <div className="min-h-full flex flex-col w-full border-l border-border pl-4">
-                <TabsContent key="install" value="install" className="flex flex-col gap-4 min-h-[150px] max-w-[90%]">
-                    <ExtInstallSettings />
-                </TabsContent>
-                <TabsContent key="port" value="port" className="flex flex-col gap-4 min-h-[150px] max-w-[70%]">
-                    <ExtPortSettings />
-                </TabsContent>
+                {tabsList.map((tab) => (
+                    <TabsContent key={tab.key} value={tab.key} className={clsx("flex flex-col gap-4 min-h-[150px]", tab.key === "install" ? "max-w-[90%]" : "max-w-[70%]")}>
+                        {tab.component}
+                    </TabsContent>
+                ))}
             </div>
         </Tabs>
         </>

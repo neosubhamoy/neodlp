@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { BellRing, BrushCleaning, Bug, Cookie, ExternalLink, FileVideo, Folder, FolderOpen, Info, Loader2, LucideIcon, Monitor, Moon, ShieldMinus, SquareTerminal, Sun, Terminal, Trash, TriangleAlert, WandSparkles, Wifi, Wrench } from "lucide-react";
+import { BadgeCheck, BellRing, BrushCleaning, Bug, Cookie, ExternalLink, FilePen, FileVideo, Folder, FolderOpen, Github, Globe, Heart, Info, Loader2, LucideIcon, Mail, Monitor, Moon, Package, Scale, ShieldMinus, SquareTerminal, Sun, Terminal, Trash, TriangleAlert, WandSparkles, Wifi, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,13 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { isPermissionGranted, requestPermission } from '@tauri-apps/plugin-notification';
+import { NeoDlpLogo } from "@/components/icons/neodlp";
+import clsx from "clsx";
+import { Badge } from "@/components/ui/badge";
+import { config } from "@/config";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import neosubhamoyImage from "@/assets/images/neosubhamoy.jpg";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const proxyUrlSchema = z.object({
     url: z.url({
@@ -467,7 +474,7 @@ function AppFormatSettings() {
     );
 }
 
-function AppMetadataSettings() {
+function AppEmbeddingSettings() {
     const { saveSettingsKey } = useSettings();
 
     const embedVideoMetadata = useSettingsPageStatesStore(state => state.settings.embed_video_metadata);
@@ -1252,6 +1259,188 @@ function AppDebugSettings() {
     );
 }
 
+function AppInfoSettings() {
+    const appVersion = useSettingsPageStatesStore(state => state.appVersion);
+
+    const binDepsList = [
+        { key: 'yt-dlp', name: 'YT-DLP', desc: 'The core video/audio downloading engine', url: 'https://github.com/yt-dlp/yt-dlp', license: 'Unlicense', licenseUrl: 'https://github.com/yt-dlp/yt-dlp/blob/master/LICENSE' },
+        { key: 'ffmpeg', name: 'FFmpeg', desc: 'Multimedia framework for handling video/audio processing', url: 'https://ffmpeg.org/', license: 'LGPLv2.1+', licenseUrl: 'https://ffmpeg.org/legal.html' },
+        { key: 'ffprobe', name: 'FFprobe', desc: 'Multimedia stream analyzer for retrieving media information', url: 'https://ffmpeg.org/ffprobe.html', license: 'LGPLv2.1+', licenseUrl: 'https://ffmpeg.org/legal.html' },
+        { key: 'deno', name: 'Deno', desc: 'The modern JavaScript/TypeScript runtime', url: 'https://deno.land/', license: 'MIT', licenseUrl: 'https://github.com/denoland/deno/blob/main/LICENSE.md' },
+        { key: 'aria2', name: 'Aria2', desc: 'Lightweight multi-protocol & multi-source download utility', url: 'https://aria2.github.io/', license: 'GPLv2+', licenseUrl: 'https://github.com/aria2/aria2/blob/master/COPYING' },
+    ];
+    const langDepsList = [
+        { key: 'tauri', name: 'Tauri', desc: 'Framework for building cross-platform, tiny and blazing fast binaries', url: 'https://tauri.app/', license: 'MIT, Apache-2.0', licenseUrl: 'https://github.com/tauri-apps/tauri/blob/dev/LICENSE_MIT' },
+        { key: 'react', name: 'React', desc: 'The library for web and native user interfaces', url: 'https://reactjs.org/', license: 'MIT', licenseUrl: 'https://github.com/facebook/react/blob/main/LICENSE' },
+        { key: 'rust', name: 'Rust', desc: 'A language empowering everyone to build reliable and efficient software', url: 'https://www.rust-lang.org/', license: 'MIT, Apache-2.0', licenseUrl: 'https://github.com/rust-lang/rust/blob/main/LICENSE-APACHE' },
+        { key: 'typescript', name: 'TypeScript', desc: 'Typed superset of JavaScript that compiles to plain JavaScript', url: 'https://www.typescriptlang.org/', license: 'Apache-2.0', licenseUrl: 'https://github.com/microsoft/TypeScript/blob/main/LICENSE.txt' },
+        { key: 'tailwindcss', name: 'Tailwind CSS', desc: 'A utility-first CSS framework for rapidly building custom designs', url: 'https://tailwindcss.com/', license: 'MIT', licenseUrl: 'https://github.com/tailwindlabs/tailwindcss/blob/main/LICENSE' },
+        { key: 'vite', name: 'Vite', desc: 'Next Generation Frontend Tooling', url: 'https://vitejs.dev/', license: 'MIT', licenseUrl: 'https://github.com/vitejs/vite/blob/main/LICENSE' },
+        { key: 'sqlite3', name: 'SQLite3', desc: 'A C library that implements a small, fast, self-contained SQL database engine', url: 'https://www.sqlite.org/', license: 'Public', licenseUrl: 'https://www.sqlite.org/copyright.html' },
+    ];
+    const libDepsList = [
+        { key: 'shadcn-ui', name: 'shadcn/ui', desc: 'Beautifully designed components built with Radix UI and Tailwind CSS', url: 'https://ui.shadcn.com/', license: 'MIT', licenseUrl: 'https://github.com/shadcn-ui/ui/blob/main/LICENSE.md' },
+        { key: 'lucide-icons', name: 'Lucide Icons', desc: 'A simple and consistent icon system for web applications', url: 'https://lucide.dev/', license: 'ISC', licenseUrl: 'https://github.com/lucide-icons/lucide/blob/main/LICENSE' },
+        { key: 'tanstack-react-query', name: 'TanStack React Query', desc: 'Powerful asynchronous state management tool', url: 'https://tanstack.com/query/latest', license: 'MIT', licenseUrl: 'https://github.com/TanStack/query/blob/main/LICENSE' },
+        { key: 'zustand', name: 'Zustand', desc: 'A small, fast and scalable bearbones state-management solution', url: 'https://zustand-demo.pmnd.rs/', license: 'MIT', licenseUrl: 'https://github.com/pmndrs/zustand/blob/main/LICENSE' },
+        { key: 'zod', name: 'Zod', desc: 'TypeScript-first schema declaration and validation library', url: 'https://zod.dev/', license: 'MIT', licenseUrl: 'https://github.com/colinhacks/zod/blob/main/LICENSE' },
+        { key: 'react-router', name: 'React Router', desc: 'Declarative routing for React applications', url: 'https://reactrouter.com/', license: 'MIT', licenseUrl: 'https://github.com/remix-run/react-router/blob/main/LICENSE.md' },
+        { key: 'react-hook-form', name: 'React Hook Form', desc: 'Performant, flexible and extensible forms with easy-to-use validation', url: 'https://react-hook-form.com/', license: 'MIT', licenseUrl: 'https://github.com/react-hook-form/react-hook-form/blob/master/LICENSE' },
+        { key: 'sonner', name: 'Sonner', desc: 'A beautiful, simple and customizable notification library for React', url: 'https://sonner.emilkowal.ski/', license: 'MIT', licenseUrl: 'https://github.com/emilkowalski/sonner/blob/main/LICENSE.md' },
+        { key: 'es-toolkit' , name: 'ES Toolkit', desc: 'State-of-the-art JavaScript utility library', url: 'https://es-toolkit.dev/', license: 'MIT', licenseUrl: 'https://github.com/toss/es-toolkit/blob/main/LICENSE' },
+        { key: 'tokio', name: 'Tokio', desc: 'An asynchronous runtime for the Rust programming language', url: 'https://tokio.rs/', license: 'MIT', licenseUrl: 'https://github.com/tokio-rs/tokio/blob/master/LICENSE' },
+        { key: 'reqwest', name: 'Reqwest', desc: 'An easy and powerful HTTP Client for Rust', url: 'https://crates.io/crates/reqwest', license: 'MIT, Apache-2.0', licenseUrl: 'https://github.com/seanmonstar/reqwest/blob/master/LICENSE-APACHE' },
+        { key: 'serde', name: 'Serde', desc: 'A framework for serializing and deserializing Rust data structures', url: 'https://serde.rs/', license: 'MIT, Apache-2.0', licenseUrl: 'https://github.com/serde-rs/serde/blob/master/LICENSE-MIT' },
+        { key: 'sqlx', name: 'SQLx', desc: 'An async, pure Rust SQL crate', url: 'https://crates.io/crates/sqlx', license: 'MIT, Apache-2.0', licenseUrl: 'https://github.com/launchbadge/sqlx/blob/main/LICENSE-APACHE' },
+        { key: 'directories', name: 'Directories', desc: 'A Rust library for platform-specific standard locations', url: 'https://crates.io/crates/directories', license: 'MIT, Apache-2.0', licenseUrl: 'https://codeberg.org/dirs/directories-rs/src/branch/main/LICENSE-APACHE' },
+    ];
+
+    function DependencyItem(dep: { key: string, name: string; desc: string; url: string; license: string; licenseUrl: string }) {
+        return (
+            <div key={dep.key} className="p-4 border border-border rounded-md flex items-center justify-between gap-4">
+                <div className="flex flex-col">
+                    <h4 className="font-semibold flex items-center gap-2">
+                        <a href={dep.url} target="_blank" className="hover:underline">
+                            {dep.name}
+                        </a>
+                        <a href={dep.url} target="_blank" title={`${dep.name} homepage`}>
+                            <ExternalLink className="size-3 text-muted-foreground hover:text-foreground" />
+                        </a>
+                    </h4>
+                    <p className="text-xs text-muted-foreground">{dep.desc}</p>
+                </div>
+                <a href={dep.licenseUrl} target="_blank">
+                    <Badge className="border-input rounded-full" variant="outline"><span className="mb-0.5">{dep.license}</span></Badge>
+                </a>
+            </div>
+        );
+    }
+
+    return (
+        <>
+        <div className="app-info">
+            <Card className="p-4 space-y-4 flex items-center gap-4">
+                <div className="flex aspect-square size-18 items-center justify-center rounded-lg m-0">
+                    <NeoDlpLogo className="size-full rounded-lg border border-border [--logo-stop-color-1:#4444FF] [--logo-stop-color-2:#FF43D0] customscheme:[--logo-stop-color-1:var(--color-chart-5)] customscheme:[--logo-stop-color-2:var(--color-chart-1)]" />
+                </div>
+                <div className="flex flex-col justify-center gap-1">
+                  <span className="truncate font-semibold">{config.appName} <Badge className="ml-1 border-primary px-1.5" variant="outline"><span className="mb-0.5">v{appVersion}</span></Badge></span>
+                  <span className="truncate text-xs text-muted-foreground">The Next-Gen Truly Cross-Platform Video/Audio Downloader</span>
+                  <span className="flex items-center gap-2">
+                    <a href={config.appHomepage} target="_blank" className="text-sm text-foreground" title="Homepage">
+                        <Globe className="size-3.5" />
+                    </a>
+                    <a href={'https://github.com/' + config.appRepo} target="_blank" className="text-sm text-foreground" title="GitHub">
+                        <Github className="size-3.5" />
+                    </a>
+                    <p className="text-muted-foreground">•</p>
+                    <a href={config.appHomepage + '/privacy-policy'} target="_blank" className="text-xs hover:underline">Privacy Policy</a>
+                    <p className="text-muted-foreground">•</p>
+                    <a href={config.appHomepage + '/terms-of-use'} target="_blank" className="text-xs hover:underline">Terms of Use</a>
+                  </span>
+                </div>
+            </Card>
+        </div>
+        <div className="about-developer">
+            <h3 className="font-semibold">Developer</h3>
+            <p className="text-xs text-muted-foreground mb-3">Meet the Creator & Lead-Developer of NeoDLP</p>
+            <Card className="p-4 space-y-4 flex items-center gap-4">
+                <div className="relative w-fit m-0">
+                    <Avatar className="size-11">
+                        <AvatarImage src={neosubhamoyImage} />
+                        <AvatarFallback>SB</AvatarFallback>
+                    </Avatar>
+                    <span className='absolute -bottom-1 -right-1.5'>
+                        <span className='sr-only'>Verified</span>
+                        <BadgeCheck className='text-background size-5 fill-primary' />
+                    </span>
+                </div>
+                <div className="flex flex-col justify-center gap-1 m-0">
+                    <span className="truncate font-semibold">{config.appAuthor}</span>
+                    <p className="text-xs text-muted-foreground">Full-Stack Developer</p>
+                </div>
+                <div className="spacer grow"></div>
+                <Button variant="ghost" size="icon" className="p-5 m-0 border border-input" title="Official Website" asChild>
+                    <a href={config.appAuthorUrl} target="_blank">
+                        <Globe className="size-4" />
+                    </a>
+                </Button>
+                <Button className="py-5" title="Buy Me a Coffee" asChild>
+                    <a href={config.appAuthorSponsorUrl} target="_blank">
+                        <Heart className="size-4" /> Sponsor
+                    </a>
+                </Button>
+            </Card>
+        </div>
+        <div className="bug-report">
+            <h3 className="font-semibold">Bug Report</h3>
+            <p className="text-xs text-muted-foreground mb-3">Noticed any bug or inconsistencies? Report it to help us improve</p>
+            <div className="report">
+                <span className="flex items-center gap-4 flex-wrap">
+                    <Button className="px-4" variant="outline" size="sm" asChild>
+                        <a href={'mailto:' + config.appSupportEmail + '?subject=[BUG]%20Title%20Here&body=Describe%20The%20Bug%20Here.%20Follow%20this%20issue%20template%3A%20https%3A%2F%2Fgithub.com%2Fneosubhamoy%2Fneodlp%2Fissues%2Fnew%3Ftemplate%3Dbug_report.md'} target="_blank" >
+                            <Mail className="size-4" /> Write an Email
+                        </a>
+                    </Button>
+                    <Button className="px-4" size="sm" asChild>
+                        <a href={'https://github.com/' + config.appRepo + '/issues/new?template=bug_report.md'} target="_blank" >
+                            <Bug className="size-4" /> Create a GitHub Issue
+                        </a>
+                    </Button>
+                </span>
+            </div>
+        </div>
+        <div className="license-and-usage">
+            <h3 className="font-semibold">License and Usage</h3>
+            <p className="text-xs text-muted-foreground mb-3">License and usage terms of NeoDLP</p>
+            <div className="license">
+                <p className="text-sm mb-3">NeoDLP is a Fully Open-Source Software Licensed under the MIT license. Anyone can view, modify, use (personal and commercial) or distribute it's sources without any extra permission (Just include the LICENSE file :)</p>
+                <p className="text-sm mb-3"><TriangleAlert className="size-4 stroke-primary inline mb-1 mr-0.5" /> DISCLAIMER: NeoDLP facilitates Downloading from various Online Platforms which have their own Policies and Terms of Use, Downloading and using Copyrighted Content from these Sites for Commercial pourposes are not allowed by most Platforms without prior Permission (We absolutely do not promote this kinds of activity), You should use the downloaded content wisely and solely at your own responsibility.</p>
+                <span className="flex items-center gap-4 flex-wrap">
+                    <Button className="px-4" variant="outline" size="sm" asChild>
+                        <a href={'https://github.com/' + config.appRepo + '/blob/main/LICENSE'} target="_blank" >
+                            <Scale className="size-4" /> MIT License
+                        </a>
+                    </Button>
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                                <Package className="size-4" /> Dependencies
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[600px]">
+                            <DialogHeader>
+                                <DialogTitle>Dependencies</DialogTitle>
+                                <DialogDescription>Major dependencies of NeoDLP</DialogDescription>
+                            </DialogHeader>
+                            <div className="flex flex-col gap-4 max-h-[45vh] overflow-y-auto">
+                                <h4 className="text-sm font-semibold">External Binaries</h4>
+                                {binDepsList.map((dep) => (
+                                    <DependencyItem {...dep} />
+                                ))}
+                                <h4 className="text-sm font-semibold">Languages, Frameworks & Tooling</h4>
+                                {langDepsList.map((dep) => (
+                                    <DependencyItem {...dep} />
+                                ))}
+                                <h4 className="text-sm font-semibold">Notable Libraries</h4>
+                                {libDepsList.map((dep) => (
+                                    <DependencyItem {...dep} />
+                                ))}
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                    <Button size="sm" className="px-4" asChild>
+                        <a href="https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md" target="_blank" >
+                            <ExternalLink className="size-4" /> Supported Sites
+                        </a>
+                    </Button>
+                </span>
+            </div>
+        </div>
+        </>
+    );
+}
+
 export function ApplicationSettings() {
     const activeSubAppTab = useSettingsPageStatesStore(state => state.activeSubAppTab);
     const setActiveSubAppTab = useSettingsPageStatesStore(state => state.setActiveSubAppTab);
@@ -1269,6 +1458,21 @@ export function ApplicationSettings() {
 
     const { saveSettingsKey } = useSettings();
     const { updateYtDlp } = useYtDlpUpdater();
+
+    const tabsList = [
+        { key: 'general', label: 'General', icon: Wrench, component: <AppGeneralSettings /> },
+        { key: 'appearance', label: 'Appearance', icon: WandSparkles, component: <AppAppearanceSettings /> },
+        { key: 'folders', label: 'Folders', icon: Folder, component: <AppFolderSettings /> },
+        { key: 'formats', label: 'Formats', icon: FileVideo, component: <AppFormatSettings /> },
+        { key: 'embedding', label: 'Embedding', icon: FilePen, component: <AppEmbeddingSettings /> },
+        { key: 'network', label: 'Network', icon: Wifi, component: <AppNetworkSettings /> },
+        { key: 'cookies', label: 'Cookies', icon: Cookie, component: <AppCookiesSettings /> },
+        { key: 'sponsorblock', label: 'Sponsorblock', icon: ShieldMinus, component: <AppSponsorblockSettings /> },
+        { key: 'notifications', label: 'Notifications', icon: BellRing, component: <AppNotificationSettings /> },
+        { key: 'commands', label: 'Commands', icon: SquareTerminal, component: <AppCommandSettings /> },
+        { key: 'debug', label: 'Debug', icon: Bug, component: <AppDebugSettings /> },
+        { key: 'info', label: 'Info', icon: Info, component: <AppInfoSettings /> },
+    ];
 
     return (
         <>
@@ -1337,118 +1541,22 @@ export function ApplicationSettings() {
         onValueChange={setActiveSubAppTab}
         >
             <TabsList className="shrink-0 grid grid-cols-1 gap-1 p-0 bg-background min-w-45">
-                <TabsTrigger
-                    key="general"
-                    value="general"
+                {tabsList.map((tab) => (
+                    <TabsTrigger
+                    key={tab.key}
+                    value={tab.key}
                     className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
-                >
-                    <Wrench className="size-4" /> General
-                </TabsTrigger>
-                <TabsTrigger
-                    key="appearance"
-                    value="appearance"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
-                >
-                    <WandSparkles className="size-4" /> Appearance
-                </TabsTrigger>
-                <TabsTrigger
-                    key="folders"
-                    value="folders"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
-                >
-                    <Folder className="size-4" /> Folders
-                </TabsTrigger>
-                <TabsTrigger
-                    key="formats"
-                    value="formats"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
-                >
-                    <FileVideo className="size-4" /> Formats
-                </TabsTrigger>
-                <TabsTrigger
-                    key="metadata"
-                    value="metadata"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
-                >
-                    <Info className="size-4" /> Metadata
-                </TabsTrigger>
-                <TabsTrigger
-                    key="network"
-                    value="network"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
-                >
-                    <Wifi className="size-4" /> Network
-                </TabsTrigger>
-                <TabsTrigger
-                    key="cookies"
-                    value="cookies"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
-                >
-                    <Cookie className="size-4" /> Cookies
-                </TabsTrigger>
-                <TabsTrigger
-                    key="sponsorblock"
-                    value="sponsorblock"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
-                >
-                    <ShieldMinus className="size-4" /> Sponsorblock
-                </TabsTrigger>
-                <TabsTrigger
-                    key="notifications"
-                    value="notifications"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
-                >
-                    <BellRing className="size-4" /> Notifications
-                </TabsTrigger>
-                <TabsTrigger
-                    key="commands"
-                    value="commands"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
-                >
-                    <SquareTerminal className="size-4" /> Commands
-                </TabsTrigger>
-                <TabsTrigger
-                    key="debug"
-                    value="debug"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start px-3 py-1.5 gap-2"
-                >
-                    <Bug className="size-4" /> Debug
-                </TabsTrigger>
+                    >
+                        <tab.icon className="size-4" /> {tab.label}
+                    </TabsTrigger>
+                ))}
             </TabsList>
-            <div className="min-h-full flex flex-col max-w-[55%] w-full border-l border-border pl-4">
-                <TabsContent key="general" value="general" className="flex flex-col gap-4 min-h-[425px]">
-                    <AppGeneralSettings />
-                </TabsContent>
-                <TabsContent key="appearance" value="appearance" className="flex flex-col gap-4 min-h-[425px]">
-                    <AppAppearanceSettings />
-                </TabsContent>
-                <TabsContent key="folders" value="folders" className="flex flex-col gap-4 min-h-[425px]">
-                    <AppFolderSettings />
-                </TabsContent>
-                <TabsContent key="formats" value="formats" className="flex flex-col gap-4 min-h-[425px]">
-                    <AppFormatSettings />
-                </TabsContent>
-                <TabsContent key="metadata" value="metadata" className="flex flex-col gap-4 min-h-[425px]">
-                    <AppMetadataSettings />
-                </TabsContent>
-                <TabsContent key="network" value="network" className="flex flex-col gap-4 min-h-[425px]">
-                    <AppNetworkSettings />
-                </TabsContent>
-                <TabsContent key="cookies" value="cookies" className="flex flex-col gap-4 min-h-[425px]">
-                    <AppCookiesSettings />
-                </TabsContent>
-                <TabsContent key="sponsorblock" value="sponsorblock" className="flex flex-col gap-4 min-h-[425px]">
-                    <AppSponsorblockSettings />
-                </TabsContent>
-                <TabsContent key="notifications" value="notifications" className="flex flex-col gap-4 min-h-[425px]">
-                    <AppNotificationSettings />
-                </TabsContent>
-                <TabsContent key="commands" value="commands" className="flex flex-col gap-4 min-h-[425px]">
-                    <AppCommandSettings />
-                </TabsContent>
-                <TabsContent key="debug" value="debug" className="flex flex-col gap-4 min-h-[425px]">
-                    <AppDebugSettings />
-                </TabsContent>
+            <div className="min-h-full flex flex-col w-full border-l border-border pl-4">
+                {tabsList.map((tab) => (
+                    <TabsContent key={tab.key} value={tab.key} className={clsx("flex flex-col gap-4 min-h-[435px]", tab.key === "info" ? "max-w-[80%]" : "max-w-[70%]")}>
+                        {tab.component}
+                    </TabsContent>
+                ))}
             </div>
         </Tabs>
         </>

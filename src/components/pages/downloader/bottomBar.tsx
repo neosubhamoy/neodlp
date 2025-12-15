@@ -203,7 +203,7 @@ function DownloadConfigDialog({ selectedFormatFileType }: DownloadConfigDialogPr
                                 </RadioGroup>
                             </div>
                             <div className="embeding-options">
-                                <Label className="text-xs my-3">Embeding Options</Label>
+                                <Label className="text-xs my-3">Embedding Options</Label>
                                 <div className="flex items-center space-x-2 mt-3">
                                     <Switch
                                     id="embed-metadata"
