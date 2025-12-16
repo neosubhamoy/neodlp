@@ -340,14 +340,14 @@ export default function useDownloader() {
             }
             // Handle audio only
             else if (fileType === 'audio' && (AUDIO_FORMAT !== 'auto' || format)) {
-                args.push('--extract-audio', '--audio-format', format || AUDIO_FORMAT);
+                args.push('--extract-audio', '--audio-format', format || AUDIO_FORMAT, '--audio-quality', '0');
             }
             // Handle unknown filetype
             else if (fileType === 'unknown' && format) {
                 if (['mkv', 'mp4', 'webm'].includes(format)) {
                     args.push(recodeOrRemux, formatToUse);
                 } else if (['mp3', 'm4a', 'opus'].includes(format)) {
-                    args.push('--extract-audio', '--audio-format', format);
+                    args.push('--extract-audio', '--audio-format', format, '--audio-quality', '0');
                 }
             }
         }
@@ -365,6 +365,7 @@ export default function useDownloader() {
         }
 
         let embedThumbnail = 0;
+        let squareCropThumbnail = 0;
         if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && (downloadConfig.embed_thumbnail || resumeState?.embed_thumbnail || EMBED_VIDEO_THUMBNAIL || EMBED_AUDIO_THUMBNAIL)) {
             const shouldEmbedThumbForVideo = (fileType === 'video+audio' || fileType === 'video') && (downloadConfig.embed_thumbnail || resumeState?.embed_thumbnail || (EMBED_VIDEO_THUMBNAIL && downloadConfig.embed_thumbnail === null));
             const shouldEmbedThumbForAudio = fileType === 'audio' && (downloadConfig.embed_thumbnail || resumeState?.embed_thumbnail || (EMBED_AUDIO_THUMBNAIL && downloadConfig.embed_thumbnail === null));
@@ -372,7 +373,12 @@ export default function useDownloader() {
 
             if (shouldEmbedThumbForUnknown || shouldEmbedThumbForVideo || shouldEmbedThumbForAudio) {
                 embedThumbnail = 1;
-                args.push('--embed-thumbnail');
+                args.push('--embed-thumbnail', '--convert-thumbnail', 'jpg');
+
+                if (downloadConfig.square_crop_thumbnail || resumeState?.square_crop_thumbnail) {
+                    squareCropThumbnail = 1;
+                    args.push('--postprocessor-args', 'ThumbnailsConvertor+FFmpeg_o:-c:v mjpeg -qmin 1 -qscale:v 1 -vf crop="\'min(iw,ih)\':\'min(iw,ih)\'"');
+                }
             }
         }
 
@@ -503,6 +509,7 @@ export default function useDownloader() {
                     output_format: outputFormat,
                     embed_metadata: embedMetadata,
                     embed_thumbnail: embedThumbnail,
+                    square_crop_thumbnail: squareCropThumbnail,
                     sponsorblock_remove: sponsorblockRemove,
                     sponsorblock_mark: sponsorblockMark,
                     use_aria2: useAria2,
@@ -630,6 +637,7 @@ export default function useDownloader() {
                         output_format: resumeState?.output_format || null,
                         embed_metadata: resumeState?.embed_metadata || 0,
                         embed_thumbnail: resumeState?.embed_thumbnail || 0,
+                        square_crop_thumbnail: resumeState?.square_crop_thumbnail || 0,
                         sponsorblock_remove: resumeState?.sponsorblock_remove || null,
                         sponsorblock_mark: resumeState?.sponsorblock_mark || null,
                         use_aria2: resumeState?.use_aria2 || 0,

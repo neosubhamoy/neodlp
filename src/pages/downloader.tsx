@@ -347,10 +347,8 @@ export default function DownloaderPage() {
                 audioOnlyFormats={audioOnlyFormats}
                 videoOnlyFormats={videoOnlyFormats}
                 combinedFormats={combinedFormats}
-                allFilteredFormats={allFilteredFormats}
                 qualityPresetFormats={qualityPresetFormats}
                 subtitleLanguages={subtitleLanguages}
-                selectedFormat={selectedFormat}
                 />
             )}
             {!isMetadataLoading && videoMetadata && selectedDownloadFormat && (

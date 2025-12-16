@@ -40,6 +40,7 @@ export interface DownloadState {
     output_format: string | null;
     embed_metadata: number;
     embed_thumbnail: number;
+    square_crop_thumbnail: number;
     sponsorblock_remove: string | null;
     sponsorblock_mark: string | null;
     use_aria2: number;
@@ -78,6 +79,7 @@ export interface Download {
     output_format: string | null;
     embed_metadata: number;
     embed_thumbnail: number;
+    square_crop_thumbnail: number;
     sponsorblock_remove: string | null;
     sponsorblock_mark: string | null;
     use_aria2: number;

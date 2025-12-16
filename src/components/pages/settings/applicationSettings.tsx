@@ -1295,9 +1295,9 @@ function AppInfoSettings() {
         { key: 'directories', name: 'Directories', desc: 'A Rust library for platform-specific standard locations', url: 'https://crates.io/crates/directories', license: 'MIT, Apache-2.0', licenseUrl: 'https://codeberg.org/dirs/directories-rs/src/branch/main/LICENSE-APACHE' },
     ];
 
-    function DependencyItem(dep: { key: string, name: string; desc: string; url: string; license: string; licenseUrl: string }) {
+    function DependencyItem(dep: { name: string; desc: string; url: string; license: string; licenseUrl: string }) {
         return (
-            <div key={dep.key} className="p-4 border border-border rounded-md flex items-center justify-between gap-4">
+            <div className="p-4 border border-border rounded-md flex items-center justify-between gap-4">
                 <div className="flex flex-col">
                     <h4 className="font-semibold flex items-center gap-2">
                         <a href={dep.url} target="_blank" className="hover:underline">
@@ -1379,7 +1379,7 @@ function AppInfoSettings() {
                 <span className="flex items-center gap-4 flex-wrap">
                     <Button className="px-4" variant="outline" size="sm" asChild>
                         <a href={'mailto:' + config.appSupportEmail + '?subject=[BUG]%20Title%20Here&body=Describe%20The%20Bug%20Here.%20Follow%20this%20issue%20template%3A%20https%3A%2F%2Fgithub.com%2Fneosubhamoy%2Fneodlp%2Fissues%2Fnew%3Ftemplate%3Dbug_report.md'} target="_blank" >
-                            <Mail className="size-4" /> Write an Email
+                            <Mail className="size-4" /> Write Us an Email
                         </a>
                     </Button>
                     <Button className="px-4" size="sm" asChild>
@@ -1415,16 +1415,16 @@ function AppInfoSettings() {
                             </DialogHeader>
                             <div className="flex flex-col gap-4 max-h-[45vh] overflow-y-auto">
                                 <h4 className="text-sm font-semibold">External Binaries</h4>
-                                {binDepsList.map((dep) => (
-                                    <DependencyItem {...dep} />
+                                {binDepsList.map(({key, ...dep}) => (
+                                    <DependencyItem key={key} {...dep} />
                                 ))}
                                 <h4 className="text-sm font-semibold">Languages, Frameworks & Tooling</h4>
-                                {langDepsList.map((dep) => (
-                                    <DependencyItem {...dep} />
+                                {langDepsList.map(({key, ...dep}) => (
+                                    <DependencyItem key={key} {...dep} />
                                 ))}
                                 <h4 className="text-sm font-semibold">Notable Libraries</h4>
-                                {libDepsList.map((dep) => (
-                                    <DependencyItem {...dep} />
+                                {libDepsList.map(({key, ...dep}) => (
+                                    <DependencyItem key={key} {...dep} />
                                 ))}
                             </div>
                         </DialogContent>

@@ -19,16 +19,13 @@ interface SelectivePlaylistDownloadProps {
     videoOnlyFormats: VideoFormat[] | undefined;
     combinedFormats: VideoFormat[] | undefined;
     qualityPresetFormats: VideoFormat[] | undefined;
-    allFilteredFormats: VideoFormat[];
     subtitleLanguages: { code: string; lang: string }[];
-    selectedFormat: VideoFormat | undefined;
 }
 
 interface CombinedPlaylistDownloadProps {
     audioOnlyFormats: VideoFormat[] | undefined;
     videoOnlyFormats: VideoFormat[] | undefined;
     subtitleLanguages: { code: string; lang: string }[];
-    selectedFormat: VideoFormat | undefined;
 }
 
 interface PlaylistDownloaderProps {
@@ -37,9 +34,7 @@ interface PlaylistDownloaderProps {
     videoOnlyFormats: VideoFormat[] | undefined;
     combinedFormats: VideoFormat[] | undefined;
     qualityPresetFormats: VideoFormat[] | undefined;
-    allFilteredFormats: VideoFormat[];
     subtitleLanguages: { code: string; lang: string }[];
-    selectedFormat: VideoFormat | undefined;
 }
 
 function PlaylistPreviewSelection({ videoMetadata }: PlaylistPreviewSelectionProps) {
@@ -104,12 +99,13 @@ function PlaylistPreviewSelection({ videoMetadata }: PlaylistPreviewSelectionPro
     );
 }
 
-function SelectivePlaylistDownload({ videoMetadata, audioOnlyFormats, videoOnlyFormats, combinedFormats, qualityPresetFormats, allFilteredFormats, subtitleLanguages, selectedFormat }: SelectivePlaylistDownloadProps) {
+function SelectivePlaylistDownload({ videoMetadata, audioOnlyFormats, videoOnlyFormats, combinedFormats, qualityPresetFormats, subtitleLanguages }: SelectivePlaylistDownloadProps) {
     const selectedDownloadFormat = useDownloaderPageStatesStore((state) => state.selectedDownloadFormat);
     const selectedSubtitles = useDownloaderPageStatesStore((state) => state.selectedSubtitles);
     const selectedPlaylistVideoIndex = useDownloaderPageStatesStore((state) => state.selectedPlaylistVideoIndex);
     const setSelectedDownloadFormat = useDownloaderPageStatesStore((state) => state.setSelectedDownloadFormat);
     const setSelectedSubtitles = useDownloaderPageStatesStore((state) => state.setSelectedSubtitles);
+    const resetDownloadConfiguration = useDownloaderPageStatesStore((state) => state.resetDownloadConfiguration);
 
     return (
         <div className="flex flex-col overflow-y-scroll max-h-[50vh] xl:max-h-[60vh] no-scrollbar">
@@ -120,7 +116,7 @@ function SelectivePlaylistDownload({ videoMetadata, audioOnlyFormats, videoOnlyF
                 className="flex flex-col items-start gap-2 mb-2"
                 value={selectedSubtitles}
                 onValueChange={(value) => setSelectedSubtitles(value)}
-                disabled={selectedFormat?.ext !== 'mp4' && selectedFormat?.ext !== 'mkv' && selectedFormat?.ext !== 'webm'}
+                // disabled={selectedFormat?.ext !== 'mp4' && selectedFormat?.ext !== 'mkv' && selectedFormat?.ext !== 'webm'}
                 >
                     <p className="text-xs">Subtitle Languages</p>
                     <div className="flex gap-2 flex-wrap items-center">
@@ -141,10 +137,11 @@ function SelectivePlaylistDownload({ videoMetadata, audioOnlyFormats, videoOnlyF
             value={selectedDownloadFormat}
             onValueChange={(value) => {
                 setSelectedDownloadFormat(value);
-                const currentlySelectedFormat = value === 'best' ? videoMetadata?.entries[Number(value) - 1].requested_downloads[0] : allFilteredFormats.find((format) => format.format_id === value);
-                if (currentlySelectedFormat?.ext !== 'mp4' && currentlySelectedFormat?.ext !== 'mkv' && currentlySelectedFormat?.ext !== 'webm') {
-                    setSelectedSubtitles([]);
-                }
+                // const currentlySelectedFormat = value === 'best' ? videoMetadata?.entries[Number(value) - 1].requested_downloads[0] : allFilteredFormats.find((format) => format.format_id === value);
+                // if (currentlySelectedFormat?.ext !== 'mp4' && currentlySelectedFormat?.ext !== 'mkv' && currentlySelectedFormat?.ext !== 'webm') {
+                //     setSelectedSubtitles([]);
+                // }
+                resetDownloadConfiguration();
             }}
             >
                 <p className="text-xs">Suggested</p>
@@ -217,13 +214,14 @@ function SelectivePlaylistDownload({ videoMetadata, audioOnlyFormats, videoOnlyF
     );
 }
 
-function CombinedPlaylistDownload({ audioOnlyFormats, videoOnlyFormats, subtitleLanguages, selectedFormat }: CombinedPlaylistDownloadProps) {
+function CombinedPlaylistDownload({ audioOnlyFormats, videoOnlyFormats, subtitleLanguages }: CombinedPlaylistDownloadProps) {
     const selectedCombinableVideoFormat = useDownloaderPageStatesStore((state) => state.selectedCombinableVideoFormat);
     const selectedCombinableAudioFormat = useDownloaderPageStatesStore((state) => state.selectedCombinableAudioFormat);
     const selectedSubtitles = useDownloaderPageStatesStore((state) => state.selectedSubtitles);
     const setSelectedCombinableVideoFormat = useDownloaderPageStatesStore((state) => state.setSelectedCombinableVideoFormat);
     const setSelectedCombinableAudioFormat = useDownloaderPageStatesStore((state) => state.setSelectedCombinableAudioFormat);
     const setSelectedSubtitles = useDownloaderPageStatesStore((state) => state.setSelectedSubtitles);
+    const resetDownloadConfiguration = useDownloaderPageStatesStore((state) => state.resetDownloadConfiguration);
 
     return (
         <div className="flex flex-col overflow-y-scroll max-h-[50vh] xl:max-h-[60vh] no-scrollbar">
@@ -234,7 +232,6 @@ function CombinedPlaylistDownload({ audioOnlyFormats, videoOnlyFormats, subtitle
                 className="flex flex-col items-start gap-2 mb-2"
                 value={selectedSubtitles}
                 onValueChange={(value) => setSelectedSubtitles(value)}
-                disabled={selectedFormat?.ext !== 'mp4' && selectedFormat?.ext !== 'mkv' && selectedFormat?.ext !== 'webm'}
                 >
                     <p className="text-xs">Subtitle Languages</p>
                     <div className="flex gap-2 flex-wrap items-center">
@@ -256,6 +253,7 @@ function CombinedPlaylistDownload({ audioOnlyFormats, videoOnlyFormats, subtitle
             value={selectedCombinableAudioFormat}
             onValueChange={(value) => {
                 setSelectedCombinableAudioFormat(value);
+                resetDownloadConfiguration();
             }}
             >
                 {videoOnlyFormats && videoOnlyFormats.length > 0 && audioOnlyFormats && audioOnlyFormats.length > 0 && (
@@ -277,6 +275,7 @@ function CombinedPlaylistDownload({ audioOnlyFormats, videoOnlyFormats, subtitle
             value={selectedCombinableVideoFormat}
             onValueChange={(value) => {
                 setSelectedCombinableVideoFormat(value);
+                resetDownloadConfiguration();
             }}
             >
                 {audioOnlyFormats && audioOnlyFormats.length > 0 && videoOnlyFormats && videoOnlyFormats.length > 0 && (
@@ -308,11 +307,12 @@ function CombinedPlaylistDownload({ audioOnlyFormats, videoOnlyFormats, subtitle
     );
 }
 
-export function PlaylistDownloader({ videoMetadata, audioOnlyFormats, videoOnlyFormats, combinedFormats, qualityPresetFormats, allFilteredFormats, subtitleLanguages, selectedFormat }: PlaylistDownloaderProps) {
+export function PlaylistDownloader({ videoMetadata, audioOnlyFormats, videoOnlyFormats, combinedFormats, qualityPresetFormats, subtitleLanguages }: PlaylistDownloaderProps) {
     const activeDownloadModeTab = useDownloaderPageStatesStore((state) => state.activeDownloadModeTab);
     const setActiveDownloadModeTab = useDownloaderPageStatesStore((state) => state.setActiveDownloadModeTab);
     const playlistPanelSizes = useDownloaderPageStatesStore((state) => state.playlistPanelSizes);
     const setPlaylistPanelSizes = useDownloaderPageStatesStore((state) => state.setPlaylistPanelSizes);
+    const resetDownloadConfiguration = useDownloaderPageStatesStore((state) => state.resetDownloadConfiguration);
 
     return (
         <div className="flex">
@@ -334,7 +334,10 @@ export function PlaylistDownloader({ videoMetadata, audioOnlyFormats, videoOnlyF
                         <Tabs
                         className=""
                         value={activeDownloadModeTab}
-                        onValueChange={(tab) => setActiveDownloadModeTab(tab)}
+                        onValueChange={(tab) => {
+                            setActiveDownloadModeTab(tab);
+                            resetDownloadConfiguration();
+                        }}
                         >
                             <div className="flex items-center justify-between">
                                 <h3 className="text-sm flex items-center gap-2">
@@ -353,9 +356,7 @@ export function PlaylistDownloader({ videoMetadata, audioOnlyFormats, videoOnlyF
                                 videoOnlyFormats={videoOnlyFormats}
                                 combinedFormats={combinedFormats}
                                 qualityPresetFormats={qualityPresetFormats}
-                                allFilteredFormats={allFilteredFormats}
                                 subtitleLanguages={subtitleLanguages}
-                                selectedFormat={selectedFormat}
                                 />
                             </TabsContent>
                             <TabsContent value="combine">
@@ -363,7 +364,6 @@ export function PlaylistDownloader({ videoMetadata, audioOnlyFormats, videoOnlyF
                                 audioOnlyFormats={audioOnlyFormats}
                                 videoOnlyFormats={videoOnlyFormats}
                                 subtitleLanguages={subtitleLanguages}
-                                selectedFormat={selectedFormat}
                                 />
                             </TabsContent>
                         </Tabs>

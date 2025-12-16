@@ -97,7 +97,7 @@ function SelectiveVideoDownload({ videoMetadata, audioOnlyFormats, videoOnlyForm
     const selectedSubtitles = useDownloaderPageStatesStore((state) => state.selectedSubtitles);
     const setSelectedDownloadFormat = useDownloaderPageStatesStore((state) => state.setSelectedDownloadFormat);
     const setSelectedSubtitles = useDownloaderPageStatesStore((state) => state.setSelectedSubtitles);
-    const setDownloadConfigurationKey = useDownloaderPageStatesStore((state) => state.setDownloadConfigurationKey);
+    const resetDownloadConfiguration = useDownloaderPageStatesStore((state) => state.resetDownloadConfiguration);
 
     return (
         <div className="flex flex-col overflow-y-scroll max-h-[50vh] xl:max-h-[60vh] no-scrollbar">
@@ -133,10 +133,7 @@ function SelectiveVideoDownload({ videoMetadata, audioOnlyFormats, videoOnlyForm
                 // if (currentlySelectedFormat?.ext !== 'mp4' && currentlySelectedFormat?.ext !== 'mkv' && currentlySelectedFormat?.ext !== 'webm') {
                 //     setSelectedSubtitles([]);
                 // }
-                setDownloadConfigurationKey('output_format', null);
-                setDownloadConfigurationKey('embed_metadata', null);
-                setDownloadConfigurationKey('embed_thumbnail', null);
-                setDownloadConfigurationKey('sponsorblock', null);
+                resetDownloadConfiguration();
             }}
             >
                 <p className="text-xs">Suggested</p>
@@ -216,7 +213,7 @@ function CombinedVideoDownload({ audioOnlyFormats, videoOnlyFormats, subtitleLan
     const setSelectedCombinableVideoFormat = useDownloaderPageStatesStore((state) => state.setSelectedCombinableVideoFormat);
     const setSelectedCombinableAudioFormat = useDownloaderPageStatesStore((state) => state.setSelectedCombinableAudioFormat);
     const setSelectedSubtitles = useDownloaderPageStatesStore((state) => state.setSelectedSubtitles);
-    const setDownloadConfigurationKey = useDownloaderPageStatesStore((state) => state.setDownloadConfigurationKey);
+    const resetDownloadConfiguration = useDownloaderPageStatesStore((state) => state.resetDownloadConfiguration);
 
     return (
         <div className="flex flex-col overflow-y-scroll max-h-[50vh] xl:max-h-[60vh] no-scrollbar">
@@ -248,10 +245,7 @@ function CombinedVideoDownload({ audioOnlyFormats, videoOnlyFormats, subtitleLan
             value={selectedCombinableAudioFormat}
             onValueChange={(value) => {
                 setSelectedCombinableAudioFormat(value);
-                setDownloadConfigurationKey('output_format', null);
-                setDownloadConfigurationKey('embed_metadata', null);
-                setDownloadConfigurationKey('embed_thumbnail', null);
-                setDownloadConfigurationKey('sponsorblock', null);
+                resetDownloadConfiguration();
             }}
             >
                 {videoOnlyFormats && videoOnlyFormats.length > 0 && audioOnlyFormats && audioOnlyFormats.length > 0 && (
@@ -273,10 +267,7 @@ function CombinedVideoDownload({ audioOnlyFormats, videoOnlyFormats, subtitleLan
             value={selectedCombinableVideoFormat}
             onValueChange={(value) => {
                 setSelectedCombinableVideoFormat(value);
-                setDownloadConfigurationKey('output_format', null);
-                setDownloadConfigurationKey('embed_metadata', null);
-                setDownloadConfigurationKey('embed_thumbnail', null);
-                setDownloadConfigurationKey('sponsorblock', null);
+                resetDownloadConfiguration();
             }}
             >
                 {audioOnlyFormats && audioOnlyFormats.length > 0 && videoOnlyFormats && videoOnlyFormats.length > 0 && (
@@ -311,7 +302,7 @@ function CombinedVideoDownload({ audioOnlyFormats, videoOnlyFormats, subtitleLan
 export function VideoDownloader({ videoMetadata, audioOnlyFormats, videoOnlyFormats, combinedFormats, qualityPresetFormats, subtitleLanguages }: VideoDownloaderProps) {
     const activeDownloadModeTab = useDownloaderPageStatesStore((state) => state.activeDownloadModeTab);
     const setActiveDownloadModeTab = useDownloaderPageStatesStore((state) => state.setActiveDownloadModeTab);
-    const setDownloadConfigurationKey = useDownloaderPageStatesStore((state) => state.setDownloadConfigurationKey);
+    const resetDownloadConfiguration = useDownloaderPageStatesStore((state) => state.resetDownloadConfiguration);
     const videoPanelSizes = useDownloaderPageStatesStore((state) => state.videoPanelSizes);
     const setVideoPanelSizes = useDownloaderPageStatesStore((state) => state.setVideoPanelSizes);
 
@@ -336,11 +327,8 @@ export function VideoDownloader({ videoMetadata, audioOnlyFormats, videoOnlyForm
                         className=""
                         value={activeDownloadModeTab}
                         onValueChange={(tab) => {
-                            setActiveDownloadModeTab(tab)
-                            setDownloadConfigurationKey('output_format', null);
-                            setDownloadConfigurationKey('embed_metadata', null);
-                            setDownloadConfigurationKey('embed_thumbnail', null);
-                            setDownloadConfigurationKey('sponsorblock', null);
+                            setActiveDownloadModeTab(tab);
+                            resetDownloadConfiguration();
                         }}
                         >
                             <div className="flex items-center justify-between">

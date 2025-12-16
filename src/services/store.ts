@@ -58,6 +58,7 @@ export const useDownloaderPageStatesStore = create<DownloaderPageStatesStore>((s
         output_format: null,
         embed_metadata: null,
         embed_thumbnail: null,
+        square_crop_thumbnail: null,
         sponsorblock: null,
         custom_command: null
     },
@@ -86,6 +87,7 @@ export const useDownloaderPageStatesStore = create<DownloaderPageStatesStore>((s
             output_format: null,
             embed_metadata: null,
             embed_thumbnail: null,
+            square_crop_thumbnail: null,
             sponsorblock: null,
             custom_command: null
         }

@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface DownloadConfigDialogProps {
     selectedFormatFileType: "video+audio" | "video" | "audio" | "unknown";
@@ -221,6 +222,15 @@ function DownloadConfigDialog({ selectedFormatFileType }: DownloadConfigDialogPr
                                     disabled={useCustomCommands}
                                     />
                                     <Label htmlFor="embed-thumbnail">Embed Thumbnail</Label>
+                                    <div className="flex items-center gap-3 ml-4">
+                                        <Checkbox
+                                        id="square-crop-thumbnail"
+                                        checked={downloadConfiguration.square_crop_thumbnail !== null ? downloadConfiguration.square_crop_thumbnail : false}
+                                        onCheckedChange={(checked) => setDownloadConfigurationKey('square_crop_thumbnail', checked)}
+                                        disabled={useCustomCommands || !(downloadConfiguration.embed_thumbnail !== null ? downloadConfiguration.embed_thumbnail : (selectedFormatFileType && (selectedFormatFileType === 'video' || selectedFormatFileType === 'video+audio')) || activeDownloadModeTab === 'combine' ? embedVideoThumbnail : selectedFormatFileType && selectedFormatFileType === 'audio' ? embedAudioThumbnail : false)}
+                                        />
+                                        <Label htmlFor="square-crop-thumbnail">Square Crop</Label>
+                                    </div>
                                 </div>
                             </div>
                         </TabsContent>
