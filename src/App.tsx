@@ -52,14 +52,12 @@ export default function App({ children }: { children: React.ReactNode }) {
         color_scheme: APP_COLOR_SCHEME,
     } = useSettingsPageStatesStore(state => state.settings);
 
-    const isErrored = useDownloaderPageStatesStore((state) => state.isErrored);
-    const isErrorExpected = useDownloaderPageStatesStore((state) => state.isErrorExpected);
-    const erroredDownloadId = useDownloaderPageStatesStore((state) => state.erroredDownloadId);
-    const setIsErrored = useDownloaderPageStatesStore((state) => state.setIsErrored);
-    const setIsErrorExpected = useDownloaderPageStatesStore((state) => state.setIsErrorExpected);
-    const setErroredDownloadId = useDownloaderPageStatesStore((state) => state.setErroredDownloadId);
+    const erroredDownloadIds = useDownloaderPageStatesStore((state) => state.erroredDownloadIds);
+    const expectedErrorDownloadIds = useDownloaderPageStatesStore((state) => state.expectedErrorDownloadIds);
+    const removeErroredDownload = useDownloaderPageStatesStore((state) => state.removeErroredDownload);
+    const removeExpectedErrorDownload = useDownloaderPageStatesStore((state) => state.removeExpectedErrorDownload);
 
-    const appWindow = getCurrentWebviewWindow()
+    const appWindow = getCurrentWebviewWindow();
     const navigate = useNavigate();
     const LOG = useLogger();
     const currentPlatform = platform();
@@ -79,6 +77,7 @@ export default function App({ children }: { children: React.ReactNode }) {
     const hasRunYtDlpAutoUpdateRef = useRef(false);
     const hasRunAppUpdateCheckRef = useRef(false);
     const isRegisteredToMacOsRef = useRef(false);
+    const pendingErrorUpdatesRef = useRef<Set<string>>(new Set());
 
     const { fetchVideoMetadata, startDownload, pauseDownload, resumeDownload, cancelDownload, processQueuedDownloads } = useDownloader();
 
@@ -328,38 +327,56 @@ export default function App({ children }: { children: React.ReactNode }) {
 
     // show a toast and pause the download when yt-dlp exits unexpectedly
     useEffect(() => {
-        if (isErrored && !isErrorExpected) {
+        const unexpectedErrors = Array.from(erroredDownloadIds).filter(id => !expectedErrorDownloadIds.has(id));
+        const processedUnexpectedErrors = unexpectedErrors.filter(id => !pendingErrorUpdatesRef.current.has(id));
+        if (unexpectedErrors.length === 0) return;
+
+        processedUnexpectedErrors.forEach((downloadId) => {
+            const downloadState = globalDownloadStates.find(d => d.download_id === downloadId);
             toast.error("Download Failed", {
-                description: "yt-dlp exited unexpectedly. Please try again later",
+                description: `The download for "${downloadState?.title}" failed because yt-dlp exited unexpectedly. Please try again later.`,
             });
-            if (erroredDownloadId) {
-                downloadStatusUpdater.mutate({ download_id: erroredDownloadId, download_status: 'paused' }, {
+        });
+
+        const timeoutIds: NodeJS.Timeout[] = [];
+        unexpectedErrors.forEach((downloadId) => {
+            pendingErrorUpdatesRef.current.add(downloadId);
+
+            const timeoutId = setTimeout(() => {
+                downloadStatusUpdater.mutate({ download_id: downloadId, download_status: 'errored' }, {
                     onSuccess: (data) => {
                         console.log("Download status updated successfully:", data);
                         queryClient.invalidateQueries({ queryKey: ['download-states'] });
+                        removeErroredDownload(downloadId);
+                        pendingErrorUpdatesRef.current.delete(downloadId);
                     },
                     onError: (error) => {
                         console.error("Failed to update download status:", error);
+                        removeErroredDownload(downloadId);
+                        pendingErrorUpdatesRef.current.delete(downloadId);
                     }
-                })
-                setErroredDownloadId(null);
-            }
-            setIsErrored(false);
-            setIsErrorExpected(false);
-        }
-    }, [isErrored, isErrorExpected, erroredDownloadId, setIsErrored, setIsErrorExpected, setErroredDownloadId]);
+                });
+            }, 500);
+            timeoutIds.push(timeoutId);
+        });
+
+        return () => {
+            timeoutIds.forEach(id => clearTimeout(id));
+        };
+    }, [erroredDownloadIds, expectedErrorDownloadIds]);
 
     // auto reset error states after 3 seconds of expecting an error
     useEffect(() => {
-        if (isErrorExpected) {
+        if (expectedErrorDownloadIds.size > 0) {
             const timeoutId = setTimeout(() => {
-                setIsErrored(false);
-                setIsErrorExpected(false);
-                setErroredDownloadId(null);
+                expectedErrorDownloadIds.forEach((downloadId) => {
+                    removeErroredDownload(downloadId);
+                    removeExpectedErrorDownload(downloadId);
+                });
             }, 3000);
             return () => clearTimeout(timeoutId);
         }
-    }, [isErrorExpected, setIsErrorExpected]);
+    }, [expectedErrorDownloadIds]);
 
     return (
         <AppContext.Provider value={{ fetchVideoMetadata, startDownload, pauseDownload, resumeDownload, cancelDownload }}>

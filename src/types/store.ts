@@ -45,9 +45,8 @@ export interface DownloaderPageStatesStore {
     selectedSubtitles: string[];
     selectedPlaylistVideoIndex: string;
     downloadConfiguration: DownloadConfiguration;
-    isErrored: boolean;
-    isErrorExpected: boolean;
-    erroredDownloadId: string | null;
+    erroredDownloadIds: Set<string>;
+    expectedErrorDownloadIds: Set<string>;
     videoPanelSizes: number[];
     playlistPanelSizes: number[];
     setActiveDownloadModeTab: (tab: string) => void;
@@ -61,9 +60,11 @@ export interface DownloaderPageStatesStore {
     setDownloadConfigurationKey: (key: string, value: unknown) => void;
     setDownloadConfiguration: (config: DownloadConfiguration) => void;
     resetDownloadConfiguration: () => void;
-    setIsErrored: (isErrored: boolean) => void;
-    setIsErrorExpected: (isErrorExpected: boolean) => void;
-    setErroredDownloadId: (downloadId: string | null) => void;
+    addErroredDownload: (downloadId: string) => void;
+    removeErroredDownload: (downloadId: string) => void;
+    addExpectedErrorDownload: (downloadId: string) => void;
+    removeExpectedErrorDownload: (downloadId: string) => void;
+    clearErrorStates: () => void;
     setVideoPanelSizes: (sizes: number[]) => void;
     setPlaylistPanelSizes: (sizes: number[]) => void;
 }

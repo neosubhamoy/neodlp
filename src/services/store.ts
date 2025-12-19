@@ -62,9 +62,8 @@ export const useDownloaderPageStatesStore = create<DownloaderPageStatesStore>((s
         sponsorblock: null,
         custom_command: null
     },
-    isErrored: false,
-    isErrorExpected: false,
-    erroredDownloadId: null,
+    erroredDownloadIds: new Set(),
+    expectedErrorDownloadIds: new Set(),
     videoPanelSizes: [35, 65],
     playlistPanelSizes: [45, 55],
     setActiveDownloadModeTab: (tab) => set(() => ({ activeDownloadModeTab: tab })),
@@ -92,9 +91,23 @@ export const useDownloaderPageStatesStore = create<DownloaderPageStatesStore>((s
             custom_command: null
         }
     })),
-    setIsErrored: (isErrored) => set(() => ({ isErrored: isErrored })),
-    setIsErrorExpected: (isErrorExpected) => set(() => ({ isErrorExpected: isErrorExpected })),
-    setErroredDownloadId: (downloadId) => set(() => ({ erroredDownloadId: downloadId })),
+    addErroredDownload: (downloadId) => set((state) => ({
+        erroredDownloadIds: new Set(state.erroredDownloadIds).add(downloadId)
+    })),
+    removeErroredDownload: (downloadId) => set((state) => {
+        const newSet = new Set(state.erroredDownloadIds);
+        newSet.delete(downloadId);
+        return { erroredDownloadIds: newSet };
+    }),
+    addExpectedErrorDownload: (downloadId) => set((state) => ({
+        expectedErrorDownloadIds: new Set(state.expectedErrorDownloadIds).add(downloadId)
+    })),
+    removeExpectedErrorDownload: (downloadId) => set((state) => {
+        const newSet = new Set(state.expectedErrorDownloadIds);
+        newSet.delete(downloadId);
+        return { expectedErrorDownloadIds: newSet };
+    }),
+    clearErrorStates: () => set({ erroredDownloadIds: new Set(), expectedErrorDownloadIds: new Set() }),
     setVideoPanelSizes: (sizes) => set(() => ({ videoPanelSizes: sizes })),
     setPlaylistPanelSizes: (sizes) => set(() => ({ playlistPanelSizes: sizes }))
 }));

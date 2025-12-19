@@ -63,10 +63,11 @@ export default function useDownloader() {
         download_completion_notification: DOWNLOAD_COMPLETION_NOTIFICATION
     } = useSettingsPageStatesStore(state => state.settings);
 
-    const isErrorExpected = useDownloaderPageStatesStore((state) => state.isErrorExpected);
-    const setIsErrored = useDownloaderPageStatesStore((state) => state.setIsErrored);
-    const setIsErrorExpected = useDownloaderPageStatesStore((state) => state.setIsErrorExpected);
-    const setErroredDownloadId = useDownloaderPageStatesStore((state) => state.setErroredDownloadId);
+    const expectedErrorDownloadIds = useDownloaderPageStatesStore((state) => state.expectedErrorDownloadIds);
+    const addErroredDownload = useDownloaderPageStatesStore((state) => state.addErroredDownload);
+    const removeErroredDownload = useDownloaderPageStatesStore((state) => state.removeErroredDownload);
+    const addExpectedErrorDownload = useDownloaderPageStatesStore((state) => state.addExpectedErrorDownload);
+    const removeExpectedErrorDownload = useDownloaderPageStatesStore((state) => state.removeExpectedErrorDownload);
 
     const LOG = useLogger();
     const currentPlatform = platform();
@@ -210,10 +211,6 @@ export default function useDownloader() {
     const startDownload = async (params: StartDownloadParams) => {
         const { url, selectedFormat, downloadConfig, selectedSubtitles, resumeState, playlistItems } = params;
         LOG.info('NEODLP', `Initiating yt-dlp download for URL: ${url}`);
-        // set error states to default
-        setIsErrored(false);
-        setIsErrorExpected(false);
-        setErroredDownloadId(null);
 
         console.log('Starting download:', { url, selectedFormat, downloadConfig, selectedSubtitles, resumeState, playlistItems });
         if (!ffmpegPath || !tempDownloadDirPath || !downloadDirPath) {
@@ -258,6 +255,11 @@ export default function useDownloader() {
         const videoId = resumeState?.video_id || generateVideoId(videoMetadata.id, videoMetadata.webpage_url_domain);
         const playlistId = isPlaylist ? (resumeState?.playlist_id || generateVideoId(videoMetadata.playlist_id, videoMetadata.webpage_url_domain)) : null;
         const downloadId = resumeState?.download_id || ulid() /*generateDownloadId(videoMetadata.id, videoMetadata.webpage_url_domain)*/;
+
+        // Clear any existing errored/expected error states for this download
+        removeErroredDownload(downloadId);
+        removeExpectedErrorDownload(downloadId);
+
         // const tempDownloadPathForYtdlp = await join(tempDownloadDirPath, `${downloadId}_${selectedFormat}.%(ext)s`);
         // const tempDownloadPath = await join(tempDownloadDirPath, `${downloadId}_${selectedFormat}.${videoMetadata.ext}`);
         // let downloadFilePath = resumeState?.filepath || await join(downloadDirPath, sanitizeFilename(`${videoMetadata.title}_${videoMetadata.resolution || 'unknown'}[${videoMetadata.id}].${videoMetadata.ext}`));
@@ -446,10 +448,7 @@ export default function useDownloader() {
             if (data.code !== 0) {
                 console.error(`Download failed with code ${data.code}`);
                 LOG.error(`YT-DLP Download ${downloadId}`, `yt-dlp exited with code ${data.code} (ignore if you manually paused or cancelled the download)`);
-                if (!isErrorExpected) {
-                    setIsErrored(true);
-                    setErroredDownloadId(downloadId);
-                }
+                if (!expectedErrorDownloadIds.has(downloadId)) addErroredDownload(downloadId);
             } else {
                 LOG.info(`YT-DLP Download ${downloadId}`, `yt-dlp exited with code ${data.code}`);
             }
@@ -458,8 +457,7 @@ export default function useDownloader() {
         command.on('error', error => {
             console.error(`Error: ${error}`);
             LOG.error(`YT-DLP Download ${downloadId}`, `Error occurred: ${error}`);
-            setIsErrored(true);
-            setErroredDownloadId(downloadId);
+            addErroredDownload(downloadId);
         });
 
         command.stdout.on('data', line => {
@@ -681,7 +679,7 @@ export default function useDownloader() {
         try {
             LOG.info('NEODLP', `Pausing yt-dlp download with id: ${downloadState.download_id} (as per user request)`);
             if ((downloadState.download_status === 'downloading' && downloadState.process_id) || (downloadState.download_status === 'starting' && downloadState.process_id)) {
-                setIsErrorExpected(true);  // Set error expected to true to handle UI state
+                addExpectedErrorDownload(downloadState.download_id); // Mark as error expected to handle UI state
                 console.log("Killing process with PID:", downloadState.process_id);
                 await invoke('kill_all_process', { pid: downloadState.process_id });
             }
@@ -706,12 +704,13 @@ export default function useDownloader() {
                             reject(error);
                         }
                     });
-                }, 1000);
+                }, 500);
             });
         } catch (e) {
             console.error(`Failed to pause download: ${e}`);
             LOG.error('NEODLP', `Failed to pause download with id: ${downloadState.download_id} with error: ${e}`);
             isProcessingQueueRef.current = false;
+            removeExpectedErrorDownload(downloadState.download_id);
             throw e;
         }
     };
@@ -726,6 +725,7 @@ export default function useDownloader() {
                     output_format: null,
                     embed_metadata: null,
                     embed_thumbnail: null,
+                    square_crop_thumbnail: null,
                     sponsorblock: null,
                     custom_command: null
                 },
@@ -744,31 +744,39 @@ export default function useDownloader() {
         try {
             LOG.info('NEODLP', `Cancelling yt-dlp download with id: ${downloadState.download_id} (as per user request)`);
             if ((downloadState.download_status === 'downloading' && downloadState.process_id) || (downloadState.download_status === 'starting' && downloadState.process_id)) {
-                setIsErrorExpected(true); // Set error expected to true to handle UI state
+                addExpectedErrorDownload(downloadState.download_id); // Mark as error expected to handle UI state
                 console.log("Killing process with PID:", downloadState.process_id);
                 await invoke('kill_all_process', { pid: downloadState.process_id });
             }
-            downloadStateDeleter.mutate(downloadState.download_id, {
-                onSuccess: (data) => {
-                    console.log("Download State deleted successfully:", data);
-                    queryClient.invalidateQueries({ queryKey: ['download-states'] });
-                    // Reset processing flag and trigger queue processing
-                    isProcessingQueueRef.current = false;
 
-                    // Process the queue after a short delay
-                    setTimeout(() => {
-                        processQueuedDownloads();
-                    }, 1000);
-                },
-                onError: (error) => {
-                    console.error("Failed to delete download state:", error);
-                    isProcessingQueueRef.current = false;
-                }
+            return new Promise<void>((resolve, reject) => {
+                setTimeout(() => {
+                    downloadStateDeleter.mutate(downloadState.download_id, {
+                        onSuccess: (data) => {
+                            console.log("Download State deleted successfully:", data);
+                            queryClient.invalidateQueries({ queryKey: ['download-states'] });
+                            // Reset processing flag and trigger queue processing
+                            isProcessingQueueRef.current = false;
+
+                            // Process the queue after a short delay
+                            setTimeout(() => {
+                                processQueuedDownloads();
+                            }, 1000);
+                            resolve();
+                        },
+                        onError: (error) => {
+                            console.error("Failed to delete download state:", error);
+                            isProcessingQueueRef.current = false;
+                            reject(error);
+                        }
+                    });
+                }, 500);
             });
-            return Promise.resolve();
         } catch (e) {
             console.error(`Failed to cancel download: ${e}`);
             LOG.error('NEODLP', `Failed to cancel download with id: ${downloadState.download_id} with error: ${e}`);
+            isProcessingQueueRef.current = false;
+            removeExpectedErrorDownload(downloadState.download_id);
             throw e;
         }
     }
@@ -826,6 +834,7 @@ export default function useDownloader() {
                     output_format: null,
                     embed_metadata: null,
                     embed_thumbnail: null,
+                    square_crop_thumbnail: null,
                     sponsorblock: null,
                     custom_command: null
                 },

@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useAppContext } from "@/providers/appContextProvider";
 import { useDownloadActionStatesStore, useSettingsPageStatesStore } from "@/services/store";
 import { formatFileSize, formatSecToTimeString, formatSpeed } from "@/utils";
-import { ArrowUpRightIcon, CircleCheck, File, Loader2, Music, Pause, Play, Video, X } from "lucide-react";
+import { ArrowUpRightIcon, CircleCheck, File, Info, Loader2, Music, Pause, Play, RotateCw, Video, X } from "lucide-react";
 import { DownloadState } from "@/types/download";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { useNavigate } from "react-router-dom";
@@ -72,7 +72,7 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                     {((state.download_status === 'starting') || (state.download_status === 'downloading' && state.status === 'finished')) && (
                         <IndeterminateProgress indeterminate={true} className="w-full" />
                     )}
-                    {(state.download_status === 'downloading' || state.download_status === 'paused') && state.progress && state.status !== 'finished' && (
+                    {(state.download_status === 'downloading' || state.download_status === 'paused' || state.download_status === 'errored') && state.progress && state.status !== 'finished' && (
                         <div className="w-full flex items-center gap-2">
                             <span className="text-sm text-nowrap">{state.progress}%</span>
                             <Progress value={state.progress} />
@@ -84,7 +84,21 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                         </div>
                     )}
                     <div className="text-xs text-muted-foreground">
-                        {state.download_status && state.download_status === 'downloading' && state.status === 'finished' ? 'Processing' : state.download_status.charAt(0).toUpperCase() + state.download_status.slice(1)} {debugMode && state.download_id ? <><span className="text-primary">•</span> ID: {state.download_id.toUpperCase()}</> : ""} {state.download_status === 'downloading' && state.status !== 'finished' && state.speed ? <><span className="text-primary">•</span> Speed: {formatSpeed(state.speed)}</> : ""} {state.download_status === 'downloading' && state.eta ? <><span className="text-primary">•</span> ETA: {formatSecToTimeString(state.eta)}</> : ""}
+                        {state.download_status && state.download_status === 'downloading' && state.status === 'finished' ? (
+                            <span>Processing</span>
+                        ) : state.download_status && state.download_status === 'errored' ? (
+                            <span className="text-destructive"><Info className="inline size-3 mb-1 mr-0.5" /> Errored</span>
+                        ) : (
+                            <span>{state.download_status.charAt(0).toUpperCase() + state.download_status.slice(1)}</span>
+                        )} {
+                        (debugMode && state.download_id) || (state.download_status === 'errored' && state.download_id) && (
+                            <><span className="text-primary">•</span> ID: {state.download_id.toUpperCase()}</>
+                        )} {
+                        state.download_status === 'downloading' && state.status !== 'finished' && state.speed && (
+                            <><span className="text-primary">•</span> Speed: {formatSpeed(state.speed)}</>
+                        )} {state.download_status === 'downloading' && state.eta && (
+                            <><span className="text-primary">•</span> ETA: {formatSecToTimeString(state.eta)}</>
+                        )}
                     </div>
                 </div>
                 <div className="w-full flex items-center gap-2 mt-2">
@@ -102,7 +116,7 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                             } catch (e) {
                                 console.error(e);
                                 toast.error("Failed to Resume Download", {
-                                    description: "An error occurred while trying to resume the download.",
+                                    description: `An error occurred while trying to resume the download for "${state.title}".`,
                                 })
                             } finally {
                                 setIsResumingDownload(state.download_id, false);
@@ -122,6 +136,37 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                                 </>
                             )}
                         </Button>
+                    ) : state.download_status === 'errored' ? (
+                        <Button
+                        size="sm"
+                        className="w-fill"
+                        onClick={async () => {
+                            setIsResumingDownload(state.download_id, true);
+                            try {
+                                await resumeDownload(state);
+                            } catch (e) {
+                                console.error(e);
+                                toast.error("Failed to Restart Download", {
+                                    description: `An error occurred while trying to restart the download for "${state.title}".`,
+                                })
+                            } finally {
+                                setIsResumingDownload(state.download_id, false);
+                            }
+                        }}
+                        disabled={itemActionStates.isResuming || itemActionStates.isCanceling}
+                        >
+                            {itemActionStates.isResuming ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Retrying
+                                </>
+                            ) : (
+                                <>
+                                    <RotateCw className="w-4 h-4" />
+                                    Retry
+                                </>
+                            )}
+                        </Button>
                     ) : (
                         <Button
                         size="sm"
@@ -136,7 +181,7 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                             } catch (e) {
                                 console.error(e);
                                 toast.error("Failed to Pause Download", {
-                                    description: "An error occurred while trying to pause the download."
+                                    description: `An error occurred while trying to pause the download for "${state.title}".`,
                                 })
                             } finally {
                                 setIsPausingDownload(state.download_id, false);
@@ -165,12 +210,12 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                         try {
                             await cancelDownload(state)
                             toast.success("Canceled Download", {
-                                description: "Download canceled successfully.",
+                                description: `The download for "${state.title}" has been canceled.`,
                             })
                         } catch (e) {
                             console.error(e);
                             toast.error("Failed to Cancel Download", {
-                                description: "An error occurred while trying to cancel the download.",
+                                description: `An error occurred while trying to cancel the download for "${state.title}".`,
                             })
                         } finally {
                             setIsCancelingDownload(state.download_id, false);
