@@ -103,7 +103,11 @@ export default function useDownloader() {
         try {
             const args = [url, '--dump-single-json', '--no-warnings'];
             if (formatId) args.push('--format', formatId);
-            if (selectedSubtitles) args.push('--embed-subs', '--sub-lang', selectedSubtitles);
+            if (selectedSubtitles) {
+                const isAutoSub = selectedSubtitles.split(',').some(lang => lang.endsWith('-orig'));
+                if (isAutoSub) args.push('--write-auto-sub');
+                args.push('--embed-subs', '--sub-lang', selectedSubtitles);
+            }
             if (playlistIndex) args.push('--playlist-items', playlistIndex);
             if (PREFER_VIDEO_OVER_PLAYLIST && !playlistIndex) args.push('--no-playlist');
             if (STRICT_DOWNLOADABILITY_CHECK && !formatId) args.push('--check-all-formats');
@@ -298,6 +302,8 @@ export default function useDownloader() {
         }
 
         if (selectedSubtitles) {
+            const isAutoSub = selectedSubtitles.split(',').some(lang => lang.endsWith('-orig'));
+            if (isAutoSub) args.push('--write-auto-sub');
             args.push('--embed-subs', '--sub-lang', selectedSubtitles);
         }
 

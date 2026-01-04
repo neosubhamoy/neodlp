@@ -15,7 +15,7 @@ export default function Footer() {
         {isSettingsPage ? (
             <div className="flex items-center justify-between p-4 border-t border-border">
                 <div className="flex flex-col gap-1">
-                    <span className="text-sm">{config.appName} v{appVersion} - &copy; {new Date().getFullYear()} &nbsp;|&nbsp; <a href={'https://github.com/' + config.appRepo + '/blob/main/LICENSE'} target="_blank">MIT License</a></span>
+                    <span className="text-sm">{config.appName} v{appVersion} &copy; 2025 - {new Date().getFullYear()} &nbsp;|&nbsp; <a href={'https://github.com/' + config.appRepo + '/blob/main/LICENSE'} target="_blank">MIT License</a></span>
                     <span className="text-xs text-muted-foreground">Proudly Made with <Heart className="inline size-3 mb-0.5 fill-primary stroke-primary"/> in India <IndianFlagLogo className="inline size-full w-4 ml-0.5 mb-[0.1rem]" /></span>
                 </div>
                 <div className="flex items-center gap-2">

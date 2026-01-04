@@ -130,10 +130,21 @@ export default function DownloaderPage() {
     })();
 
     const subtitles = videoMetadata?._type === 'video' ? (videoMetadata?.subtitles || {}) : videoMetadata?._type === 'playlist' ? (videoMetadata?.entries[Number(selectedPlaylistVideoIndex) - 1].subtitles || {}) : {};
-    const subtitleLanguages = Object.keys(subtitles).map(langCode => ({
+    const filteredSubtitles = Object.fromEntries(Object.entries(subtitles).filter(([key]) => key !== 'live_chat'));
+    const autoSubtitles = videoMetadata?._type === 'video' ? (videoMetadata?.automatic_captions || {}) : videoMetadata?._type === 'playlist' ? (videoMetadata?.entries[Number(selectedPlaylistVideoIndex) - 1].automatic_captions || {}) : {};
+    const originalAutoSubtitles = Object.fromEntries(Object.entries(autoSubtitles).filter(([key]) => key.endsWith('-orig')));
+
+    const subtitleLanguages = Object.keys(filteredSubtitles).map(langCode => ({
         code: langCode,
-        lang: subtitles[langCode][0].name || langCode
+        lang: filteredSubtitles[langCode][0].name || langCode
     }));
+    const autoSubtitleLanguages = Object.keys(originalAutoSubtitles).map(langCode => ({
+        code: langCode,
+        lang: originalAutoSubtitles[langCode][0].name + ' [auto-generated]' || langCode + ' [auto-generated]'
+    }));
+    const allSubtitleLanguages = Array.from(new Set([...subtitleLanguages, ...autoSubtitleLanguages].map(lang => lang.code))).map(code => {
+        return [...subtitleLanguages, ...autoSubtitleLanguages].find(lang => lang.code === code)!;
+    });
 
     const searchForm = useForm<z.infer<typeof searchFormSchema>>({
         resolver: zodResolver(searchFormSchema),
@@ -338,7 +349,7 @@ export default function DownloaderPage() {
                 videoOnlyFormats={videoOnlyFormats}
                 combinedFormats={combinedFormats}
                 qualityPresetFormats={qualityPresetFormats}
-                subtitleLanguages={subtitleLanguages}
+                subtitleLanguages={allSubtitleLanguages}
                 />
             )}
             {!isMetadataLoading && videoMetadata && videoMetadata._type === 'playlist' && (
@@ -348,7 +359,7 @@ export default function DownloaderPage() {
                 videoOnlyFormats={videoOnlyFormats}
                 combinedFormats={combinedFormats}
                 qualityPresetFormats={qualityPresetFormats}
-                subtitleLanguages={subtitleLanguages}
+                subtitleLanguages={allSubtitleLanguages}
                 />
             )}
             {!isMetadataLoading && videoMetadata && selectedDownloadFormat && (

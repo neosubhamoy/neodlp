@@ -31,6 +31,9 @@ export interface RawVideoInfo {
     subtitles: {
         [subtitle_id: string]: VideoSubtitle[];
     };
+    automatic_captions: {
+        [subtitle_id: string]: VideoSubtitle[];
+    };
     formats: VideoFormat[];
     requested_downloads: VideoFormat[];
     requested_subtitles: {
