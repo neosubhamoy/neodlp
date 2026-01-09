@@ -1,6 +1,6 @@
 import { RoutesObj } from "@/types/route";
 import { AllRoutes } from "@/routes";
-import { DownloadProgress } from "@/types/download";
+import { DownloadProgress, Paginated } from "@/types/download";
 import { VideoFormat } from "@/types/video";
 import * as fs from "@tauri-apps/plugin-fs";
 
@@ -401,4 +401,47 @@ export const sortByBitrate = (formats: VideoFormat[] | undefined) => {
     // If neither has tbr, maintain original order
     return 0;
   });
+};
+
+export const paginate = <T>(items: T[], currentPage: number, itemsPerPage: number): Paginated<T> => {
+    const total = items.length;
+    const lastPage = Math.max(1, Math.ceil(total / itemsPerPage));
+
+    // Clamp current page to valid range
+    const validCurrentPage = Math.max(1, Math.min(currentPage, lastPage));
+
+    // Calculate start and end indices
+    const startIndex = (validCurrentPage - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, total);
+
+    // Get paginated data
+    const data = items.slice(startIndex, endIndex);
+
+    // Calculate from/to (1-indexed)
+    const from = total > 0 ? startIndex + 1 : 0;
+    const to = total > 0 ? endIndex : 0;
+
+    // Generate pages array
+    const pages: Array<{ label: string; page: number; active: boolean }> = [];
+    for (let i = 1; i <= lastPage; i++) {
+        pages.push({
+            label: i.toString(),
+            page: i,
+            active: i === validCurrentPage
+        });
+    }
+
+    return {
+        current_page: validCurrentPage,
+        from,
+        first_page: 1,
+        last_page: lastPage,
+        pages,
+        next_page: validCurrentPage < lastPage ? validCurrentPage + 1 : null,
+        per_page: itemsPerPage,
+        prev_page: validCurrentPage > 1 ? validCurrentPage - 1 : null,
+        to,
+        total,
+        data
+    };
 };

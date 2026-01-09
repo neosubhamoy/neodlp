@@ -20,8 +20,7 @@ export default function LibraryPage() {
     const { pauseDownload } = useAppContext();
 
     const incompleteDownloads = downloadStates.filter(state => state.download_status !== 'completed');
-    const completedDownloads = downloadStates.filter(state => state.download_status === 'completed')
-    .sort((a, b) => {
+    const completedDownloads = downloadStates.filter(state => state.download_status === 'completed').sort((a, b) => {
         // Latest updated first
         const dateA = a.updated_at ? new Date(a.updated_at).getTime() : 0;
         const dateB = b.updated_at ? new Date(b.updated_at).getTime() : 0;

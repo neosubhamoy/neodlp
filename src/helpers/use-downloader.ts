@@ -88,8 +88,8 @@ export default function useDownloader() {
 
     const updateDownloadState = debounce((state: DownloadState) => {
         downloadStateSaver.mutate(state, {
-            onSuccess: (data) => {
-                console.log("Download State saved successfully:", data);
+            onSuccess: (_data) => {
+                // console.log("Download State saved successfully:", data);
                 queryClient.invalidateQueries({ queryKey: ['download-states'] });
             },
             onError: (error) => {

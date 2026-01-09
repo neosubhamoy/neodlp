@@ -309,7 +309,7 @@ export default function App({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         if (isSuccessFetchingDownloadStates && downloadStates) {
-            console.log("Download States fetched successfully:", downloadStates);
+            // console.log("Download States fetched successfully:", downloadStates);
             setDownloadStates(downloadStates);
         }
     }, [downloadStates, isSuccessFetchingDownloadStates, setDownloadStates]);

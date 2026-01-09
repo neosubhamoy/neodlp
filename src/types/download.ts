@@ -97,3 +97,21 @@ export interface DownloadProgress {
     total: number | null;
     eta: number | null;
 }
+
+export interface Paginated<T = any> {
+    current_page: number;
+    from: number;
+    first_page: number;
+    last_page: number;
+    pages: Array<{
+        label: string;
+        page: number;
+        active: boolean;
+    }>;
+    next_page: number | null;
+    per_page: number;
+    prev_page: number | null;
+    to: number;
+    total: number;
+    data: T[];
+}

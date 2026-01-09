@@ -1,10 +1,11 @@
+import { useEffect } from "react";
 import { ProxyImage } from "@/components/custom/proxyImage";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { useCurrentVideoMetadataStore, useDownloadActionStatesStore } from "@/services/store";
-import { formatBitrate, formatCodec, formatDurationString, formatFileSize } from "@/utils";
+import { useCurrentVideoMetadataStore, useDownloadActionStatesStore, useLibraryPageStatesStore } from "@/services/store";
+import { formatBitrate, formatCodec, formatDurationString, formatFileSize, paginate } from "@/utils";
 import { ArrowUpRightIcon, AudioLines, CircleArrowDown, Clock, File, FileAudio2, FileQuestion, FileVideo2, FolderInput, ListVideo, Music, Play, Search, Trash2, Video } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import * as fs from "@tauri-apps/plugin-fs";
@@ -17,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { useLogger } from "@/helpers/use-logger";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import PaginationBar from "@/components/custom/paginationBar";
 
 interface CompletedDownloadProps {
     state: DownloadState;
@@ -250,16 +252,35 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
 }
 
 export function CompletedDownloads({ downloads }: CompletedDownloadsProps) {
+    const activeCompletedDownloadsPage = useLibraryPageStatesStore(state => state.activeCompletedDownloadsPage);
+    const setActiveCompletedDownloadsPage = useLibraryPageStatesStore(state => state.setActiveCompletedDownloadsPage);
+
     const navigate = useNavigate();
+    const paginatedCompletedDownloads = paginate(downloads, activeCompletedDownloadsPage, 5);
+
+    // Ensure current page is valid when downloads change
+    useEffect(() => {
+        if (downloads.length > 0 && activeCompletedDownloadsPage > paginatedCompletedDownloads.last_page) {
+            setActiveCompletedDownloadsPage(paginatedCompletedDownloads.last_page);
+        }
+    }, [downloads.length, activeCompletedDownloadsPage, paginatedCompletedDownloads.last_page, setActiveCompletedDownloadsPage]);
 
     return (
         <div className="w-full flex flex-col gap-2">
-            {downloads.length > 0 ? (
-                downloads.map((state) => {
+            {paginatedCompletedDownloads.data.length > 0 ? (
+                <>
+                {paginatedCompletedDownloads.data.map((state) => {
                     return (
                         <CompletedDownload key={state.download_id} state={state} />
                     );
-                })
+                })}
+                {paginatedCompletedDownloads.pages.length > 1 && (
+                    <PaginationBar
+                        paginatedData={paginatedCompletedDownloads}
+                        setPage={setActiveCompletedDownloadsPage}
+                    />
+                )}
+                </>
             ) : (
                 <Empty className="mt-10">
                     <EmptyHeader>

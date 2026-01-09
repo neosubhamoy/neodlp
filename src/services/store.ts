@@ -114,7 +114,9 @@ export const useDownloaderPageStatesStore = create<DownloaderPageStatesStore>((s
 
 export const useLibraryPageStatesStore = create<LibraryPageStatesStore>((set) => ({
     activeTab: 'completed',
-    setActiveTab: (tab) => set(() => ({ activeTab: tab }))
+    activeCompletedDownloadsPage: 1,
+    setActiveTab: (tab) => set(() => ({ activeTab: tab })),
+    setActiveCompletedDownloadsPage: (page) => set(() => ({ activeCompletedDownloadsPage: page }))
 }));
 
 export const useDownloadActionStatesStore = create<DownloadActionStatesStore>((set) => ({

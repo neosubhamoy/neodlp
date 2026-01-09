@@ -71,7 +71,9 @@ export interface DownloaderPageStatesStore {
 
 export interface LibraryPageStatesStore {
     activeTab: string;
+    activeCompletedDownloadsPage: number;
     setActiveTab: (tab: string) => void;
+    setActiveCompletedDownloadsPage: (page: number) => void;
 }
 
 export interface DownloadActionStatesStore {
