@@ -53,7 +53,7 @@ export const useDownloaderPageStatesStore = create<DownloaderPageStatesStore>((s
     selectedCombinableVideoFormat: '',
     selectedCombinableAudioFormat: '',
     selectedSubtitles: [],
-    selectedPlaylistVideoIndex: '1',
+    selectedPlaylistVideos: ["1"],
     downloadConfiguration: {
         output_format: null,
         embed_metadata: null,
@@ -73,7 +73,7 @@ export const useDownloaderPageStatesStore = create<DownloaderPageStatesStore>((s
     setSelectedCombinableVideoFormat: (format) => set(() => ({ selectedCombinableVideoFormat: format })),
     setSelectedCombinableAudioFormat: (format) => set(() => ({ selectedCombinableAudioFormat: format })),
     setSelectedSubtitles: (subtitles) => set(() => ({ selectedSubtitles: subtitles })),
-    setSelectedPlaylistVideoIndex: (index) => set(() => ({ selectedPlaylistVideoIndex: index })),
+    setSelectedPlaylistVideos: (indices) => set(() => ({ selectedPlaylistVideos: indices })),
     setDownloadConfigurationKey: (key, value) => set((state) => ({
         downloadConfiguration: {
             ...state.downloadConfiguration,

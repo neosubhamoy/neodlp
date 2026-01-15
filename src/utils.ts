@@ -1,8 +1,9 @@
 import { RoutesObj } from "@/types/route";
 import { AllRoutes } from "@/routes";
 import { DownloadProgress, Paginated } from "@/types/download";
-import { VideoFormat } from "@/types/video";
+import { RawVideoInfo, VideoFormat, VideoSubtitle } from "@/types/video";
 import * as fs from "@tauri-apps/plugin-fs";
+import { fetchDownloadStateById } from "@/services/database";
 
 export function isActive(path: string, location: string, starts_with: boolean = false): boolean {
   if (starts_with) {
@@ -36,9 +37,11 @@ const convertToBytes = (value: number, unit: string): number => {
   }
 };
 
-export const parseProgressLine = (line: string): DownloadProgress => {
+export const parseProgressLine = async (line: string, downloadID: string): Promise<DownloadProgress> => {
+  const state = await fetchDownloadStateById(downloadID);
   const progress: Partial<DownloadProgress> = {
-    status: 'downloading'
+    status: 'downloading',
+    item: state?.item || null,
   };
 
   // Check if line contains both aria2c and yt-dlp format (combined format)
@@ -150,6 +153,12 @@ export const parseProgressLine = (line: string): DownloadProgress => {
 
   return progress as DownloadProgress;
 };
+
+export const extractPlaylistItemProgress = (line: string): string | null => {
+    const match = line.match(/\[download\] Downloading item (\d+) of (\d+)/);
+    if (match) return `${match[1]}/${match[2]}`;
+    return null;
+}
 
 export const formatSpeed = (bytes: number) => {
   if (bytes === 0) return '0 B/s';
@@ -444,4 +453,237 @@ export const paginate = <T>(items: T[], currentPage: number, itemsPerPage: numbe
         total,
         data
     };
+};
+
+export const getCommonFormats = (
+  entries: RawVideoInfo[],
+  selectedIndices: string[]
+): VideoFormat[] => {
+  // If no videos selected or only one video, return empty or all formats
+  if (!entries || entries.length === 0 || selectedIndices.length === 0) {
+    return [];
+  }
+
+  // Get the selected videos (convert 1-indexed strings to 0-indexed numbers)
+  const selectedVideos = selectedIndices
+    .map(index => entries[Number(index) - 1])
+    .filter(video => video && video.formats);
+
+  if (selectedVideos.length === 0) {
+    return [];
+  }
+
+  // If only one video selected, return all its formats
+  if (selectedVideos.length === 1) {
+    return selectedVideos[0].formats || [];
+  }
+
+  // Get format_ids from the first selected video as the base set
+  const firstVideoFormats = selectedVideos[0].formats || [];
+  const firstVideoFormatIds = new Set(firstVideoFormats.map(f => f.format_id));
+
+  // Find format_ids that exist in ALL selected videos
+  const commonFormatIds = [...firstVideoFormatIds].filter(formatId => {
+    return selectedVideos.every(video =>
+      video.formats?.some(f => f.format_id === formatId)
+    );
+  });
+
+  // Return the format objects with aggregated filesize_approx and tbr
+  return commonFormatIds.map(formatId => {
+    // Get the base format from the first video
+    const baseFormat = firstVideoFormats.find(f => f.format_id === formatId)!;
+
+    // Calculate aggregated values across all selected videos
+    let totalFilesizeApprox: number | null = null;
+    let totalTbr: number | null = null;
+    let allHaveFilesize = true;
+    let allHaveTbr = true;
+
+    for (const video of selectedVideos) {
+      const format = video.formats?.find(f => f.format_id === formatId);
+      if (format) {
+        if (format.filesize_approx != null) {
+          totalFilesizeApprox = (totalFilesizeApprox ?? 0) + format.filesize_approx;
+        } else {
+          allHaveFilesize = false;
+        }
+
+        if (format.tbr != null) {
+          totalTbr = (totalTbr ?? 0) + format.tbr;
+        } else {
+          allHaveTbr = false;
+        }
+      }
+    }
+
+    // Return a new format object with aggregated values
+    return {
+      ...baseFormat,
+      filesize_approx: allHaveFilesize ? totalFilesizeApprox : null,
+      tbr: allHaveTbr ? totalTbr : null,
+    };
+  });
+};
+
+export const getMergedBestFormat = (
+  entries: RawVideoInfo[],
+  selectedIndices: string[]
+): VideoFormat | undefined => {
+  // If no videos selected, return undefined
+  if (!entries || entries.length === 0 || selectedIndices.length === 0) {
+    return undefined;
+  }
+
+  // Get the selected videos (convert 1-indexed strings to 0-indexed numbers)
+  const selectedVideos = selectedIndices
+    .map(index => entries[Number(index) - 1])
+    .filter(video => video && video.requested_downloads && video.requested_downloads.length > 0);
+
+  if (selectedVideos.length === 0) {
+    return undefined;
+  }
+
+  // If only one video selected, return its requested_downloads[0]
+  if (selectedVideos.length === 1) {
+    return selectedVideos[0].requested_downloads[0];
+  }
+
+  // Get the base format from the first video
+  const baseFormat = selectedVideos[0].requested_downloads[0];
+
+  // Check if all selected videos have the same format_id
+  const allSameFormatId = selectedVideos.every(video =>
+    video.requested_downloads[0]?.format_id === baseFormat.format_id
+  );
+
+  // Calculate aggregated values across all selected videos
+  let totalFilesizeApprox: number | null = null;
+  let totalTbr: number | null = null;
+  let allHaveFilesize = true;
+  let allHaveTbr = true;
+
+  for (const video of selectedVideos) {
+    const format = video.requested_downloads[0];
+    if (format) {
+      if (format.filesize_approx != null) {
+        totalFilesizeApprox = (totalFilesizeApprox ?? 0) + format.filesize_approx;
+      } else {
+        allHaveFilesize = false;
+      }
+
+      if (format.tbr != null) {
+        totalTbr = (totalTbr ?? 0) + format.tbr;
+      } else {
+        allHaveTbr = false;
+      }
+    }
+  }
+
+  // Return a merged format object with aggregated values
+  // If all format_ids are the same, keep original attributes; otherwise use 'auto'
+  if (allSameFormatId) {
+    return {
+      ...baseFormat,
+      filesize_approx: allHaveFilesize ? totalFilesizeApprox : null,
+      tbr: allHaveTbr ? totalTbr : null,
+    };
+  } else {
+    return {
+      ...baseFormat,
+      format: 'Best Video (Automatic)',
+      format_id: 'best',
+      format_note: 'auto',
+      ext: 'auto',
+      resolution: 'auto',
+      dynamic_range: 'auto',
+      acodec: 'auto',
+      vcodec: 'auto',
+      audio_ext: 'auto',
+      video_ext: 'auto',
+      fps: null,
+      filesize_approx: allHaveFilesize ? totalFilesizeApprox : null,
+      tbr: allHaveTbr ? totalTbr : null,
+    } as VideoFormat;
+  }
+};
+
+export const getCommonSubtitles = (
+  entries: RawVideoInfo[],
+  selectedIndices: string[]
+): { [subtitle_id: string]: VideoSubtitle[] } => {
+  // If no videos selected, return empty object
+  if (!entries || entries.length === 0 || selectedIndices.length === 0) {
+    return {};
+  }
+
+  // Get the selected videos (convert 1-indexed strings to 0-indexed numbers)
+  const selectedVideos = selectedIndices
+    .map(index => entries[Number(index) - 1])
+    .filter(video => video && video.subtitles);
+
+  if (selectedVideos.length === 0) {
+    return {};
+  }
+
+  // If only one video selected, return all its subtitles
+  if (selectedVideos.length === 1) {
+    return selectedVideos[0].subtitles || {};
+  }
+
+  // Get subtitle keys from the first selected video as the base set
+  const firstVideoSubtitles = selectedVideos[0].subtitles || {};
+  const firstVideoSubtitleKeys = new Set(Object.keys(firstVideoSubtitles));
+
+  // Find subtitle keys that exist in ALL selected videos
+  const commonSubtitleKeys = [...firstVideoSubtitleKeys].filter(subtitleKey => {
+    return selectedVideos.every(video =>
+      video.subtitles && Object.prototype.hasOwnProperty.call(video.subtitles, subtitleKey)
+    );
+  });
+
+  // Return subtitle object with only common keys (using first video's subtitle data)
+  return Object.fromEntries(
+    commonSubtitleKeys.map(key => [key, firstVideoSubtitles[key]])
+  );
+};
+
+export const getCommonAutoSubtitles = (
+  entries: RawVideoInfo[],
+  selectedIndices: string[]
+): { [subtitle_id: string]: VideoSubtitle[] } => {
+  // If no videos selected, return empty object
+  if (!entries || entries.length === 0 || selectedIndices.length === 0) {
+    return {};
+  }
+
+  // Get the selected videos (convert 1-indexed strings to 0-indexed numbers)
+  const selectedVideos = selectedIndices
+    .map(index => entries[Number(index) - 1])
+    .filter(video => video && video.automatic_captions);
+
+  if (selectedVideos.length === 0) {
+    return {};
+  }
+
+  // If only one video selected, return all its automatic captions
+  if (selectedVideos.length === 1) {
+    return selectedVideos[0].automatic_captions || {};
+  }
+
+  // Get auto subtitle keys from the first selected video as the base set
+  const firstVideoAutoSubs = selectedVideos[0].automatic_captions || {};
+  const firstVideoAutoSubKeys = new Set(Object.keys(firstVideoAutoSubs));
+
+  // Find auto subtitle keys that exist in ALL selected videos
+  const commonAutoSubKeys = [...firstVideoAutoSubKeys].filter(subtitleKey => {
+    return selectedVideos.every(video =>
+      video.automatic_captions && Object.prototype.hasOwnProperty.call(video.automatic_captions, subtitleKey)
+    );
+  });
+
+  // Return auto subtitle object with only common keys (using first video's data)
+  return Object.fromEntries(
+    commonAutoSubKeys.map(key => [key, firstVideoAutoSubs[key]])
+  );
 };

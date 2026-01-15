@@ -80,7 +80,7 @@ export const saveDownloadState = async (downloadState: DownloadState) => {
             subtitle_id,
             queue_index,
             playlist_id,
-            playlist_index,
+            playlist_indices,
             process_id,
             resolution,
             ext,
@@ -90,6 +90,7 @@ export const saveDownloadState = async (downloadState: DownloadState) => {
             vcodec,
             dynamic_range,
             status,
+            item,
             progress,
             total,
             downloaded,
@@ -107,7 +108,7 @@ export const saveDownloadState = async (downloadState: DownloadState) => {
             use_aria2,
             custom_command,
             queue_config
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35)
         ON CONFLICT(download_id) DO UPDATE SET
             download_status = $2,
             video_id = $3,
@@ -115,7 +116,7 @@ export const saveDownloadState = async (downloadState: DownloadState) => {
             subtitle_id = $5,
             queue_index = $6,
             playlist_id = $7,
-            playlist_index = $8,
+            playlist_indices = $8,
             process_id = $9,
             resolution = $10,
             ext = $11,
@@ -125,23 +126,24 @@ export const saveDownloadState = async (downloadState: DownloadState) => {
             vcodec = $15,
             dynamic_range = $16,
             status = $17,
-            progress = $18,
-            total = $19,
-            downloaded = $20,
-            speed = $21,
-            eta = $22,
-            filepath = $23,
-            filetype = $24,
-            filesize = $25,
-            output_format = $26,
-            embed_metadata = $27,
-            embed_thumbnail = $28,
-            square_crop_thumbnail = $29,
-            sponsorblock_remove = $30,
-            sponsorblock_mark = $31,
-            use_aria2 = $32,
-            custom_command = $33,
-            queue_config = $34`,
+            item = $18,
+            progress = $19,
+            total = $20,
+            downloaded = $21,
+            speed = $22,
+            eta = $23,
+            filepath = $24,
+            filetype = $25,
+            filesize = $26,
+            output_format = $27,
+            embed_metadata = $28,
+            embed_thumbnail = $29,
+            square_crop_thumbnail = $30,
+            sponsorblock_remove = $31,
+            sponsorblock_mark = $32,
+            use_aria2 = $33,
+            custom_command = $34,
+            queue_config = $35`,
         [
             downloadState.download_id,
             downloadState.download_status,
@@ -150,7 +152,7 @@ export const saveDownloadState = async (downloadState: DownloadState) => {
             downloadState.subtitle_id,
             downloadState.queue_index,
             downloadState.playlist_id,
-            downloadState.playlist_index,
+            downloadState.playlist_indices,
             downloadState.process_id,
             downloadState.resolution,
             downloadState.ext,
@@ -160,6 +162,7 @@ export const saveDownloadState = async (downloadState: DownloadState) => {
             downloadState.vcodec,
             downloadState.dynamic_range,
             downloadState.status,
+            downloadState.item,
             downloadState.progress,
             downloadState.total,
             downloadState.downloaded,
@@ -197,6 +200,14 @@ export const updateDownloadFilePath = async (download_id: string, filepath: stri
     )
 }
 
+export const updateDownloadPlaylistItem = async (download_id: string, item: string) => {
+    const db = await Database.load('sqlite:database.db')
+    return await db.execute(
+        'UPDATE downloads SET item = $2 WHERE download_id = $1',
+        [download_id, item]
+    )
+}
+
 export const deleteDownloadState = async (download_id: string) => {
     const db = await Database.load('sqlite:database.db')
     return await db.execute(
@@ -231,6 +242,36 @@ export const fetchAllDownloadStates = async () => {
             AND downloads.playlist_id IS NOT NULL
         ORDER BY downloads.id DESC`
     )
+}
+
+export const fetchDownloadStateById = async (download_id: string) => {
+    const db = await Database.load('sqlite:database.db')
+    const result = await db.select<DownloadState[]>(
+        `SELECT
+            downloads.*,
+            video_info.title,
+            video_info.url,
+            video_info.host,
+            video_info.thumbnail,
+            video_info.channel,
+            video_info.duration_string,
+            video_info.release_date,
+            video_info.view_count,
+            video_info.like_count,
+            playlist_info.playlist_title,
+            playlist_info.playlist_url,
+            playlist_info.playlist_n_entries,
+            playlist_info.playlist_channel
+        FROM downloads
+        INNER JOIN video_info
+            ON downloads.video_id = video_info.video_id
+        LEFT JOIN playlist_info
+            ON downloads.playlist_id = playlist_info.playlist_id
+            AND downloads.playlist_id IS NOT NULL
+        WHERE downloads.download_id = $1`,
+        [download_id]
+    )
+    return result.length > 0 ? result[0] : null
 }
 
 export const fetchAllSettings = async () => {

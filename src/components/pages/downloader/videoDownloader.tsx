@@ -112,16 +112,23 @@ function SelectiveVideoDownload({ videoMetadata, audioOnlyFormats, videoOnlyForm
                 >
                     <p className="text-xs">Subtitle Languages</p>
                     <div className="flex gap-2 flex-wrap items-center">
-                        {subtitleLanguages.map((lang) => (
-                            <ToggleGroupItem
-                            className="text-xs text-nowrap border-2 data-[state=on]:border-2 data-[state=on]:border-primary data-[state=on]:bg-primary/10 hover:bg-muted/70"
-                            value={lang.code}
-                            size="sm"
-                            aria-label={lang.lang}
-                            key={lang.code}>
-                                {lang.lang}
-                            </ToggleGroupItem>
-                        ))}
+                        {subtitleLanguages.map((lang) => {
+                            const hasAutoSubSelected = selectedSubtitles.some(code => code.endsWith('-orig'));
+                            const hasNormalSubSelected = selectedSubtitles.some(code => !code.endsWith('-orig'));
+                            const isDisabled = (hasAutoSubSelected && !lang.code.endsWith('-orig')) || (hasNormalSubSelected && lang.code.endsWith('-orig'));
+
+                            return (
+                                <ToggleGroupItem
+                                className="text-xs text-nowrap border-2 data-[state=on]:border-2 data-[state=on]:border-primary data-[state=on]:bg-primary/10 hover:bg-muted/70"
+                                value={lang.code}
+                                size="sm"
+                                aria-label={lang.lang}
+                                key={lang.code}
+                                disabled={isDisabled}>
+                                    {lang.lang}
+                                </ToggleGroupItem>
+                            );
+                        })}
                     </div>
                 </ToggleGroup>
             )}
@@ -227,16 +234,23 @@ function CombinedVideoDownload({ audioOnlyFormats, videoOnlyFormats, subtitleLan
                 >
                     <p className="text-xs">Subtitle Languages</p>
                     <div className="flex gap-2 flex-wrap items-center">
-                        {subtitleLanguages.map((lang) => (
-                            <ToggleGroupItem
-                            className="text-xs text-nowrap border-2 data-[state=on]:border-2 data-[state=on]:border-primary data-[state=on]:bg-primary/10 hover:bg-muted/70"
-                            value={lang.code}
-                            size="sm"
-                            aria-label={lang.lang}
-                            key={lang.code}>
-                                {lang.lang}
-                            </ToggleGroupItem>
-                        ))}
+                        {subtitleLanguages.map((lang) => {
+                            const hasAutoSubSelected = selectedSubtitles.some(code => code.endsWith('-orig'));
+                            const hasNormalSubSelected = selectedSubtitles.some(code => !code.endsWith('-orig'));
+                            const isDisabled = (hasAutoSubSelected && !lang.code.endsWith('-orig')) || (hasNormalSubSelected && lang.code.endsWith('-orig'));
+
+                            return (
+                                <ToggleGroupItem
+                                className="text-xs text-nowrap border-2 data-[state=on]:border-2 data-[state=on]:border-primary data-[state=on]:bg-primary/10 hover:bg-muted/70"
+                                value={lang.code}
+                                size="sm"
+                                aria-label={lang.lang}
+                                key={lang.code}
+                                disabled={isDisabled}>
+                                    {lang.lang}
+                                </ToggleGroupItem>
+                            );
+                        })}
                     </div>
                 </ToggleGroup>
             )}

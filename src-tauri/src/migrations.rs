@@ -163,7 +163,7 @@ pub fn get_migrations() -> Vec<Migration> {
                 subtitle_id TEXT,
                 queue_index INTEGER,
                 playlist_id TEXT,
-                playlist_index INTEGER,
+                playlist_indices TEXT,
                 resolution TEXT,
                 ext TEXT,
                 abr REAL,
@@ -173,6 +173,7 @@ pub fn get_migrations() -> Vec<Migration> {
                 dynamic_range TEXT,
                 process_id INTEGER,
                 status TEXT,
+                item TEXT,
                 progress REAL,
                 total INTEGER,
                 downloaded INTEGER,
@@ -199,13 +200,17 @@ pub fn get_migrations() -> Vec<Migration> {
             -- Copy all data from original table to temporary table with default values for new columns
             INSERT INTO downloads_temp SELECT
                 id, download_id, download_status, video_id, format_id, subtitle_id,
-                queue_index, playlist_id, playlist_index, resolution, ext, abr, vbr,
-                acodec, vcodec, dynamic_range, process_id, status, progress, total,
-                downloaded, speed, eta, filepath, filetype, filesize,
+                queue_index, playlist_id,
+                CAST(playlist_index AS TEXT),                                 -- Convert INTEGER playlist_index to TEXT playlist_indices
+                resolution, ext, abr, vbr,
+                acodec, vcodec, dynamic_range, process_id, status,
+                CASE WHEN playlist_id IS NOT NULL THEN '1/1' ELSE NULL END,   -- item
+                progress, total, downloaded, speed, eta,
+                filepath, filetype, filesize,
                 output_format,
                 embed_metadata,
                 embed_thumbnail,
-                0,    -- square_crop_thumbnail
+                0,                                                            -- square_crop_thumbnail
                 sponsorblock_remove, sponsorblock_mark, use_aria2,
                 custom_command, queue_config, created_at, updated_at
             FROM downloads;

@@ -2,10 +2,10 @@ import { DownloadState } from "@/types/download";
 import { invoke } from "@tauri-apps/api/core";
 import { useCallback, useRef } from "react";
 import { useBasePathsStore, useCurrentVideoMetadataStore, useDownloaderPageStatesStore, useDownloadStatesStore, useSettingsPageStatesStore } from "@/services/store";
-import { determineFileType, generateVideoId, parseProgressLine } from "@/utils";
+import { determineFileType, extractPlaylistItemProgress, generateVideoId, parseProgressLine } from "@/utils";
 import { Command } from "@tauri-apps/plugin-shell";
 import { RawVideoInfo } from "@/types/video";
-import { useDeleteDownloadState, useSaveDownloadState, useSavePlaylistInfo, useSaveVideoInfo, useUpdateDownloadFilePath, useUpdateDownloadStatus } from "@/services/mutations";
+import { useDeleteDownloadState, useSaveDownloadState, useSavePlaylistInfo, useSaveVideoInfo, useUpdateDownloadFilePath, useUpdateDownloadPlaylistItem, useUpdateDownloadStatus } from "@/services/mutations";
 import { useQueryClient } from "@tanstack/react-query";
 import { platform } from "@tauri-apps/plugin-os";
 import { toast } from "sonner";
@@ -76,6 +76,7 @@ export default function useDownloader() {
     const downloadStateSaver = useSaveDownloadState();
     const downloadStatusUpdater = useUpdateDownloadStatus();
     const downloadFilePathUpdater = useUpdateDownloadFilePath();
+    const playlistItemUpdater = useUpdateDownloadPlaylistItem();
     const videoInfoSaver = useSaveVideoInfo();
     const downloadStateDeleter = useDeleteDownloadState();
     const playlistInfoSaver = useSavePlaylistInfo();
@@ -99,7 +100,7 @@ export default function useDownloader() {
     }, 500);
 
     const fetchVideoMetadata = async (params: FetchVideoMetadataParams): Promise<RawVideoInfo | null> => {
-        const { url, formatId, playlistIndex, selectedSubtitles, resumeState, downloadConfig } = params;
+        const { url, formatId, playlistIndices, selectedSubtitles, resumeState, downloadConfig } = params;
         try {
             const args = [url, '--dump-single-json', '--no-warnings'];
             if (formatId) args.push('--format', formatId);
@@ -108,8 +109,8 @@ export default function useDownloader() {
                 if (isAutoSub) args.push('--write-auto-sub');
                 args.push('--embed-subs', '--sub-lang', selectedSubtitles);
             }
-            if (playlistIndex) args.push('--playlist-items', playlistIndex);
-            if (PREFER_VIDEO_OVER_PLAYLIST && !playlistIndex) args.push('--no-playlist');
+            if (playlistIndices) args.push('--playlist-items', playlistIndices);
+            if (PREFER_VIDEO_OVER_PLAYLIST && !playlistIndices) args.push('--no-playlist');
             if (STRICT_DOWNLOADABILITY_CHECK && !formatId) args.push('--check-all-formats');
             if (STRICT_DOWNLOADABILITY_CHECK && formatId) args.push('--check-formats');
 
@@ -213,7 +214,7 @@ export default function useDownloader() {
     };
 
     const startDownload = async (params: StartDownloadParams) => {
-        const { url, selectedFormat, downloadConfig, selectedSubtitles, resumeState, playlistItems } = params;
+        const { url, selectedFormat, downloadConfig, selectedSubtitles, resumeState, playlistItems, overrideOptions } = params;
         LOG.info('NEODLP', `Initiating yt-dlp download for URL: ${url}`);
 
         console.log('Starting download:', { url, selectedFormat, downloadConfig, selectedSubtitles, resumeState, playlistItems });
@@ -222,12 +223,13 @@ export default function useDownloader() {
             return;
         }
 
-        const isPlaylist = (playlistItems && typeof playlistItems === 'string') || (resumeState?.playlist_id && resumeState?.playlist_index) ? true : false;
-        const playlistIndex = isPlaylist ? (resumeState?.playlist_index?.toString() || playlistItems) : null;
+        const isPlaylist = (playlistItems && typeof playlistItems === 'string') || (resumeState?.playlist_id && resumeState?.playlist_indices) ? true : false;
+        const playlistIndices = isPlaylist ? (resumeState?.playlist_indices || playlistItems) : null;
+        const isMultiplePlaylistItems = isPlaylist && playlistIndices && typeof playlistIndices === 'string' && playlistIndices.includes(',');
         let videoMetadata = await fetchVideoMetadata({
             url,
-            formatId: selectedFormat,
-            playlistIndex: isPlaylist && playlistIndex && typeof playlistIndex === 'string' ? playlistIndex : undefined,
+            formatId: (!isPlaylist || (isPlaylist && selectedFormat !== 'best')) ? selectedFormat : undefined,
+            playlistIndices: isPlaylist && playlistIndices && typeof playlistIndices === 'string' ? playlistIndices : undefined,
             selectedSubtitles,
             resumeState
         });
@@ -278,14 +280,10 @@ export default function useDownloader() {
             `temp:${tempDownloadDirPath}`,
             '--paths',
             `home:${downloadDirPath}`,
-            '--output',
-            `${FILENAME_TEMPLATE}[${downloadId}].%(ext)s`,
             '--windows-filenames',
             '--restrict-filenames',
             '--exec',
             'after_move:echo Finalpath: {}',
-            '--format',
-            selectedFormat,
             '--no-mtime',
             '--retries',
             MAX_RETRIES.toString(),
@@ -293,6 +291,27 @@ export default function useDownloader() {
 
         if (currentPlatform === 'macos') {
             args.push('--ffmpeg-location', '/Applications/NeoDLP.app/Contents/MacOS', '--js-runtimes', 'deno:/Applications/NeoDLP.app/Contents/MacOS/deno');
+        }
+
+        if (isMultiplePlaylistItems) {
+            args.push('--output', `%(playlist_title|Unknown)s[${downloadId}]/[%(playlist_index|0)d]_${FILENAME_TEMPLATE}.%(ext)s`);
+        } else {
+            args.push('--output', `${FILENAME_TEMPLATE}[${downloadId}].%(ext)s`);
+        }
+
+        if (isMultiplePlaylistItems) {
+            const playlistLength = playlistIndices.split(',').length;
+            if (playlistLength > 5 && playlistLength < 100) {
+                args.push('--sleep-requests', '1', '--sleep-interval', '5', '--max-sleep-interval', '15');
+            } else if (playlistLength >= 100 && playlistLength < 500) {
+                args.push('--sleep-requests', '1.5', '--sleep-interval', '10', '--max-sleep-interval', '40');
+            } else if (playlistLength >= 500) {
+                args.push('--sleep-requests', '2.5', '--sleep-interval', '20', '--max-sleep-interval', '60');
+            }
+        }
+
+        if (!isPlaylist || (isPlaylist && selectedFormat !== 'best')) {
+            args.push('--format', selectedFormat);
         }
 
         if (DEBUG_MODE && LOG_VERBOSE) {
@@ -307,8 +326,8 @@ export default function useDownloader() {
             args.push('--embed-subs', '--sub-lang', selectedSubtitles);
         }
 
-        if (isPlaylist && playlistIndex && typeof playlistIndex === 'string') {
-            args.push('--playlist-items', playlistIndex);
+        if (isPlaylist && playlistIndices && typeof playlistIndices === 'string') {
+            args.push('--playlist-items', playlistIndices);
         }
 
         let customCommandArgs = null;
@@ -466,11 +485,11 @@ export default function useDownloader() {
             addErroredDownload(downloadId);
         });
 
-        command.stdout.on('data', line => {
+        command.stdout.on('data', async line => {
             if (line.startsWith('status:') || line.startsWith('[#')) {
                 // console.log(line);
                 if (DEBUG_MODE && LOG_PROGRESS) LOG.progress(`YT-DLP Download ${downloadId}`, line);
-                const currentProgress = parseProgressLine(line);
+                const currentProgress = await parseProgressLine(line, downloadId);
                 const state: DownloadState = {
                     download_id: downloadId,
                     download_status: 'downloading',
@@ -479,7 +498,7 @@ export default function useDownloader() {
                     subtitle_id: selectedSubtitles || null,
                     queue_index: null,
                     playlist_id: playlistId,
-                    playlist_index: playlistIndex ? Number(playlistIndex) : null,
+                    playlist_indices: playlistIndices ?? null,
                     title: videoMetadata.title,
                     url: url,
                     host: videoMetadata.webpage_url_domain,
@@ -495,13 +514,14 @@ export default function useDownloader() {
                     playlist_channel: videoMetadata.playlist_channel || null,
                     resolution: videoMetadata.resolution || null,
                     ext: videoMetadata.ext || null,
-                    abr: videoMetadata.abr || null,
-                    vbr: videoMetadata.vbr || null,
+                    abr: resumeState?.abr || overrideOptions?.tbr/2 || videoMetadata.abr || null,
+                    vbr: resumeState?.vbr || overrideOptions?.tbr/2 || videoMetadata.vbr || null,
                     acodec: videoMetadata.acodec || null,
                     vcodec: videoMetadata.vcodec || null,
                     dynamic_range: videoMetadata.dynamic_range || null,
                     process_id: processPid,
                     status: currentProgress.status || null,
+                    item: currentProgress.item || null,
                     progress: currentProgress.progress || null,
                     total: currentProgress.total || null,
                     downloaded: currentProgress.downloaded || null,
@@ -509,7 +529,7 @@ export default function useDownloader() {
                     eta: currentProgress.eta || null,
                     filepath: downloadFilePath,
                     filetype: determineFileType(videoMetadata.vcodec, videoMetadata.acodec) || null,
-                    filesize: videoMetadata.filesize_approx || null,
+                    filesize: resumeState?.filesize || overrideOptions?.filesize || videoMetadata.filesize_approx || null,
                     output_format: outputFormat,
                     embed_metadata: embedMetadata,
                     embed_thumbnail: embedThumbnail,
@@ -525,7 +545,67 @@ export default function useDownloader() {
                 // console.log(line);
                 if (line.trim() !== '') LOG.info(`YT-DLP Download ${downloadId}`, line);
 
-                if (line.startsWith('Finalpath: ')) {
+                if (isPlaylist && line.startsWith('[download] Downloading item')) {
+                    const playlistItemProgress = extractPlaylistItemProgress(line);
+                    setTimeout(async () => {
+                        playlistItemUpdater.mutate({ download_id: downloadId, item: playlistItemProgress as string }, {
+                            onSuccess: (data) => {
+                                console.log("Playlist item progress updated successfully:", data);
+                                queryClient.invalidateQueries({ queryKey: ['download-states'] });
+                            },
+                            onError: (error) => {
+                                console.error("Failed to update playlist item progress:", error);
+                            }
+                        });
+                    }, 1500);
+                }
+
+                if (isPlaylist && line.startsWith('Finalpath: ')) {
+                    downloadFilePath = line.replace('Finalpath: ', '').trim().replace(/^"|"$/g, '');
+                    const downloadedFileExt = downloadFilePath.split('.').pop();
+
+                    setTimeout(async () => {
+                        downloadFilePathUpdater.mutate({ download_id: downloadId, filepath: downloadFilePath as string, ext: downloadedFileExt as string }, {
+                            onSuccess: (data) => {
+                                console.log("Download filepath updated successfully:", data);
+                                queryClient.invalidateQueries({ queryKey: ['download-states'] });
+                            },
+                            onError: (error) => {
+                                console.error("Failed to update download filepath:", error);
+                            }
+                        });
+                    }, 1500);
+                }
+
+                if (isPlaylist && line.startsWith('[download] Finished downloading playlist:')) {
+                    // Update completion status after a short delay to ensure database states are propagated correctly
+                    console.log(`Playlist download completed with ID: ${downloadId}, updating status after 2s delay...`);
+                    setTimeout(async () => {
+                        LOG.info('NEODLP', `yt-dlp download completed with id: ${downloadId}`);
+                        downloadStatusUpdater.mutate({ download_id: downloadId, download_status: 'completed' }, {
+                            onSuccess: (data) => {
+                                console.log("Download status updated successfully:", data);
+                                queryClient.invalidateQueries({ queryKey: ['download-states'] });
+                            },
+                            onError: (error) => {
+                                console.error("Failed to update download status:", error);
+                            }
+                        });
+
+                        toast.success(`${isMultiplePlaylistItems ? 'Playlist ' : ''}Download Completed`, {
+                            description: `The download for ${isMultiplePlaylistItems ? 'playlist ' : ''}"${isMultiplePlaylistItems ? videoMetadata.playlist_title : videoMetadata.title}" has completed successfully.`,
+                        });
+
+                        if (ENABLE_NOTIFICATIONS && DOWNLOAD_COMPLETION_NOTIFICATION) {
+                            sendNotification({
+                                title: `${isMultiplePlaylistItems ? 'Playlist ' : ''}Download Completed`,
+                                body: `The download for ${isMultiplePlaylistItems ? 'playlist ' : ''}"${isMultiplePlaylistItems ? videoMetadata.playlist_title : videoMetadata.title}" has completed successfully.`,
+                            });
+                        }
+                    }, 2000);
+                }
+
+                if (!isPlaylist && line.startsWith('Finalpath: ')) {
                     downloadFilePath = line.replace('Finalpath: ', '').trim().replace(/^"|"$/g, '');
                     const downloadedFileExt = downloadFilePath.split('.').pop();
 
@@ -607,7 +687,7 @@ export default function useDownloader() {
                         subtitle_id: selectedSubtitles || null,
                         queue_index: (!ongoingDownloads || ongoingDownloads && ongoingDownloads?.length < MAX_PARALLEL_DOWNLOADS) ? null : (queuedDownloads?.length || 0),
                         playlist_id: playlistId,
-                        playlist_index: playlistIndex ? Number(playlistIndex) : null,
+                        playlist_indices: playlistIndices ?? null,
                         title: videoMetadata.title,
                         url: url,
                         host: videoMetadata.webpage_url_domain,
@@ -623,13 +703,14 @@ export default function useDownloader() {
                         playlist_channel: videoMetadata.playlist_channel || null,
                         resolution: resumeState?.resolution || null,
                         ext: resumeState?.ext || null,
-                        abr: resumeState?.abr || null,
-                        vbr: resumeState?.vbr || null,
+                        abr: resumeState?.abr || overrideOptions?.tbr/2 || null,
+                        vbr: resumeState?.vbr || overrideOptions?.tbr/2 || null,
                         acodec: resumeState?.acodec || null,
                         vcodec: resumeState?.vcodec || null,
                         dynamic_range: resumeState?.dynamic_range || null,
                         process_id: resumeState?.process_id || null,
                         status: resumeState?.status || null,
+                        item: resumeState?.item || null,
                         progress: resumeState?.progress || null,
                         total: resumeState?.total || null,
                         downloaded: resumeState?.downloaded || null,
@@ -637,7 +718,7 @@ export default function useDownloader() {
                         eta: resumeState?.eta || null,
                         filepath: downloadFilePath,
                         filetype: resumeState?.filetype || null,
-                        filesize: resumeState?.filesize || null,
+                        filesize: resumeState?.filesize || overrideOptions?.filesize || null,
                         output_format: resumeState?.output_format || null,
                         embed_metadata: resumeState?.embed_metadata || 0,
                         embed_thumbnail: resumeState?.embed_thumbnail || 0,
@@ -725,7 +806,7 @@ export default function useDownloader() {
         try {
             LOG.info('NEODLP', `Resuming yt-dlp download with id: ${downloadState.download_id} (as per user request)`);
             await startDownload({
-                url: downloadState.playlist_id && downloadState.playlist_index ? downloadState.playlist_url : downloadState.url,
+                url: downloadState.playlist_id && downloadState.playlist_indices ? downloadState.playlist_url : downloadState.url,
                 selectedFormat: downloadState.format_id,
                 downloadConfig: downloadState.queue_config ? JSON.parse(downloadState.queue_config) : {
                     output_format: null,

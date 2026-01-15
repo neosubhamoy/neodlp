@@ -1,6 +1,6 @@
 import { VideoInfo } from "@/types/video";
 import { useMutation } from "@tanstack/react-query";
-import { deleteDownloadState, deleteKvPair, resetSettings, saveDownloadState, saveKvPair, savePlaylistInfo, saveSettingsKey, saveVideoInfo, updateDownloadFilePath, updateDownloadStatus } from "@/services/database";
+import { deleteDownloadState, deleteKvPair, resetSettings, saveDownloadState, saveKvPair, savePlaylistInfo, saveSettingsKey, saveVideoInfo, updateDownloadFilePath, updateDownloadPlaylistItem, updateDownloadStatus } from "@/services/database";
 import { DownloadState } from "@/types/download";
 import { PlaylistInfo } from "@/types/playlist";
 
@@ -33,6 +33,13 @@ export function useUpdateDownloadFilePath() {
     return useMutation({
         mutationFn: (data: { download_id: string; filepath: string, ext: string }) =>
         updateDownloadFilePath(data.download_id, data.filepath, data.ext)
+    })
+}
+
+export function useUpdateDownloadPlaylistItem() {
+    return useMutation({
+        mutationFn: (data: { download_id: string; item: string }) =>
+        updateDownloadPlaylistItem(data.download_id, data.item)
     })
 }
 

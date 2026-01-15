@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useAppContext } from "@/providers/appContextProvider";
 import { useCurrentVideoMetadataStore, useDownloaderPageStatesStore, useSettingsPageStatesStore } from "@/services/store";
-import { determineFileType, fileFormatFilter, sortByBitrate } from "@/utils";
+import { determineFileType, fileFormatFilter, getCommonFormats, getCommonSubtitles, getCommonAutoSubtitles, sortByBitrate, getMergedBestFormat } from "@/utils";
 import { Loader2, PackageSearch, X, Clipboard } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { VideoFormat } from "@/types/video";
@@ -49,12 +49,12 @@ export default function DownloaderPage() {
     const selectedDownloadFormat = useDownloaderPageStatesStore((state) => state.selectedDownloadFormat);
     const selectedCombinableVideoFormat = useDownloaderPageStatesStore((state) => state.selectedCombinableVideoFormat);
     const selectedCombinableAudioFormat = useDownloaderPageStatesStore((state) => state.selectedCombinableAudioFormat);
-    const selectedPlaylistVideoIndex = useDownloaderPageStatesStore((state) => state.selectedPlaylistVideoIndex);
+    const selectedPlaylistVideos = useDownloaderPageStatesStore((state) => state.selectedPlaylistVideos);
     const setSelectedDownloadFormat = useDownloaderPageStatesStore((state) => state.setSelectedDownloadFormat);
     const setSelectedCombinableVideoFormat = useDownloaderPageStatesStore((state) => state.setSelectedCombinableVideoFormat);
     const setSelectedCombinableAudioFormat = useDownloaderPageStatesStore((state) => state.setSelectedCombinableAudioFormat);
     const setSelectedSubtitles = useDownloaderPageStatesStore((state) => state.setSelectedSubtitles);
-    const setSelectedPlaylistVideoIndex = useDownloaderPageStatesStore((state) => state.setSelectedPlaylistVideoIndex);
+    const setSelectedPlaylistVideos = useDownloaderPageStatesStore((state) => state.setSelectedPlaylistVideos);
     const resetDownloadConfiguration = useDownloaderPageStatesStore((state) => state.resetDownloadConfiguration);
 
     const appTheme = useSettingsPageStatesStore(state => state.settings.theme);
@@ -62,12 +62,21 @@ export default function DownloaderPage() {
 
     const containerRef = useRef<HTMLDivElement>(null);
 
-    const audioOnlyFormats = videoMetadata?._type === 'video' ? sortByBitrate(videoMetadata?.formats.filter(fileFormatFilter('audio'))) : videoMetadata?._type === 'playlist' ? sortByBitrate(videoMetadata?.entries[Number(selectedPlaylistVideoIndex) - 1].formats.filter(fileFormatFilter('audio'))) : [];
-    const videoOnlyFormats = videoMetadata?._type === 'video' ? sortByBitrate(videoMetadata?.formats.filter(fileFormatFilter('video'))) : videoMetadata?._type === 'playlist' ? sortByBitrate(videoMetadata?.entries[Number(selectedPlaylistVideoIndex) - 1].formats.filter(fileFormatFilter('video'))) : [];
-    const combinedFormats = videoMetadata?._type === 'video' ? sortByBitrate(videoMetadata?.formats.filter(fileFormatFilter('video+audio'))) : videoMetadata?._type === 'playlist' ? sortByBitrate(videoMetadata?.entries[Number(selectedPlaylistVideoIndex) - 1].formats.filter(fileFormatFilter('video+audio'))) : [];
+    const commonFormats = (() => {
+        if (videoMetadata?._type === 'video') {
+            return videoMetadata?.formats;
+        } else if (videoMetadata?._type === 'playlist') {
+            return getCommonFormats(videoMetadata.entries, selectedPlaylistVideos);
+        }
+        return [];
+    })();
 
-    const av1VideoFormats = videoMetadata?.webpage_url_domain === 'youtube.com' && videoMetadata?._type === 'video' ? sortByBitrate(videoMetadata?.formats.filter((format) => format.vcodec?.startsWith('av01'))) : videoMetadata?.webpage_url_domain === 'youtube.com' && videoMetadata?._type === 'playlist' ? sortByBitrate(videoMetadata?.entries[Number(selectedPlaylistVideoIndex) - 1].formats.filter((format) => format.vcodec?.startsWith('av01'))) : [];
-    const opusAudioFormats = videoMetadata?.webpage_url_domain === 'youtube.com' && videoMetadata?._type === 'video' ? sortByBitrate(videoMetadata?.formats.filter((format) => format.acodec?.startsWith('opus'))) : videoMetadata?.webpage_url_domain === 'youtube.com' && videoMetadata?._type === 'playlist' ? sortByBitrate(videoMetadata?.entries[Number(selectedPlaylistVideoIndex) - 1].formats.filter((format) => format.acodec?.startsWith('opus'))) : [];
+    const audioOnlyFormats = sortByBitrate(commonFormats.filter(fileFormatFilter('audio')));
+    const videoOnlyFormats = sortByBitrate(commonFormats.filter(fileFormatFilter('video')));
+    const combinedFormats = sortByBitrate(commonFormats.filter(fileFormatFilter('video+audio')));
+
+    const av1VideoFormats = videoMetadata?.webpage_url_domain === 'youtube.com' ? sortByBitrate(commonFormats.filter((format) => format.vcodec?.startsWith('av01'))) : [];
+    const opusAudioFormats = videoMetadata?.webpage_url_domain === 'youtube.com' ? sortByBitrate(commonFormats.filter((format) => format.acodec?.startsWith('opus'))) : [];
     const qualityPresetFormats: VideoFormat[] | undefined = videoMetadata?.webpage_url_domain === 'youtube.com' ?
         av1VideoFormats && opusAudioFormats ?
             av1VideoFormats.map((av1Format) => {
@@ -98,7 +107,7 @@ export default function DownloaderPage() {
             );
         } else if (videoMetadata?._type === 'playlist') {
             if (selectedDownloadFormat === 'best') {
-                return videoMetadata?.entries[Number(selectedPlaylistVideoIndex) - 1].requested_downloads[0];
+                return getMergedBestFormat(videoMetadata.entries, selectedPlaylistVideos);
             }
             return allFilteredFormats.find(
                 (format) => format.format_id === selectedDownloadFormat
@@ -129,9 +138,23 @@ export default function DownloaderPage() {
         }
     })();
 
-    const subtitles = videoMetadata?._type === 'video' ? (videoMetadata?.subtitles || {}) : videoMetadata?._type === 'playlist' ? (videoMetadata?.entries[Number(selectedPlaylistVideoIndex) - 1].subtitles || {}) : {};
+    const subtitles = (() => {
+        if (videoMetadata?._type === 'video') {
+            return videoMetadata?.subtitles || {};
+        } else if (videoMetadata?._type === 'playlist') {
+            return getCommonSubtitles(videoMetadata.entries, selectedPlaylistVideos);
+        }
+        return {};
+    })();
     const filteredSubtitles = Object.fromEntries(Object.entries(subtitles).filter(([key]) => key !== 'live_chat'));
-    const autoSubtitles = videoMetadata?._type === 'video' ? (videoMetadata?.automatic_captions || {}) : videoMetadata?._type === 'playlist' ? (videoMetadata?.entries[Number(selectedPlaylistVideoIndex) - 1].automatic_captions || {}) : {};
+    const autoSubtitles = (() => {
+        if (videoMetadata?._type === 'video') {
+            return videoMetadata?.automatic_captions || {};
+        } else if (videoMetadata?._type === 'playlist') {
+            return getCommonAutoSubtitles(videoMetadata.entries, selectedPlaylistVideos);
+        }
+        return {};
+    })();
     const originalAutoSubtitles = Object.fromEntries(Object.entries(autoSubtitles).filter(([key]) => key.endsWith('-orig')));
 
     const subtitleLanguages = Object.keys(filteredSubtitles).map(langCode => ({
@@ -165,7 +188,7 @@ export default function DownloaderPage() {
         setSelectedCombinableVideoFormat('');
         setSelectedCombinableAudioFormat('');
         setSelectedSubtitles([]);
-        setSelectedPlaylistVideoIndex('1');
+        setSelectedPlaylistVideos(["1"]);
         resetDownloadConfiguration();
 
         fetchVideoMetadata({ url: values.url }).then((metadata) => {

@@ -362,7 +362,7 @@ function AppFolderSettings() {
         </div>
         <div className="filename-template">
             <h3 className="font-semibold">Filename Template</h3>
-            <p className="text-xs text-muted-foreground mb-3">Set the template for naming downloaded files (download id and file extension will be auto-appended at the end, changing template may cause paused downloads to re-start from begining)</p>
+            <p className="text-xs text-muted-foreground mb-3">Set the template for naming downloaded files (download id, file extension and playlist index will be auto-appended, changing template may cause paused downloads to re-start from begining)</p>
             <Form {...filenameTemplateForm}>
                 <form onSubmit={filenameTemplateForm.handleSubmit(handleFilenameTemplateSubmit)} className="flex gap-4 w-full" autoComplete="off">
                     <FormField
@@ -1142,7 +1142,7 @@ function AppCommandSettings() {
                                     <FormControl>
                                         <Textarea
                                         className="focus-visible:ring-0 min-h-26"
-                                        placeholder="Enter yt-dlp command line arguments (no need to start with 'yt-dlp', already passed args: url, output paths, selected formats, selected subtitles, playlist item. also, bulk downloading is not supported)"
+                                        placeholder="Enter yt-dlp command line arguments (no need to start with 'yt-dlp', already passed args: url, output paths, selected formats, selected subtitles, playlist items etc.)"
                                         {...field}
                                         />
                                     </FormControl>
@@ -1395,7 +1395,7 @@ function AppInfoSettings() {
             <p className="text-xs text-muted-foreground mb-3">License and usage terms of NeoDLP</p>
             <div className="license">
                 <p className="text-sm mb-3">NeoDLP is a Fully Open-Source Software Licensed under the MIT license. Anyone can view, modify, use (personal and commercial) or distribute it's sources without any extra permission (Just include the LICENSE file :)</p>
-                <p className="text-sm mb-3"><TriangleAlert className="size-4 stroke-primary inline mb-1 mr-0.5" /> DISCLAIMER: NeoDLP facilitates downloading from various Online Platforms with different Policies and Terms of Use which Users must follow. We strictly do not promote any unauthorized downloading of copyrighted content and content piracy. NeoDLP is only made for downloading content that the user holds the copyright to or has the authority for. Users must use the downloaded content wisely and solely at their own legal responsibility. The developer is not responsible for any action taken by the user, and takes zero direct or indirect liability for that matter.</p>
+                <p className="text-sm mb-3"><TriangleAlert className="size-4 stroke-primary inline mb-1 mr-0.5" /> DISCLAIMER: NeoDLP facilitates downloading from various Online Platforms with different Policies and Terms of Use which Users must follow. We strictly do not promote any unauthorized downloading of copyrighted content. NeoDLP is only made for downloading content that the user holds the copyright to or has the authority for. Users must use the downloaded content wisely and solely at their own legal responsibility. The developer is not responsible for any action taken by the user, and takes zero direct or indirect liability for that matter.</p>
                 <span className="flex items-center gap-4 flex-wrap">
                     <Button className="px-4" variant="outline" size="sm" asChild>
                         <a href={'https://github.com/' + config.appRepo + '/blob/main/LICENSE'} target="_blank" >

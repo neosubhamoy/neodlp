@@ -6,7 +6,7 @@ import { createContext, useContext } from 'react';
 export interface FetchVideoMetadataParams {
     url: string;
     formatId?: string;
-    playlistIndex?: string;
+    playlistIndices?: string;
     selectedSubtitles?: string | null;
     resumeState?: DownloadState;
     downloadConfig?: DownloadConfiguration;
@@ -19,6 +19,9 @@ export interface StartDownloadParams {
     selectedSubtitles?: string | null;
     resumeState?: DownloadState;
     playlistItems?: string;
+    overrideOptions?: {
+        [key: string]: any;
+    }
 };
 
 interface AppContextType {

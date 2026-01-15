@@ -6,7 +6,7 @@ export interface DownloadState {
     subtitle_id: string | null;
     queue_index: number | null;
     playlist_id: string | null;
-    playlist_index: number | null;
+    playlist_indices: string | null;
     title: string;
     url: string;
     host: string;
@@ -29,6 +29,7 @@ export interface DownloadState {
     dynamic_range: string | null;
     process_id: number | null;
     status: string | null;
+    item: string | null;
     progress: number | null;
     total: number | null;
     downloaded: number | null;
@@ -58,7 +59,7 @@ export interface Download {
     subtitle_id: string | null;
     queue_index: number | null;
     playlist_id: string | null;
-    playlist_index: number | null;
+    playlist_indices: string | null;
     resolution: string | null;
     ext: string | null;
     abr: number | null;
@@ -68,6 +69,7 @@ export interface Download {
     dynamic_range: string | null;
     process_id: number | null;
     status: string | null;
+    item: string | null;
     progress: number | null;
     total: number | null;
     downloaded: number | null;
@@ -91,6 +93,7 @@ export interface Download {
 
 export interface DownloadProgress {
     status: string | null;
+    item: string | null;
     progress: number | null;
     speed: number | null;
     downloaded: number | null;

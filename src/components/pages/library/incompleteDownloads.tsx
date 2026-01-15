@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useAppContext } from "@/providers/appContextProvider";
 import { useDownloadActionStatesStore, useSettingsPageStatesStore } from "@/services/store";
 import { formatFileSize, formatSecToTimeString, formatSpeed } from "@/utils";
-import { ArrowUpRightIcon, CircleCheck, File, Info, Loader2, Music, Pause, Play, RotateCw, Video, X } from "lucide-react";
+import { ArrowUpRightIcon, CircleCheck, File, Info, ListVideo, Loader2, Music, Pause, Play, RotateCw, Video, X } from "lucide-react";
 import { DownloadState } from "@/types/download";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { useNavigate } from "react-router-dom";
@@ -37,13 +37,34 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
         isDeleteFileChecked: false,
     };
 
+    const isPlaylist = state.playlist_id !== null && state.playlist_indices !== null;
+    const isMutilplePlaylistItems = isPlaylist && state.playlist_indices && state.playlist_indices.includes(',');
+
     return (
         <div className="p-4 border border-border rounded-lg flex gap-4" key={state.download_id}>
             <div className="w-[30%] flex flex-col justify-between gap-2">
-                <AspectRatio ratio={16 / 9} className="w-full rounded-lg overflow-hidden border border-border">
-                    <ProxyImage src={state.thumbnail || ""} alt="thumbnail" className="" />
-                </AspectRatio>
-                {state.ext ? (
+                {isMutilplePlaylistItems ? (
+                    <div className="w-full relative flex items-center justify-center mt-2">
+                        <AspectRatio ratio={16 / 9} className="w-full rounded-lg overflow-hidden border border-border mb-2 z-20">
+                            <ProxyImage src={state.thumbnail || ""} alt="thumbnail" className="" />
+                        </AspectRatio>
+                        <div className="w-[95%] aspect-video absolute -top-1 rounded-lg overflow-hidden border border-border mb-2 z-10">
+                            <ProxyImage src={state.thumbnail || ""} alt="thumbnail" className="blur-xs brightness-75" />
+                        </div>
+                        <div className="w-[87%] aspect-video absolute -top-2 rounded-lg overflow-hidden border border-border mb-2 z-0">
+                            <ProxyImage src={state.thumbnail || ""} alt="thumbnail" className="blur-sm brightness-50" />
+                        </div>
+                    </div>
+                ) : (
+                    <AspectRatio ratio={16 / 9} className="w-full rounded-lg overflow-hidden border border-border mb-2">
+                        <ProxyImage src={state.thumbnail || ""} alt="thumbnail" className="" />
+                    </AspectRatio>
+                )}
+                {isMutilplePlaylistItems ? (
+                    <span className="w-full flex items-center justify-center text-xs border border-border py-1 px-2 rounded">
+                        <ListVideo className="w-4 h-4 mr-2 stroke-primary" /> Playlist ({state.playlist_indices?.split(',').length})
+                    </span>
+                ) : state.ext ? (
                     <span className="w-full flex items-center justify-center text-xs border border-border py-1 px-2 rounded">
                         {state.filetype && (state.filetype === 'video' || state.filetype === 'video+audio') && (
                             <Video className="w-4 h-4 mr-2 stroke-primary" />
@@ -68,12 +89,15 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
             </div>
             <div className="w-full flex flex-col justify-between">
                 <div className="flex flex-col gap-1">
-                    <h4>{state.title}</h4>
+                    <h4>{isMutilplePlaylistItems ? state.playlist_title : state.title}</h4>
                     {((state.download_status === 'starting') || (state.download_status === 'downloading' && state.status === 'finished')) && (
                         <IndeterminateProgress indeterminate={true} className="w-full" />
                     )}
                     {(state.download_status === 'downloading' || state.download_status === 'paused' || state.download_status === 'errored') && state.progress && state.status !== 'finished' && (
                         <div className="w-full flex items-center gap-2">
+                            {isMutilplePlaylistItems && state.item ? (
+                                <span className="text-sm text-nowrap">({state.item})</span>
+                            ) : null}
                             <span className="text-sm text-nowrap">{state.progress}%</span>
                             <Progress value={state.progress} />
                             <span className="text-sm text-nowrap">{

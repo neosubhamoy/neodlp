@@ -9,6 +9,7 @@ import { formatBitrate, formatCodec, formatDurationString, formatFileSize, pagin
 import { ArrowUpRightIcon, AudioLines, CircleArrowDown, Clock, File, FileAudio2, FileQuestion, FileVideo2, FolderInput, ListVideo, Music, Play, Search, Trash2, Video } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import * as fs from "@tauri-apps/plugin-fs";
+import { dirname } from "@tauri-apps/api/path";
 import { DownloadState } from "@/types/download";
 import { useQueryClient } from "@tanstack/react-query";
 import { useDeleteDownloadState } from "@/services/mutations";
@@ -60,14 +61,31 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
 
     const removeFromDownloads = async (downloadState: DownloadState, delete_file: boolean) => {
         if (delete_file && downloadState.filepath) {
-            try {
-                if (await fs.exists(downloadState.filepath)) {
-                    await fs.remove(downloadState.filepath);
-                } else {
-                    console.error(`File not found: "${downloadState.filepath}"`);
+            const isMutilplePlaylistItems = downloadState.playlist_id !== null &&
+                downloadState.playlist_indices !== null &&
+                downloadState.playlist_indices.includes(',');
+
+            if (isMutilplePlaylistItems) {
+                const dirPath = await dirname(downloadState.filepath);
+                try {
+                    if (await fs.exists(dirPath)) {
+                        await fs.remove(dirPath, { recursive: true });
+                    } else {
+                        console.error(`Directory not found: "${dirPath}"`);
+                    }
+                } catch (e) {
+                    console.error(e);
                 }
-            } catch (e) {
-                console.error(e);
+            } else {
+                try {
+                    if (await fs.exists(downloadState.filepath)) {
+                        await fs.remove(downloadState.filepath);
+                    } else {
+                        console.error(`File not found: "${downloadState.filepath}"`);
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
             }
         }
 
@@ -77,11 +95,11 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                 queryClient.invalidateQueries({ queryKey: ['download-states'] });
                 if (delete_file  && downloadState.filepath) {
                     toast.success("Deleted from downloads", {
-                        description: `The download for "${downloadState.title}" has been deleted successfully.`,
+                        description: `The download for ${isMutilplePlaylistItems ? 'playlist ' : ''}"${isMutilplePlaylistItems ? downloadState.playlist_title : downloadState.title}" has been deleted successfully.`,
                     });
                 } else {
                     toast.success("Removed from downloads", {
-                        description: `The download for "${downloadState.title}" has been removed successfully.`,
+                        description: `The download for ${isMutilplePlaylistItems ? 'playlist ' : ''}"${isMutilplePlaylistItems ? downloadState.playlist_title : downloadState.title}" has been removed successfully.`,
                     });
                 }
             },
@@ -89,11 +107,11 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                 console.error("Failed to delete download state:", error);
                 if (delete_file  && downloadState.filepath) {
                     toast.error("Failed to delete download", {
-                        description: `An error occurred while trying to delete the download for "${downloadState.title}".`,
+                        description: `An error occurred while trying to delete the download for ${isMutilplePlaylistItems ? 'playlist ' : ''}"${isMutilplePlaylistItems ? downloadState.playlist_title : downloadState.title}".`,
                     });
                 } else {
                     toast.error("Failed to remove download", {
-                        description: `An error occurred while trying to remove the download for "${downloadState.title}".`,
+                        description: `An error occurred while trying to remove the download for ${isMutilplePlaylistItems ? 'playlist ' : ''}"${isMutilplePlaylistItems ? downloadState.playlist_title : downloadState.title}".`,
                     });
                 }
             }
@@ -125,31 +143,60 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
         isDeleteFileChecked: false,
     };
 
+    const isPlaylist = state.playlist_id !== null && state.playlist_indices !== null;
+    const isMutilplePlaylistItems = isPlaylist && state.playlist_indices && state.playlist_indices.includes(',');
+
     return (
         <div className="p-4 border border-border rounded-lg flex gap-4" key={state.download_id}>
             <div className="w-[30%] flex flex-col justify-between gap-2">
-                <AspectRatio ratio={16 / 9} className="w-full rounded-lg overflow-hidden border border-border mb-2">
-                    <ProxyImage src={state.thumbnail || ""} alt="thumbnail" className="" />
-                </AspectRatio>
-                <span className="w-full flex items-center justify-center text-xs border border-border py-1 px-2 rounded">
-                    {state.filetype && (state.filetype === 'video' || state.filetype === 'video+audio') && (
-                        <Video className="w-4 h-4 mr-2 stroke-primary" />
-                    )}
-                    {state.filetype && state.filetype === 'audio' && (
-                        <Music className="w-4 h-4 mr-2 stroke-primary" />
-                    )}
-                    {(!state.filetype) || (state.filetype && state.filetype !== 'video' && state.filetype !== 'audio' && state.filetype !== 'video+audio') && (
-                        <File className="w-4 h-4 mr-2 stroke-primary" />
-                    )}
-                    {state.ext ? state.ext.toUpperCase() : 'Unknown'} {state.resolution ? `(${state.resolution})` : null}
-                </span>
+                {isMutilplePlaylistItems ? (
+                    <div className="w-full relative flex items-center justify-center mt-2">
+                        <AspectRatio ratio={16 / 9} className="w-full rounded-lg overflow-hidden border border-border mb-2 z-20">
+                            <ProxyImage src={state.thumbnail || ""} alt="thumbnail" className="" />
+                        </AspectRatio>
+                        <div className="w-[95%] aspect-video absolute -top-1 rounded-lg overflow-hidden border border-border mb-2 z-10">
+                            <ProxyImage src={state.thumbnail || ""} alt="thumbnail" className="blur-xs brightness-75" />
+                        </div>
+                        <div className="w-[87%] aspect-video absolute -top-2 rounded-lg overflow-hidden border border-border mb-2 z-0">
+                            <ProxyImage src={state.thumbnail || ""} alt="thumbnail" className="blur-sm brightness-50" />
+                        </div>
+                    </div>
+                ) : (
+                    <AspectRatio ratio={16 / 9} className="w-full rounded-lg overflow-hidden border border-border mb-2">
+                        <ProxyImage src={state.thumbnail || ""} alt="thumbnail" className="" />
+                    </AspectRatio>
+                )}
+                {isMutilplePlaylistItems ? (
+                    <span className="w-full flex items-center justify-center text-xs border border-border py-1 px-2 rounded">
+                        <ListVideo className="w-4 h-4 mr-2 stroke-primary" /> Playlist ({state.playlist_indices?.split(',').length})
+                    </span>
+                ) : (
+                    <span className="w-full flex items-center justify-center text-xs border border-border py-1 px-2 rounded">
+                        {state.filetype && (state.filetype === 'video' || state.filetype === 'video+audio') && (
+                            <Video className="w-4 h-4 mr-2 stroke-primary" />
+                        )}
+                        {state.filetype && state.filetype === 'audio' && (
+                            <Music className="w-4 h-4 mr-2 stroke-primary" />
+                        )}
+                        {(!state.filetype) || (state.filetype && state.filetype !== 'video' && state.filetype !== 'audio' && state.filetype !== 'video+audio') && (
+                            <File className="w-4 h-4 mr-2 stroke-primary" />
+                        )}
+                        {state.ext ? state.ext.toUpperCase() : 'Unknown'} {state.resolution ? `(${state.resolution})` : null}
+                    </span>
+                )}
             </div>
             <div className="w-full flex flex-col justify-between gap-2">
                 <div className="flex flex-col gap-1">
-                    <h4 className="">{state.title}</h4>
-                    <p className="text-xs text-muted-foreground">{state.channel ? state.channel : 'unknown'} {state.host ? <><span className="text-primary">•</span> {state.host}</> : 'unknown'}</p>
+                    <h4 className="">{isMutilplePlaylistItems ? state.playlist_title : state.title}</h4>
+                    <p className="text-xs text-muted-foreground">{isMutilplePlaylistItems ? state.playlist_channel ?? 'unknown' : state.channel ?? 'unknown'} {state.host ? <><span className="text-primary">•</span> {state.host}</> : 'unknown'}</p>
                     <div className="flex items-center mt-1">
-                        <span className="text-xs text-muted-foreground flex items-center pr-3"><Clock className="w-4 h-4 mr-2"/> {state.duration_string ? formatDurationString(state.duration_string) : 'unknown'}</span>
+                        <span className="text-xs text-muted-foreground flex items-center pr-3">
+                            {isMutilplePlaylistItems ? (
+                                <><ListVideo className="w-4 h-4 mr-2"/> {state.playlist_n_entries ?? 'unknown'}</>
+                            ) : (
+                                <><Clock className="w-4 h-4 mr-2"/> {state.duration_string ? formatDurationString(state.duration_string) : 'unknown'}</>
+                            )}
+                        </span>
                         <Separator orientation="vertical" />
                         <span className="text-xs text-muted-foreground flex items-center px-3">
                         {state.filetype && (state.filetype === 'video' || state.filetype === 'video+audio') && (
@@ -177,21 +224,21 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                         </span>
                     </div>
                     <div className="hidden xl:flex items-center mt-1 gap-2 flex-wrap text-xs">
-                        {state.playlist_id && state.playlist_index && (
+                        {state.playlist_id && state.playlist_indices && !isMutilplePlaylistItems && (
                             <span
                             className="border border-border py-1 px-2 rounded flex items-center cursor-pointer"
                             title={`${state.playlist_title ?? 'UNKNOWN PLAYLIST'}` + ' by ' + `${state.playlist_channel ?? 'UNKNOWN CHANNEL'}`}
                             >
-                                <ListVideo className="w-4 h-4 mr-2" /> Playlist ({state.playlist_index} of {state.playlist_n_entries})
+                                <ListVideo className="w-4 h-4 mr-2" /> Playlist ({state.playlist_indices} of {state.playlist_n_entries})
                             </span>
                         )}
-                        {state.vcodec && (
+                        {state.vcodec && !isMutilplePlaylistItems && (
                             <span className="border border-border py-1 px-2 rounded">{formatCodec(state.vcodec)}</span>
                         )}
-                        {state.acodec && (
+                        {state.acodec && !isMutilplePlaylistItems && (
                             <span className="border border-border py-1 px-2 rounded">{formatCodec(state.acodec)}</span>
                         )}
-                        {state.dynamic_range && state.dynamic_range !== 'SDR' && (
+                        {state.dynamic_range && state.dynamic_range !== 'SDR' && !isMutilplePlaylistItems && (
                             <span className="border border-border py-1 px-2 rounded">{state.dynamic_range}</span>
                         )}
                         {state.subtitle_id && (
@@ -200,6 +247,22 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                             title={`EMBEDED SUBTITLE (${state.subtitle_id})`}
                             >
                                 ESUB
+                            </span>
+                        )}
+                        {state.sponsorblock_mark && (
+                            <span
+                            className="border border-border py-1 px-2 rounded cursor-pointer"
+                            title={`SPONSORBLOCK MARKED (${state.sponsorblock_mark})`}
+                            >
+                                SPBLOCK(M)
+                            </span>
+                        )}
+                        {state.sponsorblock_remove && (
+                            <span
+                            className="border border-border py-1 px-2 rounded cursor-pointer"
+                            title={`SPONSORBLOCK REMOVED (${state.sponsorblock_remove})`}
+                            >
+                                SPBLOCK(R)
                             </span>
                         )}
                     </div>
