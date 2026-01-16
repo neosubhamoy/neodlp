@@ -13,7 +13,7 @@ import { useLogger } from "@/helpers/use-logger";
 import { ulid } from "ulid";
 import { sendNotification } from '@tauri-apps/plugin-notification';
 import { FetchVideoMetadataParams, StartDownloadParams } from "@/providers/appContextProvider";
-import { debounce } from "es-toolkit";
+import { useDebouncedCallback } from '@tanstack/react-pacer/debouncer';
 
 export default function useDownloader() {
     const globalDownloadStates = useDownloadStatesStore((state) => state.downloadStates);
@@ -87,7 +87,7 @@ export default function useDownloader() {
     const isProcessingQueueRef = useRef(false);
     const lastProcessedDownloadIdRef = useRef<string | null>(null);
 
-    const updateDownloadState = debounce((state: DownloadState) => {
+    const updateDownloadProgress =  useDebouncedCallback((state: DownloadState) => {
         downloadStateSaver.mutate(state, {
             onSuccess: (_data) => {
                 // console.log("Download State saved successfully:", data);
@@ -97,7 +97,7 @@ export default function useDownloader() {
                 console.error("Failed to save download state:", error);
             }
         });
-    }, 500);
+    }, { key: 'update-download-progress', wait: 500 });
 
     const fetchVideoMetadata = async (params: FetchVideoMetadataParams): Promise<RawVideoInfo | null> => {
         const { url, formatId, playlistIndices, selectedSubtitles, resumeState, downloadConfig } = params;
@@ -540,7 +540,7 @@ export default function useDownloader() {
                     custom_command: customCommandArgs,
                     queue_config: null
                 };
-                updateDownloadState(state);
+                updateDownloadProgress(state);
             } else {
                 // console.log(line);
                 if (line.trim() !== '') LOG.info(`YT-DLP Download ${downloadId}`, line);
@@ -791,7 +791,7 @@ export default function useDownloader() {
                             reject(error);
                         }
                     });
-                }, 500);
+                }, 1500);
             });
         } catch (e) {
             console.error(`Failed to pause download: ${e}`);
@@ -857,7 +857,7 @@ export default function useDownloader() {
                             reject(error);
                         }
                     });
-                }, 500);
+                }, 1500);
             });
         } catch (e) {
             console.error(`Failed to cancel download: ${e}`);
