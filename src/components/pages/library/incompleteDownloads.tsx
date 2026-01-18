@@ -38,12 +38,12 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
     };
 
     const isPlaylist = state.playlist_id !== null && state.playlist_indices !== null;
-    const isMutilplePlaylistItems = isPlaylist && state.playlist_indices && state.playlist_indices.includes(',');
+    const isMultiplePlaylistItems = isPlaylist && state.playlist_indices && state.playlist_indices.includes(',');
 
     return (
         <div className="p-4 border border-border rounded-lg flex gap-4" key={state.download_id}>
             <div className="w-[30%] flex flex-col justify-between gap-2">
-                {isMutilplePlaylistItems ? (
+                {isMultiplePlaylistItems ? (
                     <div className="w-full relative flex items-center justify-center mt-2">
                         <AspectRatio ratio={16 / 9} className="w-full rounded-lg overflow-hidden border border-border mb-2 z-20">
                             <ProxyImage src={state.thumbnail || ""} alt="thumbnail" className="" />
@@ -60,7 +60,7 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                         <ProxyImage src={state.thumbnail || ""} alt="thumbnail" className="" />
                     </AspectRatio>
                 )}
-                {isMutilplePlaylistItems ? (
+                {isMultiplePlaylistItems ? (
                     <span className="w-full flex items-center justify-center text-xs border border-border py-1 px-2 rounded">
                         <ListVideo className="w-4 h-4 mr-2 stroke-primary" /> Playlist ({state.playlist_indices?.split(',').length})
                     </span>
@@ -89,13 +89,13 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
             </div>
             <div className="w-full flex flex-col justify-between">
                 <div className="flex flex-col gap-1">
-                    <h4>{isMutilplePlaylistItems ? state.playlist_title : state.title}</h4>
+                    <h4>{isMultiplePlaylistItems ? state.playlist_title : state.title}</h4>
                     {((state.download_status === 'starting') || (state.download_status === 'downloading' && state.status === 'finished')) && (
                         <IndeterminateProgress indeterminate={true} className="w-full" />
                     )}
                     {(state.download_status === 'downloading' || state.download_status === 'paused' || state.download_status === 'errored') && state.progress && state.status !== 'finished' && (
                         <div className="w-full flex items-center gap-2">
-                            {isMutilplePlaylistItems && state.item ? (
+                            {isMultiplePlaylistItems && state.item ? (
                                 <span className="text-sm text-nowrap">({state.item})</span>
                             ) : null}
                             <span className="text-sm text-nowrap">{state.progress}%</span>

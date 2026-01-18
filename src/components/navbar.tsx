@@ -42,12 +42,12 @@ export default function Navbar() {
                         <p>Logs</p>
                         </TooltipContent>
                     </Tooltip>
-                    <DialogContent className="sm:max-w-[600px]">
+                    <DialogContent className="sm:max-w-150">
                         <DialogHeader>
                             <DialogTitle>Log Viewer</DialogTitle>
                             <DialogDescription>Monitor real-time app session logs (latest on top)</DialogDescription>
                         </DialogHeader>
-                        <div className="flex flex-col gap-2 p-2 max-h-[300px] overflow-y-scroll overflow-x-hidden bg-muted">
+                        <div className="flex flex-col gap-2 p-2 max-h-75 overflow-y-scroll overflow-x-hidden bg-muted">
                             {logs.length === 0 ? (
                                 <p className="text-sm text-muted-foreground">NO LOGS TO SHOW!</p>
                             ) : (
@@ -61,7 +61,7 @@ export default function Navbar() {
                         </div>
                         <DialogFooter>
                             <Button
-                            variant="outline"
+                            variant="destructive"
                             disabled={logs.length === 0}
                             onClick={() => logger.clearLogs()}
                             >

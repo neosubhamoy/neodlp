@@ -296,7 +296,7 @@ export default function DownloaderPage() {
                                         <FormControl>
                                             <Input
                                             className="focus-visible:ring-0"
-                                            placeholder="Enter Video URL to Search"
+                                            placeholder="Enter Video/Playlist URL to Download"
                                             {...field}
                                             />
                                         </FormControl>

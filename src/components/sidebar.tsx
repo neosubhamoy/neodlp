@@ -1,9 +1,10 @@
 import { config } from "@/config";
 import { Link, useLocation } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
-import { CircleArrowUp, Download, Settings, SquarePlay, } from "lucide-react";
+import { CircleArrowUp } from "lucide-react";
 import { isActive as isActiveSidebarItem } from "@/utils";
 import { RoutesObj } from "@/types/route";
+import { AllRoutes } from "@/routes";
 import { useDownloadStatesStore, useSettingsPageStatesStore } from "@/services/store";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
@@ -36,24 +37,12 @@ export function AppSidebar() {
     const [isNativeLinuxApp, setIsNativeLinuxApp] = useState(false);
 
     const topItems: Array<RoutesObj> = [
-        {
-            title: "Downloader",
-            url: "/",
-            icon: Download,
-        },
-        {
-            title: "Library",
-            url: "/library",
-            icon: SquarePlay,
-        }
+        AllRoutes[0], // Downloader
+        AllRoutes[1], // Library
     ];
 
     const bottomItems: Array<RoutesObj> = [
-        {
-            title: "Settings",
-            url: "/settings",
-            icon: Settings,
-        }
+        AllRoutes[2], // Settings
     ];
 
     useEffect(() => {

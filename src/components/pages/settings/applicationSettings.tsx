@@ -83,7 +83,7 @@ function AppGeneralSettings() {
             <p className="text-xs text-muted-foreground mb-3">Set maximum number of allowed parallel downloads</p>
             <Slider
             id="max-parallel-downloads"
-            className="w-[350px] mb-2"
+            className="w-87.5 mb-2"
             value={[maxParallelDownloads]}
             min={1}
             max={5}
@@ -114,7 +114,7 @@ function AppGeneralSettings() {
             <p className="text-xs text-muted-foreground mb-3">Set maximum number of retries for a download before giving up</p>
             <Slider
             id="max-retries"
-            className="w-[350px] mb-2"
+            className="w-87.5 mb-2"
             value={[maxRetries]}
             min={1}
             max={100}
@@ -769,7 +769,7 @@ function AppCookiesSettings() {
                 onValueChange={(value) => saveSettingsKey('cookies_browser', value)}
                 disabled={importCookiesFrom !== "browser" || !useCookies || useCustomCommands}
                 >
-                    <SelectTrigger className="w-[230px] ring-0 focus:ring-0">
+                    <SelectTrigger className="w-57.5 ring-0 focus:ring-0">
                         <SelectValue placeholder="Select browser to import cookies" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1408,7 +1408,7 @@ function AppInfoSettings() {
                                 <Package className="size-4" /> Dependencies
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[600px]">
+                        <DialogContent className="sm:max-w-150">
                             <DialogHeader>
                                 <DialogTitle>Dependencies</DialogTitle>
                                 <DialogDescription>Major dependencies of NeoDLP</DialogDescription>
@@ -1505,7 +1505,7 @@ export function ApplicationSettings() {
                     value={ytDlpUpdateChannel}
                     onValueChange={(value) => saveSettingsKey('ytdlp_update_channel', value)}
                     >
-                        <SelectTrigger className="w-[150px] ring-0 focus:ring-0">
+                        <SelectTrigger className="w-37.5 ring-0 focus:ring-0">
                             <SelectValue placeholder="Select update channel" />
                         </SelectTrigger>
                         <SelectContent>
@@ -1553,7 +1553,7 @@ export function ApplicationSettings() {
             </TabsList>
             <div className="min-h-full flex flex-col w-full border-l border-border pl-4">
                 {tabsList.map((tab) => (
-                    <TabsContent key={tab.key} value={tab.key} className={clsx("flex flex-col gap-4 min-h-[435px]", tab.key === "info" ? "max-w-[80%]" : "max-w-[70%]")}>
+                    <TabsContent key={tab.key} value={tab.key} className={clsx("flex flex-col gap-4 min-h-108.75", tab.key === "info" ? "max-w-[80%]" : "max-w-[70%]")}>
                         {tab.component}
                     </TabsContent>
                 ))}

@@ -284,7 +284,7 @@ export function ExtensionSettings() {
             </TabsList>
             <div className="min-h-full flex flex-col w-full border-l border-border pl-4">
                 {tabsList.map((tab) => (
-                    <TabsContent key={tab.key} value={tab.key} className={clsx("flex flex-col gap-4 min-h-[150px]", tab.key === "install" ? "max-w-[90%]" : "max-w-[70%]")}>
+                    <TabsContent key={tab.key} value={tab.key} className={clsx("flex flex-col gap-4 min-h-37.5", tab.key === "install" ? "max-w-[90%]" : "max-w-[70%]")}>
                         {tab.component}
                     </TabsContent>
                 ))}

@@ -14,6 +14,7 @@ import { ulid } from "ulid";
 import { sendNotification } from '@tauri-apps/plugin-notification';
 import { FetchVideoMetadataParams, StartDownloadParams } from "@/providers/appContextProvider";
 import { useDebouncedCallback } from '@tanstack/react-pacer/debouncer';
+import { fetchDownloadStateById } from "@/services/database";
 
 export default function useDownloader() {
     const globalDownloadStates = useDownloadStatesStore((state) => state.downloadStates);
@@ -564,6 +565,9 @@ export default function useDownloader() {
                     downloadFilePath = line.replace('Finalpath: ', '').trim().replace(/^"|"$/g, '');
                     const downloadedFileExt = downloadFilePath.split('.').pop();
 
+                    const state = await fetchDownloadStateById(downloadId);
+                    const isLastPlaylistItem = state?.item && Number(state?.item.split('/')[0]) === Number(state?.item.split('/')[1]);
+
                     setTimeout(async () => {
                         downloadFilePathUpdater.mutate({ download_id: downloadId, filepath: downloadFilePath as string, ext: downloadedFileExt as string }, {
                             onSuccess: (data) => {
@@ -574,33 +578,31 @@ export default function useDownloader() {
                                 console.error("Failed to update download filepath:", error);
                             }
                         });
-                    }, 1500);
-                }
 
-                if (isPlaylist && line.startsWith('[download] Finished downloading playlist:')) {
-                    // Update completion status after a short delay to ensure database states are propagated correctly
-                    console.log(`Playlist download completed with ID: ${downloadId}, updating status after 2s delay...`);
-                    setTimeout(async () => {
-                        LOG.info('NEODLP', `yt-dlp download completed with id: ${downloadId}`);
-                        downloadStatusUpdater.mutate({ download_id: downloadId, download_status: 'completed' }, {
-                            onSuccess: (data) => {
-                                console.log("Download status updated successfully:", data);
-                                queryClient.invalidateQueries({ queryKey: ['download-states'] });
-                            },
-                            onError: (error) => {
-                                console.error("Failed to update download status:", error);
-                            }
-                        });
+                        if (isLastPlaylistItem) {
+                            console.log(`Playlist download completed with ID: ${downloadId}, updating status...`);
 
-                        toast.success(`${isMultiplePlaylistItems ? 'Playlist ' : ''}Download Completed`, {
-                            description: `The download for ${isMultiplePlaylistItems ? 'playlist ' : ''}"${isMultiplePlaylistItems ? videoMetadata.playlist_title : videoMetadata.title}" has completed successfully.`,
-                        });
-
-                        if (ENABLE_NOTIFICATIONS && DOWNLOAD_COMPLETION_NOTIFICATION) {
-                            sendNotification({
-                                title: `${isMultiplePlaylistItems ? 'Playlist ' : ''}Download Completed`,
-                                body: `The download for ${isMultiplePlaylistItems ? 'playlist ' : ''}"${isMultiplePlaylistItems ? videoMetadata.playlist_title : videoMetadata.title}" has completed successfully.`,
+                            LOG.info('NEODLP', `yt-dlp download completed with id: ${downloadId}`);
+                            downloadStatusUpdater.mutate({ download_id: downloadId, download_status: 'completed' }, {
+                                onSuccess: (data) => {
+                                    console.log("Download status updated successfully:", data);
+                                    queryClient.invalidateQueries({ queryKey: ['download-states'] });
+                                },
+                                onError: (error) => {
+                                    console.error("Failed to update download status:", error);
+                                }
                             });
+
+                            toast.success("Download Completed", {
+                                description: `The download for ${isMultiplePlaylistItems ? 'playlist ' : ''}"${isMultiplePlaylistItems ? videoMetadata.playlist_title : videoMetadata.title}" has completed successfully.`,
+                            });
+
+                            if (ENABLE_NOTIFICATIONS && DOWNLOAD_COMPLETION_NOTIFICATION) {
+                                sendNotification({
+                                    title: "Download Completed",
+                                    body: `The download for ${isMultiplePlaylistItems ? 'playlist ' : ''}"${isMultiplePlaylistItems ? videoMetadata.playlist_title : videoMetadata.title}" has completed successfully.`,
+                                });
+                            }
                         }
                     }, 2000);
                 }

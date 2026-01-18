@@ -61,11 +61,11 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
 
     const removeFromDownloads = async (downloadState: DownloadState, delete_file: boolean) => {
         if (delete_file && downloadState.filepath) {
-            const isMutilplePlaylistItems = downloadState.playlist_id !== null &&
+            const isMultiplePlaylistItems = downloadState.playlist_id !== null &&
                 downloadState.playlist_indices !== null &&
                 downloadState.playlist_indices.includes(',');
 
-            if (isMutilplePlaylistItems) {
+            if (isMultiplePlaylistItems) {
                 const dirPath = await dirname(downloadState.filepath);
                 try {
                     if (await fs.exists(dirPath)) {
@@ -95,11 +95,11 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                 queryClient.invalidateQueries({ queryKey: ['download-states'] });
                 if (delete_file  && downloadState.filepath) {
                     toast.success("Deleted from downloads", {
-                        description: `The download for ${isMutilplePlaylistItems ? 'playlist ' : ''}"${isMutilplePlaylistItems ? downloadState.playlist_title : downloadState.title}" has been deleted successfully.`,
+                        description: `The download for ${isMultiplePlaylistItems ? 'playlist ' : ''}"${isMultiplePlaylistItems ? downloadState.playlist_title : downloadState.title}" has been deleted successfully.`,
                     });
                 } else {
                     toast.success("Removed from downloads", {
-                        description: `The download for ${isMutilplePlaylistItems ? 'playlist ' : ''}"${isMutilplePlaylistItems ? downloadState.playlist_title : downloadState.title}" has been removed successfully.`,
+                        description: `The download for ${isMultiplePlaylistItems ? 'playlist ' : ''}"${isMultiplePlaylistItems ? downloadState.playlist_title : downloadState.title}" has been removed successfully.`,
                     });
                 }
             },
@@ -107,11 +107,11 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                 console.error("Failed to delete download state:", error);
                 if (delete_file  && downloadState.filepath) {
                     toast.error("Failed to delete download", {
-                        description: `An error occurred while trying to delete the download for ${isMutilplePlaylistItems ? 'playlist ' : ''}"${isMutilplePlaylistItems ? downloadState.playlist_title : downloadState.title}".`,
+                        description: `An error occurred while trying to delete the download for ${isMultiplePlaylistItems ? 'playlist ' : ''}"${isMultiplePlaylistItems ? downloadState.playlist_title : downloadState.title}".`,
                     });
                 } else {
                     toast.error("Failed to remove download", {
-                        description: `An error occurred while trying to remove the download for ${isMutilplePlaylistItems ? 'playlist ' : ''}"${isMutilplePlaylistItems ? downloadState.playlist_title : downloadState.title}".`,
+                        description: `An error occurred while trying to remove the download for ${isMultiplePlaylistItems ? 'playlist ' : ''}"${isMultiplePlaylistItems ? downloadState.playlist_title : downloadState.title}".`,
                     });
                 }
             }
@@ -144,12 +144,12 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
     };
 
     const isPlaylist = state.playlist_id !== null && state.playlist_indices !== null;
-    const isMutilplePlaylistItems = isPlaylist && state.playlist_indices && state.playlist_indices.includes(',');
+    const isMultiplePlaylistItems = isPlaylist && state.playlist_indices && state.playlist_indices.includes(',');
 
     return (
         <div className="p-4 border border-border rounded-lg flex gap-4" key={state.download_id}>
             <div className="w-[30%] flex flex-col justify-between gap-2">
-                {isMutilplePlaylistItems ? (
+                {isMultiplePlaylistItems ? (
                     <div className="w-full relative flex items-center justify-center mt-2">
                         <AspectRatio ratio={16 / 9} className="w-full rounded-lg overflow-hidden border border-border mb-2 z-20">
                             <ProxyImage src={state.thumbnail || ""} alt="thumbnail" className="" />
@@ -166,7 +166,7 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                         <ProxyImage src={state.thumbnail || ""} alt="thumbnail" className="" />
                     </AspectRatio>
                 )}
-                {isMutilplePlaylistItems ? (
+                {isMultiplePlaylistItems ? (
                     <span className="w-full flex items-center justify-center text-xs border border-border py-1 px-2 rounded">
                         <ListVideo className="w-4 h-4 mr-2 stroke-primary" /> Playlist ({state.playlist_indices?.split(',').length})
                     </span>
@@ -187,11 +187,11 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
             </div>
             <div className="w-full flex flex-col justify-between gap-2">
                 <div className="flex flex-col gap-1">
-                    <h4 className="">{isMutilplePlaylistItems ? state.playlist_title : state.title}</h4>
-                    <p className="text-xs text-muted-foreground">{isMutilplePlaylistItems ? state.playlist_channel ?? 'unknown' : state.channel ?? 'unknown'} {state.host ? <><span className="text-primary">•</span> {state.host}</> : 'unknown'}</p>
+                    <h4 className="">{isMultiplePlaylistItems ? state.playlist_title : state.title}</h4>
+                    <p className="text-xs text-muted-foreground">{isMultiplePlaylistItems ? state.playlist_channel ?? 'unknown' : state.channel ?? 'unknown'} {state.host ? <><span className="text-primary">•</span> {state.host}</> : 'unknown'}</p>
                     <div className="flex items-center mt-1">
                         <span className="text-xs text-muted-foreground flex items-center pr-3">
-                            {isMutilplePlaylistItems ? (
+                            {isMultiplePlaylistItems ? (
                                 <><ListVideo className="w-4 h-4 mr-2"/> {state.playlist_n_entries ?? 'unknown'}</>
                             ) : (
                                 <><Clock className="w-4 h-4 mr-2"/> {state.duration_string ? formatDurationString(state.duration_string) : 'unknown'}</>
@@ -224,7 +224,7 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                         </span>
                     </div>
                     <div className="hidden xl:flex items-center mt-1 gap-2 flex-wrap text-xs">
-                        {state.playlist_id && state.playlist_indices && !isMutilplePlaylistItems && (
+                        {state.playlist_id && state.playlist_indices && !isMultiplePlaylistItems && (
                             <span
                             className="border border-border py-1 px-2 rounded flex items-center cursor-pointer"
                             title={`${state.playlist_title ?? 'UNKNOWN PLAYLIST'}` + ' by ' + `${state.playlist_channel ?? 'UNKNOWN CHANNEL'}`}
@@ -232,13 +232,13 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                                 <ListVideo className="w-4 h-4 mr-2" /> Playlist ({state.playlist_indices} of {state.playlist_n_entries})
                             </span>
                         )}
-                        {state.vcodec && !isMutilplePlaylistItems && (
+                        {state.vcodec && !isMultiplePlaylistItems && (
                             <span className="border border-border py-1 px-2 rounded">{formatCodec(state.vcodec)}</span>
                         )}
-                        {state.acodec && !isMutilplePlaylistItems && (
+                        {state.acodec && !isMultiplePlaylistItems && (
                             <span className="border border-border py-1 px-2 rounded">{formatCodec(state.acodec)}</span>
                         )}
-                        {state.dynamic_range && state.dynamic_range !== 'SDR' && !isMutilplePlaylistItems && (
+                        {state.dynamic_range && state.dynamic_range !== 'SDR' && !isMultiplePlaylistItems && (
                             <span className="border border-border py-1 px-2 rounded">{state.dynamic_range}</span>
                         )}
                         {state.subtitle_id && (

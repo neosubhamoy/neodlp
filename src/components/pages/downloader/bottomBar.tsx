@@ -63,12 +63,12 @@ function DownloadConfigDialog({ selectedFormatFileType }: DownloadConfigDialogPr
                 <p>Configurations</p>
                 </TooltipContent>
             </Tooltip>
-            <DialogContent className="sm:max-w-[450px]">
+            <DialogContent className="sm:max-w-112.5">
                 <DialogHeader>
                     <DialogTitle>Configurations</DialogTitle>
                     <DialogDescription>Tweak this download's configurations</DialogDescription>
                 </DialogHeader>
-                <div className="flex flex-col gap-2 max-h-[300px] overflow-y-scroll overflow-x-hidden no-scrollbar">
+                <div className="flex flex-col gap-2 max-h-75 overflow-y-scroll overflow-x-hidden no-scrollbar">
                     <Tabs
                     className=""
                     value={activeDownloadConfigurationTab}

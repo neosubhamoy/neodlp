@@ -107,7 +107,7 @@ export default function App({ children }: { children: React.ReactNode }) {
                 appWindow.setFocus();
                 navigate('/');
                 if (event.payload.url) {
-                    LOG.info('NEODLP', `Received download request from neodlp browser extension for URL: ${event.payload.url}`);
+                    LOG.info('NEODLP', `Received search request from neodlp browser extension for URL: ${event.payload.url}`);
                     const { setRequestedUrl, setAutoSubmitSearch } = useCurrentVideoMetadataStore.getState();
                     setRequestedUrl(event.payload.url);
                     setAutoSubmitSearch(true);
@@ -333,8 +333,11 @@ export default function App({ children }: { children: React.ReactNode }) {
 
         processedUnexpectedErrors.forEach((downloadId) => {
             const downloadState = globalDownloadStates.find(d => d.download_id === downloadId);
+            const isPlaylist = downloadState?.playlist_id !== null && downloadState?.playlist_indices !== null;
+            const isMultiplePlaylistItems = isPlaylist && downloadState?.playlist_indices && downloadState?.playlist_indices.includes(',');
+
             toast.error("Download Failed", {
-                description: `The download for "${downloadState?.title}" failed because yt-dlp exited unexpectedly. Please try again later.`,
+                description: `The download for ${isMultiplePlaylistItems ? 'playlist ' : ''}"${isMultiplePlaylistItems ? downloadState?.playlist_title : downloadState?.title}" failed because yt-dlp exited unexpectedly. Please try again later.`,
             });
         });
 
