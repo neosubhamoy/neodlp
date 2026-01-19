@@ -8,10 +8,10 @@ import { Calendar, Clock, DownloadCloud, Eye, Info, ThumbsUp, AlertCircleIcon } 
 import { FormatSelectionGroup, FormatSelectionGroupItem } from "@/components/custom/formatSelectionGroup";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { RawVideoInfo, VideoFormat } from "@/types/video";
-// import { PlaylistToggleGroup, PlaylistToggleGroupItem } from "@/components/custom/playlistToggleGroup";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { FormatToggleGroup, FormatToggleGroupItem } from "@/components/custom/formatToggleGroup";
 
 interface VideoPreviewProps {
     videoMetadata: RawVideoInfo;
@@ -215,10 +215,10 @@ function SelectiveVideoDownload({ videoMetadata, audioOnlyFormats, videoOnlyForm
 
 function CombinedVideoDownload({ audioOnlyFormats, videoOnlyFormats, subtitleLanguages }: CombinedVideoDownloadProps) {
     const selectedCombinableVideoFormat = useDownloaderPageStatesStore((state) => state.selectedCombinableVideoFormat);
-    const selectedCombinableAudioFormat = useDownloaderPageStatesStore((state) => state.selectedCombinableAudioFormat);
+    const selectedCombinableAudioFormats = useDownloaderPageStatesStore((state) => state.selectedCombinableAudioFormats);
     const selectedSubtitles = useDownloaderPageStatesStore((state) => state.selectedSubtitles);
     const setSelectedCombinableVideoFormat = useDownloaderPageStatesStore((state) => state.setSelectedCombinableVideoFormat);
-    const setSelectedCombinableAudioFormat = useDownloaderPageStatesStore((state) => state.setSelectedCombinableAudioFormat);
+    const setSelectedCombinableAudioFormats = useDownloaderPageStatesStore((state) => state.setSelectedCombinableAudioFormats);
     const setSelectedSubtitles = useDownloaderPageStatesStore((state) => state.setSelectedSubtitles);
     const resetDownloadConfiguration = useDownloaderPageStatesStore((state) => state.resetDownloadConfiguration);
 
@@ -254,29 +254,31 @@ function CombinedVideoDownload({ audioOnlyFormats, videoOnlyFormats, subtitleLan
                     </div>
                 </ToggleGroup>
             )}
-            <FormatSelectionGroup
+            <FormatToggleGroup
+            type="multiple"
+            variant="outline"
             className="mb-2"
-            value={selectedCombinableAudioFormat}
-            onValueChange={(value) => {
-                setSelectedCombinableAudioFormat(value);
+            value={selectedCombinableAudioFormats}
+            onValueChange={(value: string[]) => {
+                setSelectedCombinableAudioFormats(value);
                 resetDownloadConfiguration();
             }}
             >
                 {videoOnlyFormats && videoOnlyFormats.length > 0 && audioOnlyFormats && audioOnlyFormats.length > 0 && (
-                <>
-                    <p className="text-xs">Audio</p>
-                    <div className="grid grid-cols-2 xl:grid-cols-3 gap-2">
-                        {audioOnlyFormats.map((format) => (
-                            <FormatSelectionGroupItem
-                            key={format.format_id}
-                            value={format.format_id}
-                            format={format}
-                            />
-                        ))}
-                    </div>
-                </>
+                    <>
+                        <p className="text-xs">Audio</p>
+                        <div className="grid grid-cols-2 xl:grid-cols-3 gap-2">
+                            {audioOnlyFormats.map((format) => (
+                                <FormatToggleGroupItem
+                                key={format.format_id}
+                                value={format.format_id}
+                                format={format}
+                                />
+                            ))}
+                        </div>
+                    </>
                 )}
-            </FormatSelectionGroup>
+            </FormatToggleGroup>
             <FormatSelectionGroup
             value={selectedCombinableVideoFormat}
             onValueChange={(value) => {

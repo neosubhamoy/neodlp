@@ -104,7 +104,11 @@ export default function useDownloader() {
         const { url, formatId, playlistIndices, selectedSubtitles, resumeState, downloadConfig } = params;
         try {
             const args = [url, '--dump-single-json', '--no-warnings'];
-            if (formatId) args.push('--format', formatId);
+            if (formatId) {
+                const isMultipleAudioFormatSelected = formatId.split('+').length > 2;
+                args.push('--format', formatId);
+                if (isMultipleAudioFormatSelected) args.push('--audio-multistreams');
+            }
             if (selectedSubtitles) {
                 const isAutoSub = selectedSubtitles.split(',').some(lang => lang.endsWith('-orig'));
                 if (isAutoSub) args.push('--write-auto-sub');
@@ -218,7 +222,7 @@ export default function useDownloader() {
         const { url, selectedFormat, downloadConfig, selectedSubtitles, resumeState, playlistItems, overrideOptions } = params;
         LOG.info('NEODLP', `Initiating yt-dlp download for URL: ${url}`);
 
-        console.log('Starting download:', { url, selectedFormat, downloadConfig, selectedSubtitles, resumeState, playlistItems });
+        console.log('Starting download:', { url, selectedFormat, downloadConfig, selectedSubtitles, resumeState, playlistItems, overrideOptions });
         if (!ffmpegPath || !tempDownloadDirPath || !downloadDirPath) {
             console.error('FFmpeg or download paths not found');
             return;
@@ -227,6 +231,7 @@ export default function useDownloader() {
         const isPlaylist = (playlistItems && typeof playlistItems === 'string') || (resumeState?.playlist_id && resumeState?.playlist_indices) ? true : false;
         const playlistIndices = isPlaylist ? (resumeState?.playlist_indices || playlistItems) : null;
         const isMultiplePlaylistItems = isPlaylist && playlistIndices && typeof playlistIndices === 'string' && playlistIndices.includes(',');
+        const isMultipleAudioFormatSelected = selectedFormat.split('+').length > 2;
         let videoMetadata = await fetchVideoMetadata({
             url,
             formatId: (!isPlaylist || (isPlaylist && selectedFormat !== 'best')) ? selectedFormat : undefined,
@@ -245,7 +250,7 @@ export default function useDownloader() {
         console.log('Video Metadata:', videoMetadata);
         videoMetadata = isPlaylist ? videoMetadata.entries[0] : videoMetadata;
 
-        const fileType = determineFileType(videoMetadata.vcodec, videoMetadata.acodec);
+        const fileType = isMultipleAudioFormatSelected ? 'video+audio' : determineFileType(videoMetadata.vcodec, videoMetadata.acodec);
 
         if (fileType !== 'unknown' && (VIDEO_FORMAT !== 'auto' || AUDIO_FORMAT !== 'auto')) {
             if (VIDEO_FORMAT !== 'auto' && (fileType === 'video+audio' || fileType === 'video')) videoMetadata.ext = VIDEO_FORMAT;
@@ -313,6 +318,9 @@ export default function useDownloader() {
 
         if (!isPlaylist || (isPlaylist && selectedFormat !== 'best')) {
             args.push('--format', selectedFormat);
+            if (isMultipleAudioFormatSelected) {
+                args.push('--audio-multistreams');
+            }
         }
 
         if (DEBUG_MODE && LOG_VERBOSE) {
@@ -529,7 +537,7 @@ export default function useDownloader() {
                     speed: currentProgress.speed || null,
                     eta: currentProgress.eta || null,
                     filepath: downloadFilePath,
-                    filetype: determineFileType(videoMetadata.vcodec, videoMetadata.acodec) || null,
+                    filetype: fileType || null,
                     filesize: resumeState?.filesize || overrideOptions?.filesize || videoMetadata.filesize_approx || null,
                     output_format: outputFormat,
                     embed_metadata: embedMetadata,

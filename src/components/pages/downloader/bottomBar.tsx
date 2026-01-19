@@ -24,7 +24,7 @@ interface BottomBarProps {
     selectedFormat: VideoFormat | undefined;
     selectedFormatFileType: "video+audio" | "video" | "audio" | "unknown";
     selectedVideoFormat: VideoFormat | undefined;
-    selectedAudioFormat: VideoFormat | undefined;
+    selectedAudioFormats: VideoFormat[] | undefined;
     containerRef: React.RefObject<HTMLDivElement | null>;
 }
 
@@ -33,7 +33,7 @@ function DownloadConfigDialog({ selectedFormatFileType }: DownloadConfigDialogPr
     const activeDownloadConfigurationTab = useDownloaderPageStatesStore((state) => state.activeDownloadConfigurationTab);
     const selectedDownloadFormat = useDownloaderPageStatesStore((state) => state.selectedDownloadFormat);
     const selectedCombinableVideoFormat = useDownloaderPageStatesStore((state) => state.selectedCombinableVideoFormat);
-    const selectedCombinableAudioFormat = useDownloaderPageStatesStore((state) => state.selectedCombinableAudioFormat);
+    const selectedCombinableAudioFormats = useDownloaderPageStatesStore((state) => state.selectedCombinableAudioFormats);
     const downloadConfiguration = useDownloaderPageStatesStore((state) => state.downloadConfiguration);
     const setActiveDownloadConfigurationTab = useDownloaderPageStatesStore((state) => state.setActiveDownloadConfigurationTab);
     const setDownloadConfigurationKey = useDownloaderPageStatesStore((state) => state.setDownloadConfigurationKey);
@@ -45,6 +45,8 @@ function DownloadConfigDialog({ selectedFormatFileType }: DownloadConfigDialogPr
     const useCustomCommands = useSettingsPageStatesStore(state => state.settings.use_custom_commands);
     const customCommands = useSettingsPageStatesStore(state => state.settings.custom_commands);
 
+    const isCombineableAudioSelected = selectedCombinableAudioFormats && selectedCombinableAudioFormats.length > 0;
+
     return (
         <Dialog>
             <Tooltip>
@@ -53,7 +55,7 @@ function DownloadConfigDialog({ selectedFormatFileType }: DownloadConfigDialogPr
                         <Button
                         variant="outline"
                         size="icon"
-                        disabled={!selectedDownloadFormat || (activeDownloadModeTab === 'combine' && (!selectedCombinableVideoFormat || !selectedCombinableAudioFormat))}
+                        disabled={!selectedDownloadFormat || (activeDownloadModeTab === 'combine' && (!selectedCombinableVideoFormat || !isCombineableAudioSelected))}
                         >
                             <Settings2 className="size-4" />
                         </Button>
@@ -272,14 +274,14 @@ function DownloadConfigDialog({ selectedFormatFileType }: DownloadConfigDialogPr
     );
 }
 
-export function BottomBar({ videoMetadata, selectedFormat, selectedFormatFileType, selectedVideoFormat, selectedAudioFormat, containerRef }: BottomBarProps) {
+export function BottomBar({ videoMetadata, selectedFormat, selectedFormatFileType, selectedVideoFormat, selectedAudioFormats, containerRef }: BottomBarProps) {
     const { startDownload } = useAppContext();
-
+    console.log(selectedAudioFormats);
     const activeDownloadModeTab = useDownloaderPageStatesStore((state) => state.activeDownloadModeTab);
     const isStartingDownload = useDownloaderPageStatesStore((state) => state.isStartingDownload);
     const selectedDownloadFormat = useDownloaderPageStatesStore((state) => state.selectedDownloadFormat);
     const selectedCombinableVideoFormat = useDownloaderPageStatesStore((state) => state.selectedCombinableVideoFormat);
-    const selectedCombinableAudioFormat = useDownloaderPageStatesStore((state) => state.selectedCombinableAudioFormat);
+    const selectedCombinableAudioFormats = useDownloaderPageStatesStore((state) => state.selectedCombinableAudioFormats);
     const selectedSubtitles = useDownloaderPageStatesStore((state) => state.selectedSubtitles);
     const selectedPlaylistVideos = useDownloaderPageStatesStore((state) => state.selectedPlaylistVideos);
     const downloadConfiguration = useDownloaderPageStatesStore((state) => state.downloadConfiguration);
@@ -295,17 +297,21 @@ export function BottomBar({ videoMetadata, selectedFormat, selectedFormatFileTyp
 
     const isPlaylist = videoMetadata._type === 'playlist';
     const isMultiplePlaylistItems = isPlaylist && selectedPlaylistVideos.length > 1;
+    const isCombineableAudioSelected = selectedCombinableAudioFormats && selectedCombinableAudioFormats.length > 0 && selectedAudioFormats && selectedAudioFormats.length > 0;
+    const isMultipleCombineableAudioSelected = selectedCombinableAudioFormats && selectedCombinableAudioFormats.length > 1 && selectedAudioFormats && selectedAudioFormats.length > 1;
 
     let selectedFormatExtensionMsg = 'Auto - unknown';
     if (activeDownloadModeTab === 'combine') {
         if (downloadConfiguration.output_format && downloadConfiguration.output_format !== 'auto') {
             selectedFormatExtensionMsg = `Combined - ${downloadConfiguration.output_format.toUpperCase()}`;
-        }
-        else if (videoFormat !== 'auto') {
+        } else if (videoFormat !== 'auto') {
             selectedFormatExtensionMsg = `Combined - ${videoFormat.toUpperCase()}`;
-        }
-        else if (selectedAudioFormat?.ext && selectedVideoFormat?.ext) {
-            selectedFormatExtensionMsg = `Combined - ${selectedVideoFormat.ext.toUpperCase()} + ${selectedAudioFormat.ext.toUpperCase()}`;
+        } else if (isCombineableAudioSelected && selectedVideoFormat?.ext) {
+            if (isMultipleCombineableAudioSelected) {
+                selectedFormatExtensionMsg = `Combined - ${selectedVideoFormat.ext.toUpperCase()} + ${selectedAudioFormats.length} Audio`;
+            } else {
+                selectedFormatExtensionMsg = `Combined - ${selectedVideoFormat.ext.toUpperCase()} + ${selectedAudioFormats[0].ext.toUpperCase()}`;
+            }
         } else {
             selectedFormatExtensionMsg = `Combined - unknown`;
         }
@@ -322,9 +328,23 @@ export function BottomBar({ videoMetadata, selectedFormat, selectedFormatFileTyp
     }
 
     let selectedFormatResolutionMsg = 'unknown';
+    let totalTbr = 0;
     if (activeDownloadModeTab === 'combine') {
-        selectedFormatResolutionMsg = `${selectedVideoFormat?.resolution ?? 'unknown'} + ${selectedAudioFormat?.tbr ? formatBitrate(selectedAudioFormat.tbr) : 'unknown'}`;
+        if (isCombineableAudioSelected) {
+            if (isMultipleCombineableAudioSelected) {
+                const totalAudioTbr = selectedAudioFormats.reduce((acc, format) => acc + (format.tbr ?? 0), 0);
+                totalTbr = (selectedVideoFormat?.tbr ?? 0) + totalAudioTbr;
+                selectedFormatResolutionMsg = `${selectedVideoFormat?.resolution ?? 'unknown'} + ${formatBitrate(totalAudioTbr)}`;
+            } else {
+                totalTbr = (selectedVideoFormat?.tbr ?? 0) + (selectedAudioFormats && selectedAudioFormats[0].tbr ? selectedAudioFormats[0].tbr : 0);
+                selectedFormatResolutionMsg = `${selectedVideoFormat?.resolution ?? 'unknown'} + ${selectedAudioFormats && selectedAudioFormats[0].tbr ? formatBitrate(selectedAudioFormats[0].tbr) : 'unknown'}`;
+            }
+        } else {
+            totalTbr = selectedVideoFormat?.tbr ?? 0;
+            selectedFormatResolutionMsg = `${selectedVideoFormat?.resolution ?? 'unknown'} + unknown`;
+        }
     } else if (selectedFormat?.resolution) {
+        totalTbr = selectedFormat.tbr ?? 0;
         selectedFormatResolutionMsg = selectedFormat.resolution;
     }
 
@@ -336,24 +356,37 @@ export function BottomBar({ videoMetadata, selectedFormat, selectedFormatFileTyp
     }
 
     let selectedFormatFileSizeMsg = 'unknown filesize';
+    let totalFilesize = 0;
     if (activeDownloadModeTab === 'combine') {
-        selectedFormatFileSizeMsg = selectedVideoFormat?.filesize_approx && selectedAudioFormat?.filesize_approx ? formatFileSize(selectedVideoFormat.filesize_approx + selectedAudioFormat.filesize_approx) : 'unknown filesize';
+        if (isCombineableAudioSelected) {
+            if (isMultipleCombineableAudioSelected) {
+                totalFilesize = (selectedVideoFormat?.filesize_approx ?? 0) + selectedAudioFormats.reduce((acc, format) => acc + (format.filesize_approx ?? 0), 0);
+                selectedFormatFileSizeMsg = totalFilesize > 0 ? formatFileSize(totalFilesize) : 'unknown filesize';
+            } else {
+                totalFilesize = (selectedVideoFormat?.filesize_approx ?? 0) + (selectedAudioFormats && selectedAudioFormats[0].filesize_approx ? selectedAudioFormats[0].filesize_approx : 0);
+                selectedFormatFileSizeMsg = (selectedVideoFormat?.filesize_approx && selectedAudioFormats && selectedAudioFormats[0].filesize_approx) ? formatFileSize(selectedVideoFormat.filesize_approx + selectedAudioFormats[0].filesize_approx) : 'unknown filesize';
+            }
+        } else {
+            totalFilesize = selectedVideoFormat?.filesize_approx ?? 0;
+            selectedFormatFileSizeMsg = selectedVideoFormat?.filesize_approx ? formatFileSize(selectedVideoFormat.filesize_approx) : 'unknown filesize';
+        }
     } else if (selectedFormat?.filesize_approx) {
+        totalFilesize = selectedFormat.filesize_approx;
         selectedFormatFileSizeMsg = formatFileSize(selectedFormat.filesize_approx);
     }
 
     let selectedFormatFinalMsg = '';
     if (activeDownloadModeTab === 'combine') {
-        if (selectedCombinableVideoFormat && selectedCombinableAudioFormat) {
+        if (selectedCombinableVideoFormat && selectedCombinableAudioFormats.length > 0) {
             selectedFormatFinalMsg = `${selectedFormatExtensionMsg} (${selectedFormatResolutionMsg}) ${selectedFormatDynamicRangeMsg} ${selectedSubtitles.length > 0 ? `• ESUB` : ''} ${useSponsorblock || (downloadConfiguration.sponsorblock && downloadConfiguration.sponsorblock !== 'auto') ? `• SPBLOCK` : ''} • ${selectedFormatFileSizeMsg}`;
         } else {
-            selectedFormatFinalMsg = `Choose a video and audio stream to combine`;
+            selectedFormatFinalMsg = `Choose a video and audio streams to combine`;
         }
     } else {
         if (selectedFormat) {
             selectedFormatFinalMsg = `${selectedFormatExtensionMsg} (${selectedFormatResolutionMsg}) ${selectedFormatDynamicRangeMsg} ${selectedSubtitles.length > 0 ? `• ESUB` : ''} ${useSponsorblock || (downloadConfiguration.sponsorblock && downloadConfiguration.sponsorblock !== 'auto') ? `• SPBLOCK` : ''} • ${selectedFormatFileSizeMsg}`;
         } else {
-            selectedFormatFinalMsg = `Choose a stream to download`;
+            selectedFormatFinalMsg = `Select a stream to download`;
         }
     }
 
@@ -389,13 +422,16 @@ export function BottomBar({ videoMetadata, selectedFormat, selectedFormatFileTyp
         <div className="flex justify-between items-center gap-2 fixed bottom-0 right-0 p-4 w-full bg-background rounded-t-lg border-t border-border z-20" ref={bottomBarRef}>
             <div className="flex items-center gap-4">
                 <div className="flex justify-center items-center p-3 rounded-md border border-border">
-                    {selectedFormatFileType && (selectedFormatFileType === 'video' || selectedFormatFileType === 'video+audio') && (
+                    {activeDownloadModeTab === 'combine' && (
                         <Video className="w-4 h-4 stroke-primary" />
                     )}
-                    {selectedFormatFileType && selectedFormatFileType === 'audio' && (
+                    {activeDownloadModeTab !== 'combine' && selectedFormatFileType && (selectedFormatFileType === 'video' || selectedFormatFileType === 'video+audio') && (
+                        <Video className="w-4 h-4 stroke-primary" />
+                    )}
+                    {activeDownloadModeTab !== 'combine' && selectedFormatFileType && selectedFormatFileType === 'audio' && (
                         <Music className="w-4 h-4 stroke-primary" />
                     )}
-                    {(!selectedFormatFileType) || (selectedFormatFileType && selectedFormatFileType !== 'video' && selectedFormatFileType !== 'audio' && selectedFormatFileType !== 'video+audio') && (
+                    {activeDownloadModeTab !== 'combine' && ((!selectedFormatFileType) || (selectedFormatFileType && selectedFormatFileType !== 'video' && selectedFormatFileType !== 'audio' && selectedFormatFileType !== 'video+audio')) && (
                         <File className="w-4 h-4 stroke-primary" />
                     )}
                 </div>
@@ -413,21 +449,28 @@ export function BottomBar({ videoMetadata, selectedFormat, selectedFormatFileTyp
                         if (videoMetadata._type === 'playlist') {
                             await startDownload({
                                 url: videoMetadata.original_url,
-                                selectedFormat: activeDownloadModeTab === 'combine' ? `${selectedCombinableVideoFormat}+${selectedCombinableAudioFormat}` : selectedDownloadFormat,
+                                selectedFormat: activeDownloadModeTab === 'combine' ? `${selectedCombinableVideoFormat}+${selectedCombinableAudioFormats.join('+')}` : selectedDownloadFormat,
                                 downloadConfig: downloadConfiguration,
                                 selectedSubtitles: selectedSubtitles.length > 0 ? selectedSubtitles.join(',') : null,
                                 playlistItems: selectedPlaylistVideos.sort((a, b) => Number(a) - Number(b)).join(','),
                                 overrideOptions: isMultiplePlaylistItems ? {
-                                    filesize: activeDownloadModeTab === 'combine' ? (selectedVideoFormat?.filesize_approx && selectedAudioFormat?.filesize_approx ? selectedVideoFormat.filesize_approx + selectedAudioFormat.filesize_approx : undefined) : selectedFormat?.filesize_approx ? selectedFormat.filesize_approx : undefined,
-                                    tbr: activeDownloadModeTab === 'combine' ? (selectedVideoFormat?.tbr && selectedAudioFormat?.tbr ? selectedVideoFormat.tbr + selectedAudioFormat.tbr : undefined) : selectedFormat?.tbr ? selectedFormat.tbr : undefined,
+                                    filesize: totalFilesize > 0 ? totalFilesize : undefined,
+                                    tbr: totalTbr > 0 ? totalTbr : undefined,
+                                } : isMultipleCombineableAudioSelected ? {
+                                    filesize: totalFilesize > 0 ? totalFilesize : undefined,
+                                    tbr: totalTbr > 0 ? totalTbr : undefined,
                                 } : undefined
                             });
                         } else if (videoMetadata._type === 'video') {
                             await startDownload({
                                 url: videoMetadata.webpage_url,
-                                selectedFormat: activeDownloadModeTab === 'combine' ? `${selectedCombinableVideoFormat}+${selectedCombinableAudioFormat}` : selectedDownloadFormat === 'best' ? videoMetadata.requested_downloads[0].format_id : selectedDownloadFormat,
+                                selectedFormat: activeDownloadModeTab === 'combine' ? `${selectedCombinableVideoFormat}+${selectedCombinableAudioFormats.join('+')}` : selectedDownloadFormat === 'best' ? videoMetadata.requested_downloads[0].format_id : selectedDownloadFormat,
                                 downloadConfig: downloadConfiguration,
-                                selectedSubtitles: selectedSubtitles.length > 0 ? selectedSubtitles.join(',') : null
+                                selectedSubtitles: selectedSubtitles.length > 0 ? selectedSubtitles.join(',') : null,
+                                overrideOptions: isMultipleCombineableAudioSelected ? {
+                                    filesize: totalFilesize > 0 ? totalFilesize : undefined,
+                                    tbr: totalTbr > 0 ? totalTbr : undefined,
+                                } : undefined
                             });
                         }
                         // toast({
@@ -443,7 +486,7 @@ export function BottomBar({ videoMetadata, selectedFormat, selectedFormatFileTyp
                         setIsStartingDownload(false);
                     }
                 }}
-                disabled={isStartingDownload || !selectedDownloadFormat || (activeDownloadModeTab === 'combine' && (!selectedCombinableVideoFormat || !selectedCombinableAudioFormat)) || (useCustomCommands && !downloadConfiguration.custom_command)}
+                disabled={isStartingDownload || !selectedDownloadFormat || (activeDownloadModeTab === 'combine' && (!selectedCombinableVideoFormat || !isCombineableAudioSelected)) || (useCustomCommands && !downloadConfiguration.custom_command)}
                 >
                     {isStartingDownload ? (
                         <>

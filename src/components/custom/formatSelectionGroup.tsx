@@ -58,7 +58,7 @@ const FormatSelectionGroupItem = React.forwardRef<
       ref={ref}
       className={cn(
         "relative w-full rounded-lg border-2 border-border bg-background px-3 py-2 shadow-sm transition-all",
-        "data-[state=checked]:border-primary data-[state=checked]:border-2 data-[state=checked]:bg-primary/10",
+        "data-[state=checked]:border-primary data-[state=checked]:bg-primary/10",
         "hover:bg-muted/70",
         "disabled:cursor-not-allowed disabled:opacity-50",
         className

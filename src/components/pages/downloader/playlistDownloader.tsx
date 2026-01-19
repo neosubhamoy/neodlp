@@ -9,6 +9,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { PlaylistToggleGroup, PlaylistToggleGroupItem } from "@/components/custom/playlistToggleGroup";
 import { getMergedBestFormat } from "@/utils";
 import { Switch } from "@/components/ui/switch";
+import { FormatToggleGroup, FormatToggleGroupItem } from "@/components/custom/formatToggleGroup";
 
 interface PlaylistPreviewSelectionProps {
     videoMetadata: RawVideoInfo;
@@ -42,7 +43,7 @@ function PlaylistPreviewSelection({ videoMetadata }: PlaylistPreviewSelectionPro
     const selectedPlaylistVideos = useDownloaderPageStatesStore((state) => state.selectedPlaylistVideos);
     const setSelectedDownloadFormat = useDownloaderPageStatesStore((state) => state.setSelectedDownloadFormat);
     const setSelectedCombinableVideoFormat = useDownloaderPageStatesStore((state) => state.setSelectedCombinableVideoFormat);
-    const setSelectedCombinableAudioFormat = useDownloaderPageStatesStore((state) => state.setSelectedCombinableAudioFormat);
+    const setSelectedCombinableAudioFormats = useDownloaderPageStatesStore((state) => state.setSelectedCombinableAudioFormats);
     const setSelectedSubtitles = useDownloaderPageStatesStore((state) => state.setSelectedSubtitles);
     const setSelectedPlaylistVideos = useDownloaderPageStatesStore((state) => state.setSelectedPlaylistVideos);
     const resetDownloadConfiguration = useDownloaderPageStatesStore((state) => state.resetDownloadConfiguration);
@@ -70,7 +71,7 @@ function PlaylistPreviewSelection({ videoMetadata }: PlaylistPreviewSelectionPro
                         setSelectedDownloadFormat('best');
                         setSelectedSubtitles([]);
                         setSelectedCombinableVideoFormat('');
-                        setSelectedCombinableAudioFormat('');
+                        setSelectedCombinableAudioFormats([]);
                         resetDownloadConfiguration();
                     }}
                     disabled={totalVideos <= 1}
@@ -90,7 +91,7 @@ function PlaylistPreviewSelection({ videoMetadata }: PlaylistPreviewSelectionPro
                             setSelectedDownloadFormat('best');
                             setSelectedSubtitles([]);
                             setSelectedCombinableVideoFormat('');
-                            setSelectedCombinableAudioFormat('');
+                            setSelectedCombinableAudioFormats([]);
                             resetDownloadConfiguration();
                         }
                     }}
@@ -237,10 +238,10 @@ function SelectivePlaylistDownload({ videoMetadata, audioOnlyFormats, videoOnlyF
 
 function CombinedPlaylistDownload({ audioOnlyFormats, videoOnlyFormats, subtitleLanguages }: CombinedPlaylistDownloadProps) {
     const selectedCombinableVideoFormat = useDownloaderPageStatesStore((state) => state.selectedCombinableVideoFormat);
-    const selectedCombinableAudioFormat = useDownloaderPageStatesStore((state) => state.selectedCombinableAudioFormat);
+    const selectedCombinableAudioFormats = useDownloaderPageStatesStore((state) => state.selectedCombinableAudioFormats);
     const selectedSubtitles = useDownloaderPageStatesStore((state) => state.selectedSubtitles);
     const setSelectedCombinableVideoFormat = useDownloaderPageStatesStore((state) => state.setSelectedCombinableVideoFormat);
-    const setSelectedCombinableAudioFormat = useDownloaderPageStatesStore((state) => state.setSelectedCombinableAudioFormat);
+    const setSelectedCombinableAudioFormats = useDownloaderPageStatesStore((state) => state.setSelectedCombinableAudioFormats);
     const setSelectedSubtitles = useDownloaderPageStatesStore((state) => state.setSelectedSubtitles);
     const resetDownloadConfiguration = useDownloaderPageStatesStore((state) => state.resetDownloadConfiguration);
 
@@ -276,29 +277,31 @@ function CombinedPlaylistDownload({ audioOnlyFormats, videoOnlyFormats, subtitle
                     </div>
                 </ToggleGroup>
             )}
-            <FormatSelectionGroup
+            <FormatToggleGroup
+            type="multiple"
+            variant="outline"
             className="mb-2"
-            value={selectedCombinableAudioFormat}
-            onValueChange={(value) => {
-                setSelectedCombinableAudioFormat(value);
+            value={selectedCombinableAudioFormats}
+            onValueChange={(value: string[]) => {
+                setSelectedCombinableAudioFormats(value);
                 resetDownloadConfiguration();
             }}
             >
                 {videoOnlyFormats && videoOnlyFormats.length > 0 && audioOnlyFormats && audioOnlyFormats.length > 0 && (
-                <>
-                    <p className="text-xs">Audio</p>
-                    <div className="grid grid-cols-2 xl:grid-cols-3 gap-2">
-                        {audioOnlyFormats.map((format) => (
-                            <FormatSelectionGroupItem
-                            key={format.format_id}
-                            value={format.format_id}
-                            format={format}
-                            />
-                        ))}
-                    </div>
-                </>
+                    <>
+                        <p className="text-xs">Audio</p>
+                        <div className="grid grid-cols-2 xl:grid-cols-3 gap-2">
+                            {audioOnlyFormats.map((format) => (
+                                <FormatToggleGroupItem
+                                key={format.format_id}
+                                value={format.format_id}
+                                format={format}
+                                />
+                            ))}
+                        </div>
+                    </>
                 )}
-            </FormatSelectionGroup>
+            </FormatToggleGroup>
             <FormatSelectionGroup
             value={selectedCombinableVideoFormat}
             onValueChange={(value) => {

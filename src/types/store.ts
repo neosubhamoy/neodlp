@@ -41,7 +41,7 @@ export interface DownloaderPageStatesStore {
     isStartingDownload: boolean;
     selectedDownloadFormat: string;
     selectedCombinableVideoFormat: string;
-    selectedCombinableAudioFormat: string;
+    selectedCombinableAudioFormats: string[];
     selectedSubtitles: string[];
     selectedPlaylistVideos: string[];
     downloadConfiguration: DownloadConfiguration;
@@ -54,7 +54,7 @@ export interface DownloaderPageStatesStore {
     setIsStartingDownload: (isStarting: boolean) => void;
     setSelectedDownloadFormat: (format: string) => void;
     setSelectedCombinableVideoFormat: (format: string) => void;
-    setSelectedCombinableAudioFormat: (format: string) => void;
+    setSelectedCombinableAudioFormats: (formats: string[]) => void;
     setSelectedSubtitles: (subtitles: string[]) => void;
     setSelectedPlaylistVideos: (indices: string[]) => void;
     setDownloadConfigurationKey: (key: string, value: unknown) => void;

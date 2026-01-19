@@ -145,6 +145,7 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
 
     const isPlaylist = state.playlist_id !== null && state.playlist_indices !== null;
     const isMultiplePlaylistItems = isPlaylist && state.playlist_indices && state.playlist_indices.includes(',');
+    const isMultipleAudioFormatSelected = state.format_id ? state.format_id.split('+').length > 2 : false;
 
     return (
         <div className="p-4 border border-border rounded-lg flex gap-4" key={state.download_id}>
@@ -237,6 +238,9 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                         )}
                         {state.acodec && !isMultiplePlaylistItems && (
                             <span className="border border-border py-1 px-2 rounded">{formatCodec(state.acodec)}</span>
+                        )}
+                        {isMultipleAudioFormatSelected && (
+                            <span className="border border-border py-1 px-2 rounded">MULTIAUDIO</span>
                         )}
                         {state.dynamic_range && state.dynamic_range !== 'SDR' && !isMultiplePlaylistItems && (
                             <span className="border border-border py-1 px-2 rounded">{state.dynamic_range}</span>

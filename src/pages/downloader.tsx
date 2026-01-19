@@ -48,11 +48,11 @@ export default function DownloaderPage() {
 
     const selectedDownloadFormat = useDownloaderPageStatesStore((state) => state.selectedDownloadFormat);
     const selectedCombinableVideoFormat = useDownloaderPageStatesStore((state) => state.selectedCombinableVideoFormat);
-    const selectedCombinableAudioFormat = useDownloaderPageStatesStore((state) => state.selectedCombinableAudioFormat);
+    const selectedCombinableAudioFormats = useDownloaderPageStatesStore((state) => state.selectedCombinableAudioFormats);
     const selectedPlaylistVideos = useDownloaderPageStatesStore((state) => state.selectedPlaylistVideos);
     const setSelectedDownloadFormat = useDownloaderPageStatesStore((state) => state.setSelectedDownloadFormat);
     const setSelectedCombinableVideoFormat = useDownloaderPageStatesStore((state) => state.setSelectedCombinableVideoFormat);
-    const setSelectedCombinableAudioFormat = useDownloaderPageStatesStore((state) => state.setSelectedCombinableAudioFormat);
+    const setSelectedCombinableAudioFormats = useDownloaderPageStatesStore((state) => state.setSelectedCombinableAudioFormats);
     const setSelectedSubtitles = useDownloaderPageStatesStore((state) => state.setSelectedSubtitles);
     const setSelectedPlaylistVideos = useDownloaderPageStatesStore((state) => state.setSelectedPlaylistVideos);
     const resetDownloadConfiguration = useDownloaderPageStatesStore((state) => state.resetDownloadConfiguration);
@@ -126,14 +126,14 @@ export default function DownloaderPage() {
             );
         }
     })();
-    const selectedAudioFormat = (() => {
+    const selectedAudioFormats = (() => {
         if (videoMetadata?._type === 'video') {
-            return allFilteredFormats.find(
-                (format) => format.format_id === selectedCombinableAudioFormat
+            return allFilteredFormats.filter(
+                (format) => selectedCombinableAudioFormats.includes(format.format_id)
             );
         } else if (videoMetadata?._type === 'playlist') {
-            return allFilteredFormats.find(
-                (format) => format.format_id === selectedCombinableAudioFormat
+            return allFilteredFormats.filter(
+                (format) => selectedCombinableAudioFormats.includes(format.format_id)
             );
         }
     })();
@@ -186,7 +186,7 @@ export default function DownloaderPage() {
         setIsMetadataLoading(true);
         setSelectedDownloadFormat('best');
         setSelectedCombinableVideoFormat('');
-        setSelectedCombinableAudioFormat('');
+        setSelectedCombinableAudioFormats([]);
         setSelectedSubtitles([]);
         setSelectedPlaylistVideos(["1"]);
         resetDownloadConfiguration();
@@ -391,7 +391,7 @@ export default function DownloaderPage() {
                 selectedFormat={selectedFormat}
                 selectedFormatFileType={selectedFormatFileType}
                 selectedVideoFormat={selectedVideoFormat}
-                selectedAudioFormat={selectedAudioFormat}
+                selectedAudioFormats={selectedAudioFormats}
                 containerRef={containerRef}
                 />
             )}
