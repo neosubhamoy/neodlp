@@ -151,7 +151,7 @@ pub fn get_migrations() -> Vec<Migration> {
     },
     Migration {
         version: 3,
-        description: "add_more_columns_and_indexes_to_downloads",
+        description: "add_more_columns_and_indices_to_downloads",
         sql: "
             -- Create temporary table with all new columns
             CREATE TABLE downloads_temp (
@@ -207,9 +207,7 @@ pub fn get_migrations() -> Vec<Migration> {
                 CASE WHEN playlist_id IS NOT NULL THEN '1/1' ELSE NULL END,   -- item
                 progress, total, downloaded, speed, eta,
                 filepath, filetype, filesize,
-                output_format,
-                embed_metadata,
-                embed_thumbnail,
+                output_format, embed_metadata, embed_thumbnail,
                 0,                                                            -- square_crop_thumbnail
                 sponsorblock_remove, sponsorblock_mark, use_aria2,
                 custom_command, queue_config, created_at, updated_at

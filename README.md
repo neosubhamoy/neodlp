@@ -1,18 +1,20 @@
 ![NeoDLP](./.github/images/banner.svg)
 
-# NeoDLP - (Neo Downloader Plus)
+# NeoDLP - Neo Downloader Plus
 
 Cross-platform Video/Audio Downloader Desktop App with Modern UI and Browser Integration
 
-[![status](https://img.shields.io/badge/status-active-brightgreen.svg?style=flat)](https://github.com/neosubhamoy/neodlp)
-[![github tag](https://img.shields.io/github/v/tag/neosubhamoy/neodlp?color=yellow)](https://github.com/neosubhamoy/neodlp)
-[![github downloads](https://img.shields.io/github/downloads/neosubhamoy/neodlp/total)](https://github.com/neosubhamoy/neodlp/releases)
-[![PRs](https://img.shields.io/badge/PRs-welcome-blue.svg?style=flat)](https://github.com/neosubhamoy/neodlp)
+[![github release](https://img.shields.io/github/v/release/neosubhamoy/neodlp?color=lime-green&style=for-the-badge)](https://github.com/neosubhamoy/neodlp/releases/latest)
+[![github downloads](https://img.shields.io/github/downloads/neosubhamoy/neodlp/total?style=for-the-badge)](https://github.com/neosubhamoy/neodlp/releases)
+[![github stars](https://img.shields.io/github/stars/neosubhamoy/neodlp?color=yellow&style=for-the-badge)](https://github.com/neosubhamoy/neodlp/stargazers)
+[![github license](https://img.shields.io/github/license/neosubhamoy/neodlp?color=blue&style=for-the-badge)](https://github.com/neosubhamoy/neodlp/blob/main/LICENSE)
 
 > [!TIP]
 > **🥰 Liked this project? Please consider giving it a Star (🌟) on github to show us your appreciation and help the algorythm recommend this project to even more awesome people like you!**
 
-[![Packaging status](https://repology.org/badge/vertical-allrepos/neodlp.svg)](https://repology.org/project/neodlp/versions)
+[![winget version](https://img.shields.io/winget/v/neosubhamoy.neodlp?color=lime-green&style=flat-square)](https://github.com/microsoft/winget-pkgs/tree/master/manifests/n/neosubhamoy/neodlp)
+[![aur version](https://img.shields.io/aur/version/neodlp?color=lime-green&style=flat-square)](https://aur.archlinux.org/packages/neodlp)
+
 
 ## ✨ Highlighted Features
 
@@ -20,7 +22,7 @@ Cross-platform Video/Audio Downloader Desktop App with Modern UI and Browser Int
 - Download Video/Audio in your preffered format (MP4, WEBM, MKV, MP3 etc.)
 - Supports both Video and Playlist download
 - Supports Combining Video, Audio streams of your choice
-- Supports Multi-Language Subtitle/Caption (CC) embeding
+- Supports Multi-Lingual Subtitle/Caption (CC) embeding
 - Different Video/Audio metadata embeding options (info, chapters, thumbnail etc.)
 - SponsorBlock support (mark/remove video segments)
 - Network controls (proxy, rate limit etc.)
@@ -28,13 +30,13 @@ Cross-platform Video/Audio Downloader Desktop App with Modern UI and Browser Int
 
 ## 🧩 Browser Integration
 
-You can integrate NeoDLP with your favourite browser (any Chrome/Chromium/Firefox based browser) Just, install [NeoDLP Extension](https://github.com/neosubhamoy/neodlp-extension) to get started!
+You can integrate NeoDLP with your favourite browser (any Chromium/Firefox based browser) Just, install [NeoDLP Extension](https://github.com/neosubhamoy/neodlp-extension) to get started!
 
 After installing the extension you can do the following directly from the browser:
 
 - Quick Search (search current browser address with NeoDLP) (via pressing keyboard shortcut `ALT`+`SHIFT`+`Q`, You can also change this shortcut key combo from browser settings)
 
-- Right Click Context Menu Action (Download with Neo Downloader Plus - Link, Selection, Media Source)
+- Right Click Context Menu Action (Search with Neo Downloader Plus - Link, Selection, Media Source)
 
 ## 👀 Sneak Peek
 
@@ -52,10 +54,10 @@ After installing the extension you can do the following directly from the browse
 
 ## 🤝 External Dependencies
 
-- [YT-DLP](https://github.com/yt-dlp/yt-dlp) - The core CLI tool used to download video/audio from the web (Hero of the show 😎)
-- [FFmpeg & FFprobe](https://www.ffmpeg.org) - Used for video/audio post-processing
-- [Aria2](https://aria2.github.io) - Used as an external downloader for blazing fast downloads with yt-dlp (Not included with NeoDLP MacOS builds)
-- [Deno](https://deno.com) - Provides sandboxed javascript runtime environment for yt-dlp (Required for YT downloads, as per the new yt-dlp [announcement](https://github.com/yt-dlp/yt-dlp/issues/14404))
+- [YT-DLP](https://github.com/yt-dlp/yt-dlp) [Unlicense] - The core CLI tool used to download video/audio from the web (Hero of the show 😎)
+- [FFmpeg & FFprobe](https://www.ffmpeg.org) [LGPLv2.1+] - Used for video/audio post-processing
+- [Aria2](https://aria2.github.io) [GPLv2+] - Used as an external downloader for blazing fast downloads with yt-dlp (Not included with NeoDLP MacOS builds)
+- [Deno](https://deno.com) [MIT] - Provides sandboxed javascript runtime environment for yt-dlp (Required for YT downloads, as per the new yt-dlp [announcement](https://github.com/yt-dlp/yt-dlp/issues/14404))
 
 ## ℹ️ System Pre-Requirements
 
@@ -65,7 +67,7 @@ After installing the extension you can do the following directly from the browse
 
 ## ⬇️ Download and Installation
 
-1. Download the latest [NeoDLP](https://github.com/neosubhamoy/neodlp/releases/latest) release based on your OS and CPU Architecture, then install it! -OR- Install it directly from an available distribution channel (listed below)
+1. Download the latest NeoDLP release based on your OS and CPU Architecture, then install it! -OR- Install it directly from an available distribution channel (listed below)
 
 | Architecture | Windows | Linux | MacOS |
 | :----        | :----   | :---- | :---- |
@@ -77,7 +79,7 @@ After installing the extension you can do the following directly from the browse
 
 | Platform (OS) | Distribution Channel | Installation Command / Instruction |
 | :---- | :---- | :---- |
-| Windows x86_64 / ARM64 | WinGet | `winget install neodlp` |
+| Windows x86_64 / ARM64 | WinGet | `winget install neosubhamoy.neodlp` |
 | MacOS x86_64 / ARM64 | Curl-Bash Installer | `curl -sSL https://neodlp.neosubhamoy.com/macos_installer.sh \| bash` |
 | Linux x86_64 / ARM64 | Curl-Bash Installer | `curl -sSL https://neodlp.neosubhamoy.com/linux_installer.sh \| bash` |
 | Arch Linux x86_64 / ARM64 | AUR | `yay -S neodlp` |
@@ -88,6 +90,9 @@ Though NeoDLP is supported on most platforms but not all packages are tested on 
 
 > [!TIP]
 > If you have access to any of the untested systems listed below, you can test the packages there and send me the test results via creating an github issue! (that would be super helpful actualy 😊)
+
+<details>
+<summary>Test Coverage</summary>
 
 | Platform | Status | Platform | Status |
 | :---- | :---- | :---- | :---- |
@@ -101,6 +106,8 @@ Though NeoDLP is supported on most platforms but not all packages are tested on 
 | Arch Linux (x64) | ✅ Tested | Arch Linux (ARM64) | ✅ Tested |
 | openSUSE 16 (x64) | ⚠️ Untested | openSUSE 16 (ARM64) | ⚠️ Untested |
 | RHEL 10 (x64) | ⚠️ Untested | RHEL 10 (ARM64) | ⚠️ Untested |
+
+</details>
 
 ## 💝 Support the Development
 
@@ -121,67 +128,80 @@ NeoDLP is and will be always FREE to Use and Open-Sourced for Everyone. On the o
 - [x] Integrate with browsers
 - [x] Add aria2c support
 - [x] Add custom command support
-- [ ] Add more advanced settings and achive stability **(ongoing)**
-- [ ] Add media converter
-- [ ] Add multiple downloader engines
-- [ ] Add advanced web extractor
+- [x] Add full-playlist/batch download support
+- [ ] Improve browser integration **(ongoing)**
+- [ ] Implement NeoDLP API
+- [ ] Build web interface
+- [ ] Implement plugin system
 - [ ] Add more cool stuffs 😉
 
 ## ⚡ Technologies Used
 
-![Tauri](https://img.shields.io/badge/tauri-%2324C8DB.svg?style=for-the-badge&logo=tauri&logoColor=%23FFFFFF)
-![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
-![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
-![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
-![ShadCnUi](https://img.shields.io/badge/shadcn%2Fui-000000?style=for-the-badge&logo=shadcnui&logoColor=white)
+[![Tauri](https://img.shields.io/badge/tauri-%2324C8DB.svg?style=for-the-badge&logo=tauri&logoColor=%23FFFFFF)](https://tauri.app)
+[![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)](https://rust-lang.org)
+[![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![ShadCnUi](https://img.shields.io/badge/shadcn%2Fui-000000?style=for-the-badge&logo=shadcnui&logoColor=white)](https://ui.shadcn.com)
 
-## 🛠️ Contributing / Building from Source
+## 🛠️ Building from Source
 
-Want to be part of this? Feel free to contribute...!! Pull Requests are always welcome...!! (^_^) Follow these simple steps to start building:
+Want to build/compile NeoDLP from the source code? Follow these simple steps to create a production build:
 
 * Make sure to install [Rust](https://www.rust-lang.org/tools/install), [Node.js](https://nodejs.org/en), and [Git](https://git-scm.com/downloads) before proceeding.
 * Install [Tauri Prerequisites](https://v2.tauri.app/start/prerequisites/) for your OS / platform
-1. Fork this repo in your github account.
-2. Git clone the forked repo in your local machine.
-3. Create a git branch (related to the feature you are working on) (Optional - Recommended)
-4. Install Node.js dependencies: `npm install`
-5. Download binaries (for current platform): `npm run download`
-6. Run development / build process
-> [!WARNING]
-> Make sure to run the `build` command once before running the `dev` command for the first time to avoid compile time errors
-```code
-# for windows users
-npm run tauri dev        # for development
-npm run tauri build      # for production build
+1. Clone this repo in your local machine: `git clone https://github.com/neosubhamoy/neodlp.git`
+2. Go inside the cloned project directory: `cd neodlp`
+3. Install Node.js dependencies: `npm install`
+4. Download required external binaries (for your platform): `npm run download`
+5. Run build process (run the command based on your platform and architecture)
+```shell
+# command for windows users
+npm run tauri build                 # for both x64/ARM64 devices
 
-# for linux users (based on cpu architecture)
-npm run tauri dev -- --config "./src-tauri/tauri.linux-aarch64.conf.json"       # for ARM64 devices, development
-npm run tauri build -- --config "./src-tauri/tauri.linux-aarch64.conf.json"     # for ARM64 devices, production build
+# commands for linux users
+npm run tauri:build:linux-x64       # for x64 devices
+npm run tauri:build:linux-arm64     # for ARM64 devices
 
-npm run tauri dev -- --config "./src-tauri/tauri.linux-x86_64.conf.json"        # for x64 devices, development
-npm run tauri build -- --config "./src-tauri/tauri.linux-x86_64.conf.json"      # for x64 devices, production build
-
-# for macOS users (based on cpu architecture)
-npm run tauri dev -- --config "./src-tauri/tauri.macos-aarch64.conf.json"       # for apple silicon macs, development
-npm run tauri build -- --config "./src-tauri/tauri.macos-aarch64.conf.json"     # for apple silicon macs, production build
-
-npm run tauri dev -- --config "./src-tauri/tauri.macos-x86_64.conf.json"        # for intel x86 macs, development
-npm run tauri build -- --config "./src-tauri/tauri.macos-x86_64.conf.json"      # for intel x86 macs, production build
+# commands for macOS users
+npm run tauri:build:macos-arm64     # for apple silicon macs
+npm run tauri:build:macos-x64       # for intel x86 macs
 ```
-6. Do the changes, Send a Pull Request with proper Description (NOTE: Pull Requests Without Proper Description will be Rejected)
+6. Give it the time to compile (~5-10min) (if you get an error, something like this at the end: `Error A public key has been found, but no private key. Make sure to set 'TAURI_SIGNING_PRIVATE_KEY' environment variable.` simply ignore it! Your build is successfull!). You can find the compiled packages under: `src-tauri/target/release/bundle` directory.
 
-## ⭕ Bug Report
+## 🐞 Bug Report and Discussions
 
-Noticed any Bug? or Want to give me some suggetion? Always feel free to open a [GitHub Issue](https://github.com/neosubhamoy/neodlp/issues). I would love to hear from you...!!
+Noticed any Bug? or Want to give us some suggetions? Always feel free to let us know! We would love to hear from you...!! You can reach us out via the following methods:
+
+- GitHub Issues (Recommended):  [Report a Bug](https://github.com/neosubhamoy/neodlp/issues/new?template=bug_report.md) -OR- [Request a Feature](https://github.com/neosubhamoy/neodlp/issues/new?template=feature_request.md)
+- Mailing List: If you prefer the good old mailing list way, You can just simply write us on [support@neodlp.neosubhamoy.com](mailto:support@neodlp.neosubhamoy.com) (Kindly follow the Bug Report/Feature Request Template on that case)
+- Reddit Community: If you have any other general pourpose query/discussion related to NeoDLP, post it on our subreddit community [r/NeoDLP](https://www.reddit.com/r/NeoDLP)
+
+## 📦 Sources
+
+- [Official Website](https://neodlp.neosubhamoy.com)
+- Official Repositories
+  - [GitHub (Primary)](https://github.com/neosubhamoy/neodlp)
+  - [Gitea (Mirror)](https://gitea.neosubhamoy.com/neosubhamoy/neodlp)
+  - [SourceForge (Releases Only)](https://sourceforge.net/projects/neodlp)
+- Official Distribution Channels
+  - [WinGet (for Windows)](https://github.com/microsoft/winget-pkgs/tree/master/manifests/n/neosubhamoy/neodlp)
+  - [AUR (for Arch Linux)](https://aur.archlinux.org/packages/neodlp)
+- Related Projects
+  - [NeoDLP Extension](https://github.com/neosubhamoy/neodlp-extension)
+  - [NeoDLP Website](https://github.com/neosubhamoy/neodlp-website)
 
 ## 💫 Credits
 
+- NeoDLP is made possible by the joint efforts of [yt-dlp](https://github.com/yt-dlp/yt-dlp) and [FFmpeg](https://www.ffmpeg.org). Lots of NeoDLP features are actually powered by these tools under the hood! So huge thanks to all the developers/contributers for making these great tools! 🙏
 - NeoDLP's 'Format Selection' options are inspired from the [Seal](https://github.com/JunkFood02/Seal) app by [@JunkFood02](https://github.com/JunkFood02)
 - Aria2 Linux x86_64 static binaries are built by [@asdo92](https://github.com/asdo92/aria2-static-builds)
 
-## 📝 License
+## ⚖️ License and Usage
 
-NeoDLP is Licensed under the [MIT license](https://github.com/neosubhamoy/neodlp/blob/main/LICENSE). Anyone can view, modify, use (personal and commercial) or distribute it's sources without any attribution and extra permissions.
+NeoDLP is a Fully Open-Source Software Licensed under the [MIT license](https://github.com/neosubhamoy/neodlp/blob/main/LICENSE). Anyone can view, modify, use (personal and commercial) or distribute it's sources without any extra permission (Just include the LICENSE file :)
+
+> [!WARNING]
+> NeoDLP facilitates downloading from various Online Platforms with different Policies and Terms of Use which Users must follow. We strictly do not promote any unauthorized downloading of copyrighted content. NeoDLP is only made for downloading content that the user holds the copyright to or has the authority for. Users must use the downloaded content wisely and solely at their own legal responsibility. The developer is not responsible for any action taken by the user, and takes zero direct or indirect liability for that matter.
 
 ****
 An Open Sourced Project - Developed with ❤️ by **Subhamoy**

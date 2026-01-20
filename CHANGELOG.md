@@ -1,15 +1,24 @@
 ### ✨ Changelog
 
-- HOTFIX: yt-dlp exiting with code 2 while resolving deno on macOS
-- Also, a small correction: Linux (deb, rpm) packages are not yet self-updateable
+- Added support for selective-batch/full-playlist download
+- Added support for selecting multiple audio streams on combine mode
+- Added support for embedding original auto-generated subtitles
+- Added option to crop thubnails to square (1:1) before embedding
+- Added 'errored' download state (to better identify errored downloads, which you can retry later)
+- Added app interface color scheme options on appearance settings
+- Added app info page under settings
+- Added copy/clear log buttons in log viewer
+- Added sponsorblock 'hook' category
+- Fixed sidebar state not persisting on app re-start
+- Fixed linux native (deb/rpm) installation downloading appimage update
+- Bumped up shadcn/ui to v3.5 and lots of under the hood ui improvements
+- Optimized database and backend performance
+- Lots of other fixes and improvements
 
 ### 📝 Notes
 
-> [!TIP]
-> This is a hotfix release for macOS only, You can skip this update if you are on other platforms
-
 > [!CAUTION]
-> This is a breaking update if you are coming from older version than `v0.3.0`. Users are adviced to complete/cancel all paused downloads before updating to this version, otherwise paused downloads may not resume properly or re-start from the begining.
+> This update introduces few breaking changes! Users are adviced to complete/cancel all paused downloads before updating to this version, otherwise paused downloads may not resume properly or re-start from the begining.
 
 > [!WARNING]
 > Linux users make sure `yt-dlp` and `deno` is not installed in your distro (otherwise you will get package installation conflict). Don't worry, You can still use yt-dlp cli as before (the only difference is that now it will be installed and auto-updated by neo-dlp, which You can also disable from neo-dlp Settings if you don't want to auto-update yt-dlp)
@@ -22,7 +31,7 @@
 
 | yt-dlp (updateable) | ffmpeg | ffprobe | aria2c | deno |
 | :---- | :---- | :---- | :---- | :---- |
-| v2025.11.05.232946 (nightly) | v7.1.1 | v7.1.1 | v1.37.0 | v2.5.6 |
+| v2026.01.19.233146 (nightly) | v7.1.1 | v7.1.1 | v1.37.0 | v2.6.5 |
 
 > ‼️ Linux builds (deb, rpm) does not ships with `ffmpeg` and `ffprobe` (though it will be auto installed as a dependency by your package manager, if you are on fedora make sure to [enable rpmfusion free+nonfree repos](https://docs.fedoraproject.org/en-US/quick-docs/rpmfusion-setup/#_enabling_the_rpm_fusion_repositories_using_command_line_utilities) before installing the rpm package)
 
@@ -41,4 +50,7 @@
 
 > 🚫 Linux AppImage builds are experimental and does not support neodlp's browser intergration features due to it's sandboxed nature. Also, don't run the AppImage with portable (.home, .config) folders, it will break things (it is highly recommended to use native [deb, rpm, AUR] builds if possible for the full experiance, otherwise AppImages are good for trying out NeoDLP without installing)
 
-> ⚠️ MacOS ARM64 binary downloads are experimental and may not open on Apple Silicon Macs if downloaded from browser (You will get 'Damaged File' error) it's because the binaries are not signed (signing MacOS binaries requires 99$/year Apple Developer Account subscription, which I can't afford RN!) and Apple Silicon Macs don't allow unsigned apps (downloaded from browser) to be installed on the system. If you want to use NeoDLP on your Apple Silicon Macs, you can simply use the command line [Curl-Bash Installer](https://neodlp.neosubhamoy.com/download) (Recommended) -OR- [compile it from source](https://github.com/neosubhamoy/neodlp?tab=readme-ov-file#%EF%B8%8F-contributing--building-from-source) in your Mac
+> ⚠️ MacOS ARM64 binary downloads are experimental and may not open on Apple Silicon Macs if downloaded from browser (You will get 'Damaged File' error) it's because the binaries are not signed (signing MacOS binaries requires 99$/year Apple Developer Account subscription, which I can't afford RN!) and Apple Silicon Macs don't allow unsigned apps (downloaded from browser) to be installed on the system. If you want to use NeoDLP on your Apple Silicon Macs, There are few ways you can bypass these restrictions:
+> 1. Using our automated [Curl-Bash Installer](https://neodlp.neosubhamoy.com/download) (Recommended)
+> 2. You can also manually remove the .dmg file/.app folder from macOS quarantine using these commands: `xattr -d com.apple.quarantine NeoDLP_x.x.x_aarch64_darwin.dmg` (for .dmg file) -OR- `xattr -r -d com.apple.quarantine /Applications/NeoDLP.app` (for .app folder)
+> 3. Or you can [compile NeoDLP from source](https://github.com/neosubhamoy/neodlp?tab=readme-ov-file#%EF%B8%8F-building-from-source) in your Mac (Then you don't have to download the pre-compiled binaries at all, though it is a much longer process and is intended for advanced users only)
