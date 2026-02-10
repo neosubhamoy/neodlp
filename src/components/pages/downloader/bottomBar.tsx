@@ -276,7 +276,7 @@ function DownloadConfigDialog({ selectedFormatFileType }: DownloadConfigDialogPr
 
 export function BottomBar({ videoMetadata, selectedFormat, selectedFormatFileType, selectedVideoFormat, selectedAudioFormats, containerRef }: BottomBarProps) {
     const { startDownload } = useAppContext();
-    console.log(selectedAudioFormats);
+
     const activeDownloadModeTab = useDownloaderPageStatesStore((state) => state.activeDownloadModeTab);
     const isStartingDownload = useDownloaderPageStatesStore((state) => state.isStartingDownload);
     const selectedDownloadFormat = useDownloaderPageStatesStore((state) => state.selectedDownloadFormat);
