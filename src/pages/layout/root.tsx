@@ -7,15 +7,15 @@ import Footer from "@/components/footer";
 export default function RootLayout() {
     return (
         <>
-        <div className="flex min-h-screen">
-        <SidebarProvider>
-            <AppSidebar />
-            <div className="w-full h-screen overflow-y-scroll relative">
-                <Navbar/>
-                <Outlet />
-                <Footer/>
-            </div>
-        </SidebarProvider>
+        <div className="flex flex-col min-h-screen">
+            <SidebarProvider>
+                <AppSidebar />
+                <div className="w-full h-screen overflow-y-scroll no-scrollbar relative">
+                    <Navbar/>
+                    <Outlet />
+                    <Footer/>
+                </div>
+            </SidebarProvider>
         </div>
         </>
     );

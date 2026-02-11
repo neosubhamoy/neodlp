@@ -1,0 +1,7 @@
+export function MinimizeIcon({ className }: { className?: string }) {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" className={className}>
+            <path fill="currentColor" d="M14 8v1H3V8z" />
+        </svg>
+    );
+}

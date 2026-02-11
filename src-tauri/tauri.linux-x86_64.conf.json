@@ -10,8 +10,9 @@
         "windows": [
             {
                 "title": "NeoDLP",
-                "width": 1067,
-                "height": 605,
+                "width": 1080,
+                "height": 680,
+                "decorations": false,
                 "visible": false
             }
         ],

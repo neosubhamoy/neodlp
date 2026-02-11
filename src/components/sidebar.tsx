@@ -147,7 +147,7 @@ export function AppSidebar() {
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button variant="ghost">
-                                <CircleArrowUp className="size-4" />
+                                <CircleArrowUp className="size-4 stroke-primary" />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent side="right">
