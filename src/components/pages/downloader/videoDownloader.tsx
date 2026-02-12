@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { FormatToggleGroup, FormatToggleGroupItem } from "@/components/custom/formatToggleGroup";
+import { Layout } from "react-resizable-panels";
 
 interface VideoPreviewProps {
     videoMetadata: RawVideoInfo;
@@ -325,18 +326,22 @@ export function VideoDownloader({ videoMetadata, audioOnlyFormats, videoOnlyForm
     return (
         <div className="flex">
             <ResizablePanelGroup
-            direction="horizontal"
+            orientation="horizontal"
             className="w-full"
-            onLayout={(sizes) => setVideoPanelSizes(sizes)}
+            onLayoutChanged={(layout: Layout) => {
+                const firstPanelSize = layout[Object.keys(layout)[0]];
+                const secondPanelSize = layout[Object.keys(layout)[1]];
+                setVideoPanelSizes([firstPanelSize, secondPanelSize]);
+            }}
             >
                 <ResizablePanel
-                defaultSize={videoPanelSizes[0]}
+                defaultSize={`${videoPanelSizes[0]}%`}
                 >
                     <VideoPreview videoMetadata={videoMetadata} />
                 </ResizablePanel>
-                <ResizableHandle />
+                <ResizableHandle withHandle />
                 <ResizablePanel
-                defaultSize={videoPanelSizes[1]}
+                defaultSize={`${videoPanelSizes[1]}%`}
                 >
                     <div className="flex flex-col w-full pl-4">
                         <Tabs

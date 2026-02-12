@@ -10,6 +10,7 @@ import { PlaylistToggleGroup, PlaylistToggleGroupItem } from "@/components/custo
 import { getMergedBestFormat } from "@/utils";
 import { Switch } from "@/components/ui/switch";
 import { FormatToggleGroup, FormatToggleGroupItem } from "@/components/custom/formatToggleGroup";
+import { Layout } from "react-resizable-panels";
 
 interface PlaylistPreviewSelectionProps {
     videoMetadata: RawVideoInfo;
@@ -348,18 +349,22 @@ export function PlaylistDownloader({ videoMetadata, audioOnlyFormats, videoOnlyF
     return (
         <div className="flex">
             <ResizablePanelGroup
-            direction="horizontal"
+            orientation="horizontal"
             className="w-full"
-            onLayout={(sizes) => setPlaylistPanelSizes(sizes)}
+            onLayoutChanged={(layout: Layout) => {
+                const firstPanelSize = layout[Object.keys(layout)[0]];
+                const secondPanelSize = layout[Object.keys(layout)[1]];
+                setPlaylistPanelSizes([firstPanelSize, secondPanelSize]);
+            }}
             >
                 <ResizablePanel
-                defaultSize={playlistPanelSizes[0]}
+                defaultSize={`${playlistPanelSizes[0]}%`}
                 >
                     <PlaylistPreviewSelection videoMetadata={videoMetadata} />
                 </ResizablePanel>
-                <ResizableHandle />
+                <ResizableHandle withHandle />
                 <ResizablePanel
-                defaultSize={playlistPanelSizes[1]}
+                defaultSize={`${playlistPanelSizes[1]}%`}
                 >
                     <div className="flex flex-col w-full pl-4">
                         <Tabs
