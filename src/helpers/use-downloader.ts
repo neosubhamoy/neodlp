@@ -658,6 +658,10 @@ export default function useDownloader() {
             }
         });
 
+        command.stderr.on('data', line => {
+            if (line.trim() !== '') LOG.info(`YT-DLP Download ${downloadId}`, line);
+        });
+
         try {
             videoInfoSaver.mutate({
                 video_id: videoId,

@@ -29,6 +29,7 @@
     "clipboard-manager:allow-read-text",
     "clipboard-manager:allow-write-text",
     "notification:default",
+    "log:default",
     {
       "identifier": "opener:allow-open-path",
       "allow": [

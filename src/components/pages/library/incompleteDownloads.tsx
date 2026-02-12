@@ -115,9 +115,9 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                         ) : (
                             <span>{state.download_status.charAt(0).toUpperCase() + state.download_status.slice(1)}</span>
                         )} {
-                        (debugMode && state.download_id) || (state.download_status === 'errored' && state.download_id) && (
+                        (debugMode && state.download_id) || (state.download_status === 'errored' && state.download_id) ? (
                             <><span className="text-primary">•</span> ID: {state.download_id.toUpperCase()}</>
-                        )} {
+                        ) : null} {
                         state.download_status === 'downloading' && state.status !== 'finished' && state.speed && (
                             <><span className="text-primary">•</span> Speed: {formatSpeed(state.speed)}</>
                         )} {state.download_status === 'downloading' && state.eta && (

@@ -9,6 +9,6 @@ async fn main() {
             std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
         }
     }
-    
+
     neodlp_lib::run().await
 }
