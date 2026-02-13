@@ -103,7 +103,12 @@ export default function useDownloader() {
     const fetchVideoMetadata = async (params: FetchVideoMetadataParams): Promise<RawVideoInfo | null> => {
         const { url, formatId, playlistIndices, selectedSubtitles, resumeState, downloadConfig } = params;
         try {
-            const args = [url, '--dump-single-json', '--no-warnings'];
+            const args = [url, '--dump-single-json'];
+            if (DEBUG_MODE && LOG_VERBOSE) {
+                args.push('--verbose');
+            } else {
+                args.push('--no-warnings');
+            }
             if (formatId) {
                 const isMultipleAudioFormatSelected = formatId.split('+').length > 2;
                 args.push('--format', formatId);
@@ -168,31 +173,40 @@ export default function useDownloader() {
 
             return new Promise<RawVideoInfo | null>((resolve) => {
                 command.stdout.on('data', line => {
-                    jsonOutput += line;
+                    if (line.startsWith('{')) {
+                        jsonOutput = line;
+                    } else {
+                        if (line.trim() !== '') LOG.info('YT-DLP', line);
+                    }
+                });
+
+                command.stderr.on('data', line => {
+                    if (line.trim() !== '') LOG.info('YT-DLP', line);
                 });
 
                 command.on('close', async (data) => {
                     if (data.code !== 0) {
-                        console.error(`yt-dlp failed to fetch metadata with code ${data.code}`);
+                        console.error(`yt-dlp exited with code ${data.code} while fetching metadata for URL: ${url}`);
                         LOG.error('NEODLP', `yt-dlp exited with code ${data.code} while fetching metadata for URL: ${url} (ignore if you manually cancelled)`);
-                        resolve(null);
                     } else {
-                        try {
-                            const matchedJson = jsonOutput.match(/{.*}/);
-                            if (!matchedJson) {
-                                console.error(`Failed to match JSON: ${jsonOutput}`);
-                                LOG.error('NEODLP', `Failed to parse metadata JSON for URL: ${url})`);
-                                resolve(null);
-                                return;
-                            }
-                            const parsedJson: RawVideoInfo = JSON.parse(matchedJson[0]);
-                            resolve(parsedJson);
-                        }
-                        catch (e) {
-                            console.error(`Failed to parse JSON: ${e}`);
-                            LOG.error('NEODLP', `Failed to parse metadata JSON for URL: ${url}) with error: ${e}`);
+                        LOG.info('NEODLP', `yt-dlp exited with code ${data.code} while fetching metadata for URL: ${url}`);
+                    }
+
+                    try {
+                        const matchedJson = jsonOutput.match(/{.*}/);
+                        if (!matchedJson) {
+                            console.error(`Failed to match JSON: ${jsonOutput}`);
+                            LOG.error('NEODLP', `Failed to parse metadata JSON for URL: ${url})`);
                             resolve(null);
+                            return;
                         }
+                        const parsedJson: RawVideoInfo = JSON.parse(matchedJson[0]);
+                        resolve(parsedJson);
+                    }
+                    catch (e) {
+                        console.error(`Failed to parse JSON: ${e}`);
+                        LOG.error('NEODLP', `Failed to parse metadata JSON for URL: ${url}) with error: ${e}`);
+                        resolve(null);
                     }
                 });
 

@@ -47,8 +47,8 @@ export default function Navbar() {
                                     </Button>
                                 </DialogTrigger>
                             </TooltipTrigger>
-                            <TooltipContent>
-                            <p>Logs</p>
+                            <TooltipContent side="bottom">
+                                <p>Logs</p>
                             </TooltipContent>
                         </Tooltip>
                         <DialogContent className="sm:max-w-150">
