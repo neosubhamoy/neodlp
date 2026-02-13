@@ -1,5 +1,5 @@
 import * as React from "react"
-import * as RadioGroupPrimitive from "@radix-ui/react-radio-group"
+import { RadioGroup as RadioGroupPrimitive } from "radix-ui"
 import { cn } from "@/lib/utils"
 import { RawVideoInfo } from "@/types/video"
 import { formatDurationString} from "@/utils"
