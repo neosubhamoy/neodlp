@@ -211,6 +211,13 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         enable_notifications: false,
         update_notification: true,
         download_completion_notification: false,
+        use_delay: true,
+        use_search_delay: false,
+        delay_mode: 'auto',
+        min_sleep_interval: 10,
+        max_sleep_interval: 20,
+        request_sleep_interval: 1,
+        delay_playlist_only: true,
         // extension settings
         websocket_port: 53511
     },
@@ -282,6 +289,13 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             enable_notifications: false,
             update_notification: true,
             download_completion_notification: false,
+            use_delay: true,
+            use_search_delay: false,
+            delay_mode: 'auto',
+            min_sleep_interval: 10,
+            max_sleep_interval: 20,
+            request_sleep_interval: 1,
+            delay_playlist_only: true,
             // extension settings
             websocket_port: 53511
         },

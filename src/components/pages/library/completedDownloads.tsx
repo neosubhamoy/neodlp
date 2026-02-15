@@ -352,7 +352,7 @@ export function CompletedDownloads({ downloads }: CompletedDownloadsProps) {
                 <Empty className="mt-10">
                     <EmptyHeader>
                         <EmptyMedia variant="icon">
-                            <CircleArrowDown />
+                            <CircleArrowDown className="stroke-primary" />
                         </EmptyMedia>
                         <EmptyTitle>No Completed Downloads</EmptyTitle>
                         <EmptyDescription>

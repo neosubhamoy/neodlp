@@ -348,7 +348,7 @@ export const determineFileType = (
   const audioCodec = (acodec || '').toLowerCase();
 
   const isNone = (str: string): boolean => {
-    return ['none', 'n/a', '-', ''].includes(str);
+    return ['none', 'auto', 'n/a', '-', ''].includes(str);
   };
 
   const hasVideo = !isNone(videoCodec);
@@ -591,7 +591,7 @@ export const getMergedBestFormat = (
   } else {
     return {
       ...baseFormat,
-      format: 'Best Video (Automatic)',
+      format: 'Best Quality (Auto)',
       format_id: 'best',
       format_note: 'auto',
       ext: 'auto',

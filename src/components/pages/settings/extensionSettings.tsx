@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ArrowDownToLine, ArrowRight, EthernetPort, Loader2, Radio, RotateCw } from "lucide-react";
 import { useSettings } from "@/helpers/use-settings";
-import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -15,6 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { invoke } from "@tauri-apps/api/core";
 import { SlidingButton } from "@/components/custom/slidingButton";
 import clsx from "clsx";
+import { NumberInput } from "@/components/custom/numberInput";
 
 const websocketPortSchema = z.object({
     port: z.coerce.number<number>({
@@ -167,9 +167,10 @@ function ExtPortSettings() {
                             render={({ field }) => (
                                 <FormItem className="w-full">
                                     <FormControl>
-                                        <Input
-                                        className="focus-visible:ring-0"
+                                        <NumberInput
+                                        className="w-full"
                                         placeholder="Enter port number"
+                                        min={0}
                                         {...field}
                                         />
                                     </FormControl>

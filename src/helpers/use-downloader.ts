@@ -61,7 +61,14 @@ export default function useDownloader() {
         log_verbose: LOG_VERBOSE,
         log_progress: LOG_PROGRESS,
         enable_notifications: ENABLE_NOTIFICATIONS,
-        download_completion_notification: DOWNLOAD_COMPLETION_NOTIFICATION
+        download_completion_notification: DOWNLOAD_COMPLETION_NOTIFICATION,
+        use_delay: USE_DELAY,
+        use_search_delay: USE_SEARCH_DELAY,
+        delay_mode: DELAY_MODE,
+        min_sleep_interval: MIN_SLEEP_INTERVAL,
+        max_sleep_interval: MAX_SLEEP_INTERVAL,
+        request_sleep_interval: REQUEST_SLEEP_INTERVAL,
+        delay_playlist_only: DELAY_PLAYLIST_ONLY,
     } = useSettingsPageStatesStore(state => state.settings);
 
     const expectedErrorDownloadIds = useDownloaderPageStatesStore((state) => state.expectedErrorDownloadIds);
@@ -167,6 +174,14 @@ export default function useDownloader() {
                     args.push('--sponsorblock-mark', sponsorblockMark);
                 }
             };
+            if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && USE_SEARCH_DELAY) {
+                if (DELAY_MODE === 'auto') {
+                    args.push('--sleep-requests', '1', '--sleep-interval', '10', '--max-sleep-interval', '20');
+                } else if (DELAY_MODE === 'custom') {
+                    args.push('--sleep-requests', REQUEST_SLEEP_INTERVAL.toString(), '--sleep-interval', MIN_SLEEP_INTERVAL.toString(), '--max-sleep-interval', MAX_SLEEP_INTERVAL.toString());
+                }
+            }
+
             const command = Command.sidecar('binaries/yt-dlp', args);
 
             let jsonOutput = '';
@@ -319,14 +334,41 @@ export default function useDownloader() {
             args.push('--output', `${FILENAME_TEMPLATE}[${downloadId}].%(ext)s`);
         }
 
-        if (isMultiplePlaylistItems) {
-            const playlistLength = playlistIndices.split(',').length;
-            if (playlistLength > 5 && playlistLength < 100) {
-                args.push('--sleep-requests', '1', '--sleep-interval', '5', '--max-sleep-interval', '15');
-            } else if (playlistLength >= 100 && playlistLength < 500) {
-                args.push('--sleep-requests', '1.5', '--sleep-interval', '10', '--max-sleep-interval', '40');
-            } else if (playlistLength >= 500) {
-                args.push('--sleep-requests', '2.5', '--sleep-interval', '20', '--max-sleep-interval', '60');
+        if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && USE_DELAY) {
+            if (!DELAY_PLAYLIST_ONLY) {
+                if (DELAY_MODE === 'auto') {
+                    if (isMultiplePlaylistItems) {
+                        const playlistLength = playlistIndices.split(',').length;
+                        if (playlistLength <= 5) {
+                            args.push('--sleep-requests', '1', '--sleep-interval', '5', '--max-sleep-interval', '10');
+                        } else if (playlistLength > 5 && playlistLength < 100) {
+                            args.push('--sleep-requests', '1', '--sleep-interval', '10', '--max-sleep-interval', '20');
+                        } else if (playlistLength >= 100 && playlistLength < 500) {
+                            args.push('--sleep-requests', '2', '--sleep-interval', '20', '--max-sleep-interval', '40');
+                        } else if (playlistLength >= 500) {
+                            args.push('--sleep-requests', '2', '--sleep-interval', '40', '--max-sleep-interval', '60');
+                        }
+                    } else {
+                        args.push('--sleep-requests', '1', '--sleep-interval', '10', '--max-sleep-interval', '20');
+                    }
+                } else if (DELAY_MODE === 'custom') {
+                    args.push('--sleep-requests', REQUEST_SLEEP_INTERVAL.toString(), '--sleep-interval', MIN_SLEEP_INTERVAL.toString(), '--max-sleep-interval', MAX_SLEEP_INTERVAL.toString());
+                }
+            } else if (DELAY_PLAYLIST_ONLY && isMultiplePlaylistItems) {
+                if (DELAY_MODE === 'auto') {
+                    const playlistLength = playlistIndices.split(',').length;
+                    if (playlistLength <= 5) {
+                        args.push('--sleep-requests', '1', '--sleep-interval', '5', '--max-sleep-interval', '10');
+                    } else if (playlistLength > 5 && playlistLength < 100) {
+                        args.push('--sleep-requests', '1', '--sleep-interval', '10', '--max-sleep-interval', '20');
+                    } else if (playlistLength >= 100 && playlistLength < 500) {
+                        args.push('--sleep-requests', '2', '--sleep-interval', '20', '--max-sleep-interval', '40');
+                    } else if (playlistLength >= 500) {
+                        args.push('--sleep-requests', '2', '--sleep-interval', '40', '--max-sleep-interval', '60');
+                    }
+                } else if (DELAY_MODE === 'custom') {
+                    args.push('--sleep-requests', REQUEST_SLEEP_INTERVAL.toString(), '--sleep-interval', MIN_SLEEP_INTERVAL.toString(), '--max-sleep-interval', MAX_SLEEP_INTERVAL.toString());
+                }
             }
         }
 

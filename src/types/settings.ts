@@ -54,6 +54,13 @@ export interface Settings {
     enable_notifications: boolean;
     update_notification: boolean;
     download_completion_notification: boolean;
+    use_delay: boolean;
+    use_search_delay: boolean;
+    delay_mode: string;
+    min_sleep_interval: number;
+    max_sleep_interval: number;
+    request_sleep_interval: number;
+    delay_playlist_only: boolean;
     // extension settings
     websocket_port: number;
 }

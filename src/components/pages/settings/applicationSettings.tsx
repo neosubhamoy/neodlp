@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { BadgeCheck, BellRing, BrushCleaning, Bug, Cookie, ExternalLink, FilePen, FileVideo, Folder, FolderOpen, Github, Globe, Heart, Info, Loader2, LucideIcon, Mail, Monitor, Moon, Package, Scale, ShieldMinus, SquareTerminal, Sun, Terminal, Trash, TriangleAlert, WandSparkles, Wifi, Wrench } from "lucide-react";
+import { BadgeCheck, BellRing, BrushCleaning, Bug, Cookie, ExternalLink, FilePen, FileVideo, Folder, FolderOpen, Github, Globe, Heart, Info, Loader2, LucideIcon, Mail, Monitor, Moon, Package, Scale, ShieldMinus, SquareTerminal, Sun, Terminal, Timer, Trash, TriangleAlert, WandSparkles, Wifi, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,7 @@ import { config } from "@/config";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import neosubhamoyImage from "@/assets/images/neosubhamoy.jpg";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { NumberInput } from "@/components/custom/numberInput";
 
 const proxyUrlSchema = z.object({
     url: z.url({
@@ -65,6 +66,46 @@ const addCustomCommandSchema = z.object({
 const filenameTemplateShcema = z.object({
     template: z.string().min(1, { message: "Filename Template is required" }),
 });
+
+const minMaxSleepIntervalSchema = z.object({
+    min_sleep_interval: z.coerce.number<number>({
+        error: (issue) => issue.input === undefined || issue.input === null || issue.input === ""
+        ? "Minimum Sleep Interval is required"
+        : "Minimum Sleep Interval must be a valid number"
+    }).int({
+        message: "Minimum Sleep Interval must be an integer"
+    }).min(1, {
+        message: "Minimum Sleep Interval must be at least 1 second"
+    }).max(3600, {
+        message: "Minimum Sleep Interval must be at most 3600 seconds (1 hour)"
+    }),
+    max_sleep_interval: z.coerce.number<number>({
+        error: (issue) => issue.input === undefined || issue.input === null || issue.input === ""
+        ? "Maximum Sleep Interval is required"
+        : "Maximum Sleep Interval must be a valid number"
+    }).int({
+        message: "Maximum Sleep Interval must be an integer"
+    }).min(1, {
+        message: "Maximum Sleep Interval must be at least 1 second"
+    }).max(3600, {
+        message: "Maximum Sleep Interval must be at most 3600 seconds (1 hour)"
+    }),
+})
+
+const requestSleepIntervalSchema = z.object({
+    request_sleep_interval: z.coerce.number<number>({
+        error: (issue) => issue.input === undefined || issue.input === null || issue.input === ""
+        ? "Request Sleep Interval is required"
+        : "Request Sleep Interval must be a valid number"
+    }).int({
+        message: "Request Sleep Interval must be an integer"
+    }).min(1, {
+        message: "Request Sleep Interval must be at least 1 second"
+    }).max(3600, {
+        message: "Request Sleep Interval must be at most 3600 seconds (1 hour)"
+    }),
+})
+
 
 function AppGeneralSettings() {
     const { saveSettingsKey } = useSettings();
@@ -668,9 +709,10 @@ function AppNetworkSettings() {
                         render={({ field }) => (
                             <FormItem className="w-full">
                                 <FormControl>
-                                    <Input
-                                    className="focus-visible:ring-0"
+                                    <NumberInput
+                                    className="w-full"
                                     placeholder="Enter rate limit in bytes/s"
+                                    min={0}
                                     readOnly={useCustomCommands}
                                     {...field}
                                     />
@@ -853,7 +895,7 @@ function AppSponsorblockSettings() {
     return (
         <>
         <div className="sponsorblock">
-            <h3 className="font-semibold">Sponsor Block</h3>
+            <h3 className="font-semibold">Sponsorblock</h3>
             <p className="text-xs text-muted-foreground mb-3">Use sponsorblock to remove/mark unwanted segments in videos (sponsorships, intros, outros, etc.)</p>
             <div className="flex items-center space-x-2 mb-4">
                 <Switch
@@ -973,6 +1015,220 @@ function AppSponsorblockSettings() {
                 </ToggleGroup>
             </div>
             <Label className="text-xs text-muted-foreground">(Configured: {sponsorblockMode === "remove" && sponsorblockRemove === "custom" && sponsorblockRemoveCategories.length <= 0 ? 'No' : sponsorblockMode === "mark" && sponsorblockMark === "custom" && sponsorblockMarkCategories.length <= 0 ? 'No' : 'Yes'}, Mode: {sponsorblockMode === "remove" ? 'Remove' : 'Mark'}, Status: {useSponsorblock && !useCustomCommands ? 'Enabled' : 'Disabled'})</Label>
+        </div>
+        </>
+    );
+}
+
+function AppDelaySettings() {
+    const { saveSettingsKey } = useSettings();
+
+    const formResetTrigger = useSettingsPageStatesStore(state => state.formResetTrigger);
+    const acknowledgeFormReset = useSettingsPageStatesStore(state => state.acknowledgeFormReset);
+
+    const useDelay = useSettingsPageStatesStore(state => state.settings.use_delay);
+    const useSearchDelay = useSettingsPageStatesStore(state => state.settings.use_search_delay);
+    const delayMode = useSettingsPageStatesStore(state => state.settings.delay_mode);
+    const minSleepInterval = useSettingsPageStatesStore(state => state.settings.min_sleep_interval);
+    const maxSleepInterval = useSettingsPageStatesStore(state => state.settings.max_sleep_interval);
+    const requestSleepInterval = useSettingsPageStatesStore(state => state.settings.request_sleep_interval);
+    const delayPlaylistOnly = useSettingsPageStatesStore(state => state.settings.delay_playlist_only);
+    const useCustomCommands = useSettingsPageStatesStore(state => state.settings.use_custom_commands);
+
+    const minMaxSleepIntervalForm = useForm<z.infer<typeof minMaxSleepIntervalSchema>>({
+        resolver: zodResolver(minMaxSleepIntervalSchema),
+        defaultValues: {
+            min_sleep_interval: minSleepInterval,
+            max_sleep_interval: maxSleepInterval,
+        },
+        mode: "onChange",
+    });
+    const watchedMinSleepInterval = minMaxSleepIntervalForm.watch("min_sleep_interval");
+    const watchedMaxSleepInterval = minMaxSleepIntervalForm.watch("max_sleep_interval");
+    const { errors: minMaxSleepIntervalFormErrors } = minMaxSleepIntervalForm.formState;
+
+    function handleMinMaxSleepIntervalSubmit(values: z.infer<typeof minMaxSleepIntervalSchema>) {
+        try {
+            saveSettingsKey('min_sleep_interval', values.min_sleep_interval);
+            saveSettingsKey('max_sleep_interval', values.max_sleep_interval);
+            toast.success("Sleep Intervals updated", {
+                description: `Minimum Sleep Interval changed to ${values.min_sleep_interval} seconds, Maximum Sleep Interval changed to ${values.max_sleep_interval} seconds`,
+            });
+        } catch (error) {
+            console.error("Error changing sleep intervals:", error);
+            toast.error("Failed to change sleep intervals", {
+                description: "An error occurred while trying to change the sleep intervals. Please try again.",
+            });
+        }
+    }
+
+    const requestSleepIntervalForm = useForm<z.infer<typeof requestSleepIntervalSchema>>({
+        resolver: zodResolver(requestSleepIntervalSchema),
+        defaultValues: {
+            request_sleep_interval: requestSleepInterval,
+        },
+        mode: "onChange",
+    });
+    const watchedRequestSleepInterval = requestSleepIntervalForm.watch("request_sleep_interval");
+    const { errors: requestSleepIntervalFormErrors } = requestSleepIntervalForm.formState;
+
+    function handleRequestSleepIntervalSubmit(values: z.infer<typeof requestSleepIntervalSchema>) {
+        try {
+            saveSettingsKey('request_sleep_interval', values.request_sleep_interval);
+            toast.success("Request Sleep Interval updated", {
+                description: `Request Sleep Interval changed to ${values.request_sleep_interval} seconds`,
+            });
+        } catch (error) {
+            console.error("Error changing request sleep interval:", error);
+            toast.error("Failed to change request sleep interval", {
+                description: "An error occurred while trying to change the request sleep interval. Please try again.",
+            });
+        }
+    }
+
+    useEffect(() => {
+        if (formResetTrigger > 0) {
+            minMaxSleepIntervalForm.reset();
+            requestSleepIntervalForm.reset();
+            acknowledgeFormReset();
+        }
+    }, [formResetTrigger]);
+
+    return (
+        <>
+        <div className="delay">
+            <h3 className="font-semibold">Delay</h3>
+            <p className="text-xs text-muted-foreground mb-3">Use delay to prevent potential issues with some sites (bypass rate-limit, temporary ban, etc.)</p>
+            <div className="flex items-center space-x-2 mb-3">
+                <Switch
+                id="use-delay"
+                checked={useDelay}
+                onCheckedChange={(checked) => saveSettingsKey('use_delay', checked)}
+                disabled={useCustomCommands}
+                />
+                <Label htmlFor="use-delay">Use Delay in Downloads</Label>
+            </div>
+            <div className="flex items-center space-x-2 mb-4">
+                <Switch
+                id="use-search-delay"
+                checked={useSearchDelay}
+                onCheckedChange={(checked) => saveSettingsKey('use_search_delay', checked)}
+                disabled={useCustomCommands}
+                />
+                <Label htmlFor="use-search-delay">Use Delay in Search</Label>
+            </div>
+            <RadioGroup
+            orientation="horizontal"
+            className="flex items-center gap-4"
+            value={delayMode}
+            onValueChange={(value) => saveSettingsKey('delay_mode', value)}
+            disabled={(!useDelay && !useSearchDelay) || useCustomCommands}
+            >
+                <div className="flex items-center gap-3">
+                    <RadioGroupItem value="auto" id="delay-auto" />
+                    <Label htmlFor="delay-auto">Auto (Default)</Label>
+                </div>
+                <div className="flex items-center gap-3">
+                    <RadioGroupItem value="custom" id="delay-custom" />
+                    <Label htmlFor="delay-custom">Custom</Label>
+                </div>
+            </RadioGroup>
+            <div className="flex flex-col gap-2 mt-5">
+                <Label className="text-xs mb-1">Minimum, Maximum Sleep Interval (in Seconds)</Label>
+                <Form {...minMaxSleepIntervalForm}>
+                    <form onSubmit={minMaxSleepIntervalForm.handleSubmit(handleMinMaxSleepIntervalSubmit)} className="flex gap-4 w-full" autoComplete="off">
+                        <FormField
+                            control={minMaxSleepIntervalForm.control}
+                            name="min_sleep_interval"
+                            disabled={delayMode !== "custom" || (!useDelay && !useSearchDelay)}
+                            render={({ field }) => (
+                                <FormItem className="w-full">
+                                    <FormControl>
+                                        <NumberInput
+                                        className="w-full"
+                                        placeholder="Min sleep"
+                                        min={0}
+                                        readOnly={useCustomCommands}
+                                        {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={minMaxSleepIntervalForm.control}
+                            name="max_sleep_interval"
+                            disabled={delayMode !== "custom" || (!useDelay && !useSearchDelay)}
+                            render={({ field }) => (
+                                <FormItem className="w-full">
+                                    <FormControl>
+                                        <NumberInput
+                                        className="w-full"
+                                        placeholder="Max sleep"
+                                        min={0}
+                                        readOnly={useCustomCommands}
+                                        {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <Button
+                            type="submit"
+                            disabled={(!watchedMinSleepInterval || Number(watchedMinSleepInterval) === minSleepInterval) && (!watchedMaxSleepInterval || Number(watchedMaxSleepInterval) === maxSleepInterval) || Object.keys(minMaxSleepIntervalFormErrors).length > 0 || delayMode !== "custom" || (!useDelay && !useSearchDelay)}
+                        >
+                            Save
+                        </Button>
+                    </form>
+                </Form>
+            </div>
+            <div className="flex flex-col gap-2 mt-4 mb-2">
+                <Label className="text-xs mb-1">Request Sleep Interval (in Seconds)</Label>
+                <Form {...requestSleepIntervalForm}>
+                    <form onSubmit={requestSleepIntervalForm.handleSubmit(handleRequestSleepIntervalSubmit)} className="flex gap-4 w-full" autoComplete="off">
+                        <FormField
+                            control={requestSleepIntervalForm.control}
+                            name="request_sleep_interval"
+                            disabled={delayMode !== "custom" || (!useDelay && !useSearchDelay)}
+                            render={({ field }) => (
+                                <FormItem className="w-full">
+                                    <FormControl>
+                                        <NumberInput
+                                        className="w-full"
+                                        placeholder="Request sleep"
+                                        min={0}
+                                        readOnly={useCustomCommands}
+                                        {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <Button
+                            type="submit"
+                            disabled={!watchedRequestSleepInterval || Number(watchedRequestSleepInterval) === requestSleepInterval || Object.keys(requestSleepIntervalFormErrors).length > 0 || delayMode !== "custom" || (!useDelay && !useSearchDelay)}
+                        >
+                            Save
+                        </Button>
+                    </form>
+                </Form>
+            </div>
+            <Label className="text-xs text-muted-foreground">(Configured: {minSleepInterval}s - {maxSleepInterval}s & {requestSleepInterval}s, Mode: {delayMode === 'auto' ? 'Auto' : 'Custom'}, Status: {useDelay && delayPlaylistOnly ? 'Playlist Only' : useDelay ? 'Downloads' : ''}{useDelay && useSearchDelay ? ', Search' : useSearchDelay ? 'Search' : !useDelay && !useSearchDelay ? 'Disabled' : ''}) (Default: 10s - 20s & 1s, Range: 1s - 3600s)</Label>
+        </div>
+        <div className="delay-playlist-only">
+            <h3 className="font-semibold">Delay Playlist Only</h3>
+            <p className="text-xs text-muted-foreground mb-3">Only apply delay for playlist/batch downloads, single video downloads will not be affected (recommended)</p>
+            <div className="flex items-center space-x-2 mb-4">
+                <Switch
+                id="delay-playlist-only"
+                checked={delayPlaylistOnly}
+                onCheckedChange={(checked) => saveSettingsKey('delay_playlist_only', checked)}
+                disabled={!useDelay || useCustomCommands}
+                />
+            </div>
         </div>
         </>
     );
@@ -1468,6 +1724,7 @@ export function ApplicationSettings() {
         { key: 'network', label: 'Network', icon: Wifi, component: <AppNetworkSettings /> },
         { key: 'cookies', label: 'Cookies', icon: Cookie, component: <AppCookiesSettings /> },
         { key: 'sponsorblock', label: 'Sponsorblock', icon: ShieldMinus, component: <AppSponsorblockSettings /> },
+        { key: 'delay', label: 'Delay', icon: Timer, component: <AppDelaySettings /> },
         { key: 'notifications', label: 'Notifications', icon: BellRing, component: <AppNotificationSettings /> },
         { key: 'commands', label: 'Commands', icon: SquareTerminal, component: <AppCommandSettings /> },
         { key: 'debug', label: 'Debug', icon: Bug, component: <AppDebugSettings /> },
@@ -1553,7 +1810,7 @@ export function ApplicationSettings() {
             </TabsList>
             <div className="min-h-full flex flex-col w-full border-l border-border pl-4">
                 {tabsList.map((tab) => (
-                    <TabsContent key={tab.key} value={tab.key} className={clsx("flex flex-col gap-4 min-h-108.75", tab.key === "info" ? "max-w-[80%]" : "max-w-[70%]")}>
+                    <TabsContent key={tab.key} value={tab.key} className={clsx("flex flex-col gap-4 min-h-120", tab.key === "info" ? "max-w-[80%]" : "max-w-[70%]")}>
                         {tab.component}
                     </TabsContent>
                 ))}

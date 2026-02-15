@@ -280,7 +280,7 @@ export function IncompleteDownloads({ downloads }: IncompleteDownloadsProps) {
                 <Empty className="mt-10">
                     <EmptyHeader>
                         <EmptyMedia variant="icon">
-                            <CircleCheck />
+                            <CircleCheck className="stroke-primary" />
                         </EmptyMedia>
                         <EmptyTitle>No Incomplete Downloads</EmptyTitle>
                         <EmptyDescription>
