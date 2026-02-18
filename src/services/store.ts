@@ -218,6 +218,9 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         max_sleep_interval: 20,
         request_sleep_interval: 1,
         delay_playlist_only: true,
+        use_potoken: false,
+        disable_innertube: false,
+        pot_server_port: 4416,
         // extension settings
         websocket_port: 53511
     },
@@ -230,6 +233,10 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
     appUpdateDownloadProgress: 0,
     formResetTrigger: 0,
     resetAcknowledgements: 0,
+    isRunningPotServer: false,
+    isStartingPotServer: false,
+    isChangingPotServerPort: false,
+    potServerPid: null,
     setActiveTab: (tab) => set(() => ({ activeTab: tab })),
     setActiveSubAppTab: (tab) => set(() => ({ activeSubAppTab: tab })),
     setActiveSubExtTab: (tab) => set(() => ({ activeSubExtTab: tab })),
@@ -296,6 +303,9 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             max_sleep_interval: 20,
             request_sleep_interval: 1,
             delay_playlist_only: true,
+            use_potoken: false,
+            disable_innertube: false,
+            pot_server_port: 4416,
             // extension settings
             websocket_port: 53511
         },
@@ -315,12 +325,17 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
     acknowledgeFormReset: () => set((state) => ({
         resetAcknowledgements: state.resetAcknowledgements + 1
     })),
+    setIsRunningPotServer: (isRunning) => set(() => ({ isRunningPotServer: isRunning })),
+    setIsStartingPotServer: (isStarting) => set(() => ({ isStartingPotServer: isStarting })),
+    setIsChangingPotServerPort: (isChanging) => set(() => ({ isChangingPotServerPort: isChanging })),
+    setPotServerPid: (pid) => set(() => ({ potServerPid: pid }))
 }));
 
 export const useKvPairsStatesStore = create<KvPairsStatesStore>((set) => ({
     kvPairs: {
         ytdlp_update_last_check: null,
-        macos_registered_version: null
+        macos_registered_version: null,
+        linux_registered_version: null
     },
     setKvPairsKey: (key, value) => set((state) => ({
         kvPairs: {

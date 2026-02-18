@@ -25,6 +25,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { useLogger } from "@/helpers/use-logger";
 import useDownloader from "@/helpers/use-downloader";
+import usePotServer from "@/helpers/use-pot-server";
 
 export default function App({ children }: { children: React.ReactNode }) {
     const { data: downloadStates, isSuccess: isSuccessFetchingDownloadStates } = useFetchAllDownloadStates();
@@ -39,6 +40,7 @@ export default function App({ children }: { children: React.ReactNode }) {
     const setIsUsingDefaultSettings = useSettingsPageStatesStore((state) => state.setIsUsingDefaultSettings);
     const setSettingsKey = useSettingsPageStatesStore((state) => state.setSettingsKey);
     const appVersion = useSettingsPageStatesStore(state => state.appVersion);
+    const isRunningPotServer = useSettingsPageStatesStore(state => state.isRunningPotServer);
     const ytDlpVersion = useSettingsPageStatesStore(state => state.ytDlpVersion);
     const setYtDlpVersion = useSettingsPageStatesStore((state) => state.setYtDlpVersion);
     const setIsFetchingYtDlpVersion = useSettingsPageStatesStore((state) => state.setIsFetchingYtDlpVersion);
@@ -50,6 +52,7 @@ export default function App({ children }: { children: React.ReactNode }) {
         download_dir: DOWNLOAD_DIR,
         theme: APP_THEME,
         color_scheme: APP_COLOR_SCHEME,
+        use_potoken: USE_POTOKEN,
     } = useSettingsPageStatesStore(state => state.settings);
 
     const erroredDownloadIds = useDownloaderPageStatesStore((state) => state.erroredDownloadIds);
@@ -64,9 +67,11 @@ export default function App({ children }: { children: React.ReactNode }) {
     const { updateYtDlp } = useYtDlpUpdater();
     const { registerToMac } = useMacOsRegisterer();
     const { checkForAppUpdate } = useAppUpdater();
+    const { startPotServer, stopPotServer } = usePotServer();
     const setKvPairsKey = useKvPairsStatesStore((state) => state.setKvPairsKey);
     const ytDlpUpdateLastCheck = useKvPairsStatesStore(state => state.kvPairs.ytdlp_update_last_check);
     const macOsRegisteredVersion = useKvPairsStatesStore(state => state.kvPairs.macos_registered_version);
+    const linuxRegisteredVersion = useKvPairsStatesStore(state => state.kvPairs.linux_registered_version);
 
     const queryClient = useQueryClient();
     const downloadStatusUpdater = useUpdateDownloadStatus();
@@ -76,7 +81,9 @@ export default function App({ children }: { children: React.ReactNode }) {
 
     const hasRunYtDlpAutoUpdateRef = useRef(false);
     const hasRunAppUpdateCheckRef = useRef(false);
+    const hasRunPotServerStatusCheckRef = useRef(false);
     const isRegisteredToMacOsRef = useRef(false);
+    const isRegisteredToLinuxRef = useRef(false);
     const pendingErrorUpdatesRef = useRef<Set<string>>(new Set());
 
     const { fetchVideoMetadata, startDownload, pauseDownload, resumeDownload, cancelDownload, processQueuedDownloads } = useDownloader();
@@ -97,6 +104,19 @@ export default function App({ children }: { children: React.ReactNode }) {
 
         appWindow.onCloseRequested(handleCloseRequested);
     }, []);
+
+    // Cleanup before page refresh/unload
+    useEffect(() => {
+        const handleBeforeUnload = (_event: BeforeUnloadEvent) => {
+            if (isRunningPotServer) {
+                stopPotServer();
+            }
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [stopPotServer]);
 
     // Listen for websocket messages
     useEffect(() => {
@@ -272,6 +292,32 @@ export default function App({ children }: { children: React.ReactNode }) {
         }
     }, [isSettingsStatePropagated, isKvPairsStatePropagated]);
 
+    // Check POT server status and auto-start if enabled
+    useEffect(() => {
+        // Only run once when both settings and KV pairs are loaded
+        if (!isSettingsStatePropagated || !isKvPairsStatePropagated) {
+            console.log("Skipping POT server status check, waiting for configs to load...");
+            return;
+        }
+        // Skip if we've already run the POT server status check once
+        if (hasRunPotServerStatusCheckRef.current) {
+            console.log("POT server status check already performed in this session, skipping");
+            return;
+        }
+        hasRunPotServerStatusCheckRef.current = true;
+        console.log("Checking POT server status with loaded config values:", {
+            usePotoken: USE_POTOKEN,
+        });
+        if (USE_POTOKEN) {
+            console.log("Auto-starting POT server...");
+            startPotServer().catch((error) => {
+                console.error("Error starting POT server:", error);
+            });
+        } else {
+            console.log("Skipping POT server auto-start, not enabled.");
+        }
+    }, [isSettingsStatePropagated, isKvPairsStatePropagated]);
+
     // Check for MacOS auto-registration
     useEffect(() => {
         // Only run once when both settings and KV pairs are loaded
@@ -303,6 +349,41 @@ export default function App({ children }: { children: React.ReactNode }) {
             }).catch((error) => {
                 console.error("Error during macOS registration:", error);
                 LOG.error('NEODLP', `Error during macOS registration: ${error}`);
+            });
+        }
+    }, [isSettingsStatePropagated, isKvPairsStatePropagated]);
+
+    // Check for Linux auto-registration
+    useEffect(() => {
+        // Only run once when both settings and KV pairs are loaded
+        if (!isSettingsStatePropagated || !isKvPairsStatePropagated) {
+            console.log("Skipping Linux auto registration, waiting for configs to load...");
+            return;
+        }
+        // Skip if we've already run the linux auto-registration once
+        if (isRegisteredToLinuxRef.current) {
+            console.log("Linux auto registration check already performed in this session, skipping");
+            return;
+        }
+        isRegisteredToLinuxRef.current = true;
+        console.log("Checking Linux auto registration with loaded config values:", {
+            appVersion: appVersion,
+            registeredVersion: linuxRegisteredVersion
+        });
+        if (currentPlatform === 'linux' && (!linuxRegisteredVersion || linuxRegisteredVersion !== appVersion)) {
+            console.log("Running Linux auto registration...");
+            LOG.info('NEODLP', 'Running Linux registration');
+            registerToMac().then((result: { success: boolean, message: string }) => {
+                if (result.success) {
+                    console.log("Linux registration successful:", result.message);
+                    LOG.info('NEODLP', 'Linux registration successful');
+                } else {
+                    console.error("Linux registration failed:", result.message);
+                    LOG.error('NEODLP', `Linux registration failed: ${result.message}`);
+                }
+            }).catch((error) => {
+                console.error("Error during Linux registration:", error);
+                LOG.error('NEODLP', `Error during Linux registration: ${error}`);
             });
         }
     }, [isSettingsStatePropagated, isKvPairsStatePropagated]);
@@ -341,7 +422,7 @@ export default function App({ children }: { children: React.ReactNode }) {
             });
         });
 
-        const timeoutIds: NodeJS.Timeout[] = [];
+        const timeoutIds: ReturnType<typeof setTimeout>[] = [];
         unexpectedErrors.forEach((downloadId) => {
             pendingErrorUpdatesRef.current.add(downloadId);
 

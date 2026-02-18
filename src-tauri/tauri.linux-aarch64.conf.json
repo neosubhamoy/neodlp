@@ -39,8 +39,12 @@
         "externalBin": [
             "binaries/yt-dlp",
             "binaries/aria2c",
-            "binaries/deno"
+            "binaries/deno",
+            "binaries/neodlp-pot"
         ],
+        "resources": {
+            "resources/plugins/yt-dlp-plugins/": "yt-dlp-plugins/"
+        },
         "linux": {
             "deb": {
                 "depends": ["ffmpeg"],

@@ -36,6 +36,11 @@
           "sidecar": true
         },
         {
+          "name": "binaries/neodlp-pot",
+          "args": true,
+          "sidecar": true
+        },
+        {
           "name": "ffmpeg",
           "cmd": "ffmpeg",
           "args": true
@@ -43,6 +48,11 @@
         {
           "name": "aria2c",
           "cmd": "aria2c",
+          "args": true
+        },
+        {
+          "name": "deno",
+          "cmd": "deno",
           "args": true
         },
         {
@@ -86,6 +96,11 @@
           "sidecar": true
         },
         {
+          "name": "binaries/neodlp-pot",
+          "args": true,
+          "sidecar": true
+        },
+        {
           "name": "ffmpeg",
           "cmd": "ffmpeg",
           "args": true
@@ -93,6 +108,11 @@
         {
           "name": "aria2c",
           "cmd": "aria2c",
+          "args": true
+        },
+        {
+          "name": "deno",
+          "cmd": "deno",
           "args": true
         }
       ]

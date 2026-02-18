@@ -69,7 +69,11 @@ export default function useDownloader() {
         max_sleep_interval: MAX_SLEEP_INTERVAL,
         request_sleep_interval: REQUEST_SLEEP_INTERVAL,
         delay_playlist_only: DELAY_PLAYLIST_ONLY,
+        use_potoken: USE_POTOKEN,
+        disable_innertube: DISABLE_INNERTUBE,
+        pot_server_port: POT_SERVER_PORT,
     } = useSettingsPageStatesStore(state => state.settings);
+    const isRunningPotServer = useSettingsPageStatesStore(state => state.isRunningPotServer);
 
     const expectedErrorDownloadIds = useDownloaderPageStatesStore((state) => state.expectedErrorDownloadIds);
     const addErroredDownload = useDownloaderPageStatesStore((state) => state.addErroredDownload);
@@ -179,6 +183,16 @@ export default function useDownloader() {
                     args.push('--sleep-requests', '1', '--sleep-interval', '10', '--max-sleep-interval', '20');
                 } else if (DELAY_MODE === 'custom') {
                     args.push('--sleep-requests', REQUEST_SLEEP_INTERVAL.toString(), '--sleep-interval', MIN_SLEEP_INTERVAL.toString(), '--max-sleep-interval', MAX_SLEEP_INTERVAL.toString());
+                }
+            }
+            if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && USE_POTOKEN) {
+                if (!isRunningPotServer) {
+                    LOG.warning("NEODLP", "Looks like you want to use PO Token! But, NeoDLP POT Server is not running. PO Token generation will most likely fail!");
+                }
+                if (DISABLE_INNERTUBE) {
+                    args.push('--extractor-args', `youtubepot-bgutilhttp:base_url=http://localhost:${POT_SERVER_PORT};disable_innertube=1`);
+                } else {
+                    args.push('--extractor-args', `youtubepot-bgutilhttp:base_url=http://localhost:${POT_SERVER_PORT}`);
                 }
             }
 
@@ -523,6 +537,17 @@ export default function useDownloader() {
                 '--downloader-args', 'aria2c:-c -j 16 -x 16 -s 16 -k 1M --check-certificate=false'
             );
             LOG.warning('NEODLP', `Looks like you are using aria2 for this yt-dlp download: ${downloadId}. Make sure aria2 is installed on your system if you are on macOS for this to work. Also, pause/resume might not work as expected especially on windows (using aria2 is not recommended for most downloads).`);
+        }
+
+        if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && USE_POTOKEN) {
+            if (!isRunningPotServer) {
+                LOG.warning("NEODLP", "Looks like you want to use PO Token! But, NeoDLP POT Server is not running. PO Token generation will most likely fail!");
+            }
+            if (DISABLE_INNERTUBE) {
+                args.push('--extractor-args', `youtubepot-bgutilhttp:base_url=http://localhost:${POT_SERVER_PORT};disable_innertube=1`);
+            } else {
+                args.push('--extractor-args', `youtubepot-bgutilhttp:base_url=http://localhost:${POT_SERVER_PORT}`);
+            }
         }
 
         if (resumeState || (!USE_CUSTOM_COMMANDS && USE_ARIA2)) {

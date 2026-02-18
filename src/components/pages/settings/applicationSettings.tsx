@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { BadgeCheck, BellRing, BrushCleaning, Bug, Cookie, ExternalLink, FilePen, FileVideo, Folder, FolderOpen, Github, Globe, Heart, Info, Loader2, LucideIcon, Mail, Monitor, Moon, Package, Scale, ShieldMinus, SquareTerminal, Sun, Terminal, Timer, Trash, TriangleAlert, WandSparkles, Wifi, Wrench } from "lucide-react";
+import { BadgeCheck, BellRing, BrushCleaning, Bug, Cookie, ExternalLink, FilePen, FileVideo, Folder, FolderOpen, Github, Globe, Heart, Info, KeyRound, Loader2, LucideIcon, Mail, Monitor, Moon, Package, Scale, ShieldMinus, SquareTerminal, Sun, Terminal, Timer, Trash, TriangleAlert, WandSparkles, Wifi, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import neosubhamoyImage from "@/assets/images/neosubhamoy.jpg";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { NumberInput } from "@/components/custom/numberInput";
+import usePotServer from "@/helpers/use-pot-server";
 
 const proxyUrlSchema = z.object({
     url: z.url({
@@ -106,6 +107,19 @@ const requestSleepIntervalSchema = z.object({
     }),
 })
 
+const potServerPortSchema = z.object({
+    port: z.coerce.number<number>({
+        error: (issue) => issue.input === undefined || issue.input === null || issue.input === ""
+        ? "POT Server Port is required"
+        : "POT Server Port must be a valid number"
+    }).int({
+        message: "POT Server Port must be an integer"
+    }).min(4000, {
+        message: "POT Server Port must be at least 4000"
+    }).max(5000, {
+        message: "POT Server Port must be at most 5000"
+    }),
+});
 
 function AppGeneralSettings() {
     const { saveSettingsKey } = useSettings();
@@ -1234,6 +1248,155 @@ function AppDelaySettings() {
     );
 }
 
+function AppPoTokenSettings() {
+    const formResetTrigger = useSettingsPageStatesStore(state => state.formResetTrigger);
+    const acknowledgeFormReset = useSettingsPageStatesStore(state => state.acknowledgeFormReset);
+
+    const usePotoken = useSettingsPageStatesStore(state => state.settings.use_potoken);
+    const disableInnertube = useSettingsPageStatesStore(state => state.settings.disable_innertube);
+    const potServerPort = useSettingsPageStatesStore(state => state.settings.pot_server_port);
+    const useCustomCommands = useSettingsPageStatesStore(state => state.settings.use_custom_commands);
+    const isRunningPotServer = useSettingsPageStatesStore(state => state.isRunningPotServer);
+    const isStartingPotServer = useSettingsPageStatesStore(state => state.isStartingPotServer);
+    const isChangingPotServerPort = useSettingsPageStatesStore(state => state.isChangingPotServerPort);
+    const setIsChangingPotServerPort = useSettingsPageStatesStore(state => state.setIsChangingPotServerPort);
+
+    const { saveSettingsKey } = useSettings();
+    const { startPotServer, stopPotServer } = usePotServer();
+
+    const potServerPortForm = useForm<z.infer<typeof potServerPortSchema>>({
+        resolver: zodResolver(potServerPortSchema),
+        defaultValues: {
+            port: potServerPort,
+        },
+        mode: "onChange",
+    });
+    const watchedPotServerPort = potServerPortForm.watch("port");
+    const { errors: potServerPortFormErrors } = potServerPortForm.formState;
+
+    async function handlePotServerPortSubmit(values: z.infer<typeof potServerPortSchema>) {
+        setIsChangingPotServerPort(true);
+        try {
+            saveSettingsKey('pot_server_port', values.port);
+            if (isRunningPotServer) {
+                await stopPotServer();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                await startPotServer(values.port);
+            }
+            toast.success("POT Server Port updated", {
+                description: `PO Token Server Port changed to ${values.port}`,
+            });
+        } catch (error) {
+            console.error("Error changing PO Token Server Port:", error);
+            toast.error("Failed to change POT Server Port", {
+                description: "An error occurred while trying to change the PO Token Server Port. Please try again.",
+            });
+        } finally {
+            setIsChangingPotServerPort(false);
+        }
+    }
+
+    useEffect(() => {
+        if (formResetTrigger > 0) {
+            potServerPortForm.reset();
+            acknowledgeFormReset();
+        }
+    }, [formResetTrigger]);
+
+    return (
+        <>
+        <div className="potoken">
+            <h3 className="font-semibold">PO Token</h3>
+            <p className="text-xs text-muted-foreground mb-3">Generate proof-of-origin token for youtube to make seem your traffic more legitimate (bypasses some bot-protection checks, sometimes requires cookies)</p>
+            <div className="flex items-center space-x-2 mb-2">
+                <Switch
+                id="use-potoken"
+                checked={usePotoken}
+                onCheckedChange={async (checked) => {
+                    saveSettingsKey('use_potoken', checked);
+                    if (checked) {
+                        await startPotServer();
+                    } else {
+                        await stopPotServer();
+                    }
+                }}
+                disabled={useCustomCommands || isStartingPotServer || isChangingPotServerPort}
+                />
+                <Label htmlFor="use-potoken">Use PO Token</Label>
+            </div>
+            <Label className="text-xs text-muted-foreground flex items-center">
+                <span className="mr-1">NeoDLP POT Server is</span>
+                {isStartingPotServer ? (
+                    <span className="text-amber-600 dark:text-amber-500 underline">Starting</span>
+                ) : isRunningPotServer ? (
+                    <span className="text-emerald-600 dark:text-emerald-500 underline">Running</span>
+                ) : (
+                    <span className="text-red-600 dark:text-red-500 underline">Not Running</span>
+                )}
+                {isRunningPotServer && potServerPort ? (
+                    <span className="ml-1">on Port {potServerPort}</span>
+                ) : null}
+            </Label>
+        </div>
+        <div className="disable-innertube">
+            <h3 className="font-semibold">Disable Innertube</h3>
+            <p className="text-xs text-muted-foreground mb-3">Disable the usage of innertube api for potoken generation (falls back to legacy mode, use only if normal potoken is not working)</p>
+            <div className="flex items-center space-x-2">
+                <Switch
+                id="disable-innertube"
+                checked={disableInnertube}
+                onCheckedChange={(checked) => saveSettingsKey('disable_innertube', checked)}
+                disabled={useCustomCommands || !usePotoken}
+                />
+            </div>
+        </div>
+        <div className="pot-server-port">
+            <h3 className="font-semibold">POT Server Port</h3>
+            <p className="text-xs text-muted-foreground mb-3">Change neodlp proof-of-origin token server port</p>
+            <div className="flex flex-col gap-2">
+                <Form {...potServerPortForm}>
+                    <form onSubmit={potServerPortForm.handleSubmit(handlePotServerPortSubmit)} className="flex gap-4 w-full" autoComplete="off">
+                        <FormField
+                            control={potServerPortForm.control}
+                            name="port"
+                            disabled={!usePotoken || useCustomCommands || isChangingPotServerPort || isStartingPotServer}
+                            render={({ field }) => (
+                                <FormItem className="w-full">
+                                    <FormControl>
+                                        <NumberInput
+                                        className="w-full"
+                                        placeholder="Enter port number"
+                                        min={0}
+                                        readOnly={useCustomCommands}
+                                        {...field}
+                                        />
+                                    </FormControl>
+                                    <Label htmlFor="port" className="text-xs text-muted-foreground">(Current: {potServerPort}) (Default: 4416, Range: 4000-5000)</Label>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <Button
+                            type="submit"
+                            disabled={!watchedPotServerPort || Number(watchedPotServerPort) === potServerPort || Object.keys(potServerPortFormErrors).length > 0 || !usePotoken || useCustomCommands || isChangingPotServerPort || isStartingPotServer}
+                        >
+                            {isChangingPotServerPort ? (
+                                <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Changing
+                                </>
+                            ) : (
+                                'Change'
+                            )}
+                        </Button>
+                    </form>
+                </Form>
+            </div>
+        </div>
+        </>
+    );
+}
+
 function AppNotificationSettings() {
     const { saveSettingsKey } = useSettings();
 
@@ -1296,12 +1459,14 @@ function AppNotificationSettings() {
 
 function AppCommandSettings() {
     const { saveSettingsKey } = useSettings();
+    const { startPotServer, stopPotServer } = usePotServer();
 
     const formResetTrigger = useSettingsPageStatesStore(state => state.formResetTrigger);
     const acknowledgeFormReset = useSettingsPageStatesStore(state => state.acknowledgeFormReset);
 
     const useCustomCommands = useSettingsPageStatesStore(state => state.settings.use_custom_commands);
     const customCommands = useSettingsPageStatesStore(state => state.settings.custom_commands);
+    const usePotoken = useSettingsPageStatesStore(state => state.settings.use_potoken);
 
     const setDownloadConfigurationKey = useDownloaderPageStatesStore((state) => state.setDownloadConfigurationKey);
     const resetDownloadConfiguration = useDownloaderPageStatesStore((state) => state.resetDownloadConfiguration);
@@ -1379,9 +1544,14 @@ function AppCommandSettings() {
                 <Switch
                 id="use-custom-commands"
                 checked={useCustomCommands}
-                onCheckedChange={(checked) => {
+                onCheckedChange={async(checked) => {
                     saveSettingsKey('use_custom_commands', checked)
                     resetDownloadConfiguration();
+                    if (checked && usePotoken) {
+                        await stopPotServer();
+                    } else if (!checked && usePotoken) {
+                        await startPotServer();
+                    }
                 }}
                 />
                 <Label htmlFor="use-custom-commands">Use Custom Commands</Label>
@@ -1524,6 +1694,7 @@ function AppInfoSettings() {
         { key: 'ffprobe', name: 'FFprobe', desc: 'Multimedia stream analyzer for retrieving media information', url: 'https://ffmpeg.org/ffprobe.html', license: 'LGPLv2.1+', licenseUrl: 'https://ffmpeg.org/legal.html' },
         { key: 'deno', name: 'Deno', desc: 'The modern JavaScript/TypeScript runtime', url: 'https://deno.land/', license: 'MIT', licenseUrl: 'https://github.com/denoland/deno/blob/main/LICENSE.md' },
         { key: 'aria2', name: 'Aria2', desc: 'Lightweight multi-protocol & multi-source download utility', url: 'https://aria2.github.io/', license: 'GPLv2+', licenseUrl: 'https://github.com/aria2/aria2/blob/master/COPYING' },
+        { Key: 'bgutil-pot-rs', name: 'BgUtils POT Provider (Rust)', desc: 'A high-performance YouTube POT (Proof-of-Origin Token) provider implemented in Rust', url: 'https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs', license: 'GPLv3+', licenseUrl: 'https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/blob/master/LICENSE' },
     ];
     const langDepsList = [
         { key: 'tauri', name: 'Tauri', desc: 'Framework for building cross-platform, tiny and blazing fast binaries', url: 'https://tauri.app/', license: 'MIT, Apache-2.0', licenseUrl: 'https://github.com/tauri-apps/tauri/blob/dev/LICENSE_MIT' },
@@ -1725,6 +1896,7 @@ export function ApplicationSettings() {
         { key: 'cookies', label: 'Cookies', icon: Cookie, component: <AppCookiesSettings /> },
         { key: 'sponsorblock', label: 'Sponsorblock', icon: ShieldMinus, component: <AppSponsorblockSettings /> },
         { key: 'delay', label: 'Delay', icon: Timer, component: <AppDelaySettings /> },
+        { key: 'potoken', label: 'Potoken', icon: KeyRound, component: <AppPoTokenSettings /> },
         { key: 'notifications', label: 'Notifications', icon: BellRing, component: <AppNotificationSettings /> },
         { key: 'commands', label: 'Commands', icon: SquareTerminal, component: <AppCommandSettings /> },
         { key: 'debug', label: 'Debug', icon: Bug, component: <AppDebugSettings /> },
@@ -1810,7 +1982,7 @@ export function ApplicationSettings() {
             </TabsList>
             <div className="min-h-full flex flex-col w-full border-l border-border pl-4">
                 {tabsList.map((tab) => (
-                    <TabsContent key={tab.key} value={tab.key} className={clsx("flex flex-col gap-4 min-h-120", tab.key === "info" ? "max-w-[80%]" : "max-w-[70%]")}>
+                    <TabsContent key={tab.key} value={tab.key} className={clsx("flex flex-col gap-4 min-h-130", tab.key === "info" ? "max-w-[80%]" : "max-w-[70%]")}>
                         {tab.component}
                     </TabsContent>
                 ))}

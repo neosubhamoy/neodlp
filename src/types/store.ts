@@ -110,6 +110,10 @@ export interface SettingsPageStatesStore {
     appUpdateDownloadProgress: number;
     formResetTrigger: number;
     resetAcknowledgements: number;
+    isRunningPotServer: boolean;
+    isStartingPotServer: boolean;
+    isChangingPotServerPort: boolean;
+    potServerPid: number | null;
     setActiveTab: (tab: string) => void;
     setActiveSubAppTab: (tab: string) => void;
     setActiveSubExtTab: (tab: string) => void;
@@ -130,6 +134,10 @@ export interface SettingsPageStatesStore {
     setAppUpdateDownloadProgress: (progress: number) => void;
     triggerFormReset: () => void;
     acknowledgeFormReset: () => void;
+    setIsRunningPotServer: (isRunning: boolean) => void;
+    setIsStartingPotServer: (isStarting: boolean) => void;
+    setIsChangingPotServerPort: (isChanging: boolean) => void;
+    setPotServerPid: (pid: number | null) => void;
 }
 
 export interface KvPairsStatesStore {

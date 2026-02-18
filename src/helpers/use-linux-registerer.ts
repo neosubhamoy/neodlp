@@ -9,17 +9,13 @@ interface FileMap {
     dir: string;
 }
 
-export function useMacOsRegisterer() {
+export function useLinuxRegisterer() {
     const { saveKvPair } = useKvPairs();
     const appVersion = useSettingsPageStatesStore(state => state.appVersion);
 
-    const registerToMac = async () => {
+    const registerToLinux = async () => {
         try {
             const filesToCopy: FileMap[] = [
-                { source: 'neodlp-autostart.plist', destination: 'Library/LaunchAgents/com.neosubhamoy.neodlp.plist', dir: 'Library/LaunchAgents/' },
-                { source: 'neodlp-msghost.json', destination: 'Library/Application Support/Google/Chrome/NativeMessagingHosts/com.neosubhamoy.neodlp.json', dir: 'Library/Application Support/Google/Chrome/NativeMessagingHosts/' },
-                { source: 'neodlp-msghost.json', destination: 'Library/Application Support/Chromium/NativeMessagingHosts/com.neosubhamoy.neodlp.json', dir: 'Library/Application Support/Chromium/NativeMessagingHosts/' },
-                { source: 'neodlp-msghost-moz.json', destination: 'Library/Application Support/Mozilla/NativeMessagingHosts/com.neosubhamoy.neodlp.json', dir: 'Library/Application Support/Mozilla/NativeMessagingHosts/' },
                 { source: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil.py', destination: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil.py', dir: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/' },
                 { source: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_cli.py', destination: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_cli.py', dir: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/' },
                 { source: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_http.py', destination: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_http.py', dir: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/' },
@@ -44,7 +40,7 @@ export function useMacOsRegisterer() {
                     console.log(`File ${file.source} copied successfully to ${destinationPath}`);
                 }
             }
-            saveKvPair('macos_registered_version', appVersion);
+            saveKvPair('linux_registered_version', appVersion);
             return { success: true, message: 'Registered successfully' }
         } catch (error) {
             console.error('Error copying files:', error);
@@ -52,5 +48,5 @@ export function useMacOsRegisterer() {
         }
     }
 
-    return { registerToMac };
+    return { registerToLinux };
 }

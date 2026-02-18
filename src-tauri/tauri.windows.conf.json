@@ -41,12 +41,14 @@
             "binaries/ffmpeg",
             "binaries/ffprobe",
             "binaries/aria2c",
-            "binaries/deno"
+            "binaries/deno",
+            "binaries/neodlp-pot"
         ],
         "resources": {
             "target/release/neodlp-msghost.exe": "neodlp-msghost.exe",
             "resources/msghost-manifest/windows/chrome.json": "chrome.json",
-            "resources/msghost-manifest/windows/firefox.json": "firefox.json"
+            "resources/msghost-manifest/windows/firefox.json": "firefox.json",
+            "resources/plugins/yt-dlp-plugins/": "yt-dlp-plugins/"
         },
         "windows": {
             "wix": {

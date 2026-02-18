@@ -2,7 +2,7 @@
 
 # NeoDLP - Neo Downloader Plus
 
-Cross-platform Video/Audio Downloader Desktop App with Modern UI and Browser Integration
+Cross-platform Video/Audio Downloader Desktop App based on YT-DLP with Modern UI and Browser Integration
 
 [![github release](https://img.shields.io/github/v/release/neosubhamoy/neodlp?color=lime-green&style=for-the-badge)](https://github.com/neosubhamoy/neodlp/releases/latest)
 [![github downloads](https://img.shields.io/github/downloads/neosubhamoy/neodlp/total?style=for-the-badge)](https://github.com/neosubhamoy/neodlp/releases)
@@ -18,13 +18,15 @@ Cross-platform Video/Audio Downloader Desktop App with Modern UI and Browser Int
 
 ## ✨ Highlighted Features
 
-- Download Video/Audio from popular sites (YT, FB, IG, X and other 2.5k+ [supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md))
+- Download Video/Audio from thousands of popular sites (YT, FB, IG, X and other 2.5k+ [supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md))
+- Fully Configured YT-DLP Environment Out-of-the-Box (with JS Runtime, PO Token Server, Real-Time Logs etc.)
 - Download Video/Audio in your preffered format (MP4, WEBM, MKV, MP3 etc.)
-- Supports both Video and Playlist download
+- Supports both Video and Playlist/Batch download
 - Supports Combining Video, Audio streams of your choice
 - Supports Multi-Lingual Subtitle/Caption (CC) embeding
 - Different Video/Audio metadata embeding options (info, chapters, thumbnail etc.)
 - SponsorBlock support (mark/remove video segments)
+- Aria2 support (for blazing fast downloads)
 - Network controls (proxy, rate limit etc.)
 - Highly customizable and many more...😉
 
@@ -58,6 +60,7 @@ After installing the extension you can do the following directly from the browse
 - [FFmpeg & FFprobe](https://www.ffmpeg.org) [LGPLv2.1+] - Used for video/audio post-processing
 - [Aria2](https://aria2.github.io) [GPLv2+] - Used as an external downloader for blazing fast downloads with yt-dlp (Not included with NeoDLP MacOS builds)
 - [Deno](https://deno.com) [MIT] - Provides sandboxed javascript runtime environment for yt-dlp (Required for YT downloads, as per the new yt-dlp [announcement](https://github.com/yt-dlp/yt-dlp/issues/14404))
+- [BgUtils POT Provider (Rust)](https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs) [GPLv3+] - Provides PO (Proof-of-Origin) Token for YT downloads
 
 ## ℹ️ System Pre-Requirements
 
@@ -195,6 +198,7 @@ Noticed any Bug? or Want to give us some suggetions? Always feel free to let us 
 - NeoDLP is made possible by the joint efforts of [yt-dlp](https://github.com/yt-dlp/yt-dlp) and [FFmpeg](https://www.ffmpeg.org). Lots of NeoDLP features are actually powered by these tools under the hood! So huge thanks to all the developers/contributers for making these great tools! 🙏
 - NeoDLP's 'Format Selection' options are inspired from the [Seal](https://github.com/JunkFood02/Seal) app by [@JunkFood02](https://github.com/JunkFood02)
 - Aria2 Linux x86_64 static binaries are built by [@asdo92](https://github.com/asdo92/aria2-static-builds)
+- NeoDLP's 'POT Server' is based on [@jim60105's Rust Implementation](https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs) of [Brainicism/bgutil-ytdlp-pot-provider](https://github.com/Brainicism/bgutil-ytdlp-pot-provider)
 
 ## ⚖️ License and Usage
 

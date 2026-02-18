@@ -9,6 +9,7 @@ import { useSettings } from "@/helpers/use-settings";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ExtensionSettings } from "@/components/pages/settings/extensionSettings";
 import { ApplicationSettings } from "@/components/pages/settings/applicationSettings";
+import usePotServer from "@/helpers/use-pot-server";
 
 export default function SettingsPage() {
     const { setTheme } = useTheme();
@@ -17,10 +18,12 @@ export default function SettingsPage() {
     const setActiveTab = useSettingsPageStatesStore(state => state.setActiveTab);
 
     const isUsingDefaultSettings = useSettingsPageStatesStore(state => state.isUsingDefaultSettings);
+    const isRunningPotServer = useSettingsPageStatesStore(state => state.isRunningPotServer);
     const appTheme = useSettingsPageStatesStore(state => state.settings.theme);
     const appColorScheme = useSettingsPageStatesStore(state => state.settings.color_scheme);
 
     const { resetSettings } = useSettings();
+    const { stopPotServer } = usePotServer();
 
     useEffect(() => {
         const updateTheme = async () => {
@@ -60,8 +63,11 @@ export default function SettingsPage() {
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction onClick={
-                                    () => {
-                                        resetSettings()
+                                    async () => {
+                                        resetSettings();
+                                        if (isRunningPotServer) {
+                                            await stopPotServer();
+                                        }
                                     }
                                 }>Reset</AlertDialogAction>
                             </AlertDialogFooter>

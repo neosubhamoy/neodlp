@@ -39,13 +39,15 @@
             "binaries/yt-dlp",
             "binaries/ffmpeg",
             "binaries/ffprobe",
-            "binaries/deno"
+            "binaries/deno",
+            "binaries/neodlp-pot"
         ],
         "resources": {
             "target/x86_64-apple-darwin/release/neodlp-msghost": "neodlp-msghost",
             "resources/msghost-manifest/macos/chrome.json": "neodlp-msghost.json",
             "resources/msghost-manifest/macos/firefox.json": "neodlp-msghost-moz.json",
-            "resources/autostart/macos/autostart.plist": "neodlp-autostart.plist"
+            "resources/autostart/macos/autostart.plist": "neodlp-autostart.plist",
+            "resources/plugins/yt-dlp-plugins/": "yt-dlp-plugins/"
         },
         "macOS": {
             "providerShortName": "neosubhamoy"

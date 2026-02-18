@@ -1,7 +1,7 @@
 [package]
 name = "neodlp"
 version = "0.4.0"
-description = "Cross-platform Video/Audio Downloader Desktop App with Modern UI and Browser Integration"
+description = "Cross-platform Video/Audio Downloader Desktop App based on YT-DLP with Modern UI and Browser Integration"
 authors = ["neosubhamoy <hey@neosubhamoy.com>"]
 edition = "2021"
 license = "MIT"

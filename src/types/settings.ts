@@ -61,6 +61,9 @@ export interface Settings {
     max_sleep_interval: number;
     request_sleep_interval: number;
     delay_playlist_only: boolean;
+    use_potoken: boolean;
+    disable_innertube: boolean;
+    pot_server_port: number;
     // extension settings
     websocket_port: number;
 }
