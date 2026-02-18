@@ -1,24 +1,16 @@
 ### ✨ Changelog
 
-- Added support for selective-batch/full-playlist download
-- Added support for selecting multiple audio streams on combine mode
-- Added support for embedding original auto-generated subtitles
-- Added option to crop thubnails to square (1:1) before embedding
-- Added 'errored' download state (to better identify errored downloads, which you can retry later)
-- Added app interface color scheme options on appearance settings
-- Added app info page under settings
-- Added copy/clear log buttons in log viewer
-- Added sponsorblock 'hook' category
-- Fixed sidebar state not persisting on app re-start
-- Fixed linux native (deb/rpm) installation downloading appimage update
-- Bumped up shadcn/ui to v3.5 and lots of under the hood ui improvements
-- Optimized database and backend performance
-- Lots of other fixes and improvements
+- Added delay/sleep configuration settings (delay is now also configurable on search)
+- Added support for YouTube PO Token generation (based on [bgutil-ytdlp-pot-provider-rs](https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs))
+- Implemented custom app titlebar on windows and linux
+- Further improved and persisted app logs (stored in [platform specific log directory](https://v2.tauri.app/plugin/logging/#persisting-logs))
+- Fixed webview window creation is failing on wayland with nvidia gpu
+- Other minor fixes and improvements
 
 ### 📝 Notes
 
 > [!CAUTION]
-> This update introduces few breaking changes! Users are adviced to complete/cancel all paused downloads before updating to this version, otherwise paused downloads may not resume properly or re-start from the begining.
+> Users are always adviced to complete/cancel all paused downloads before updating to a newer version, otherwise paused downloads may not resume properly and re-start from the begining.
 
 > [!WARNING]
 > Linux users make sure `yt-dlp` and `deno` is not installed in your distro (otherwise you will get package installation conflict). Don't worry, You can still use yt-dlp cli as before (the only difference is that now it will be installed and auto-updated by neo-dlp, which You can also disable from neo-dlp Settings if you don't want to auto-update yt-dlp)
@@ -29,9 +21,9 @@
 
 ### 📦 Shipped Binaries
 
-| yt-dlp (updateable) | ffmpeg | ffprobe | aria2c | deno |
-| :---- | :---- | :---- | :---- | :---- |
-| v2026.01.19.233146 (nightly) | v7.1.1 | v7.1.1 | v1.37.0 | v2.6.5 |
+| yt-dlp (updateable) | ffmpeg | ffprobe | aria2c | deno | bgutil-pot-rs |
+| :---- | :---- | :---- | :---- | :---- | :---- |
+| v2026.02.17.233631 (nightly) | v7.1.1 | v7.1.1 | v1.37.0 | v2.6.10 | v0.7.1-1.2.2 |
 
 > ‼️ Linux builds (deb, rpm) does not ships with `ffmpeg` and `ffprobe` (though it will be auto installed as a dependency by your package manager, if you are on fedora make sure to [enable rpmfusion free+nonfree repos](https://docs.fedoraproject.org/en-US/quick-docs/rpmfusion-setup/#_enabling_the_rpm_fusion_repositories_using_command_line_utilities) before installing the rpm package)
 
