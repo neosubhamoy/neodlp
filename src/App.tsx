@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { useLogger } from "@/helpers/use-logger";
 import useDownloader from "@/helpers/use-downloader";
 import usePotServer from "@/helpers/use-pot-server";
+import { useLinuxRegisterer } from "@/helpers/use-linux-registerer";
 
 export default function App({ children }: { children: React.ReactNode }) {
     const { data: downloadStates, isSuccess: isSuccessFetchingDownloadStates } = useFetchAllDownloadStates();
@@ -66,6 +67,7 @@ export default function App({ children }: { children: React.ReactNode }) {
     const currentPlatform = platform();
     const { updateYtDlp } = useYtDlpUpdater();
     const { registerToMac } = useMacOsRegisterer();
+    const { registerToLinux } = useLinuxRegisterer();
     const { checkForAppUpdate } = useAppUpdater();
     const { startPotServer, stopPotServer } = usePotServer();
     const setKvPairsKey = useKvPairsStatesStore((state) => state.setKvPairsKey);
@@ -373,7 +375,7 @@ export default function App({ children }: { children: React.ReactNode }) {
         if (currentPlatform === 'linux' && (!linuxRegisteredVersion || linuxRegisteredVersion !== appVersion)) {
             console.log("Running Linux auto registration...");
             LOG.info('NEODLP', 'Running Linux registration');
-            registerToMac().then((result: { success: boolean, message: string }) => {
+            registerToLinux().then((result: { success: boolean, message: string }) => {
                 if (result.success) {
                     console.log("Linux registration successful:", result.message);
                     LOG.info('NEODLP', 'Linux registration successful');
