@@ -146,10 +146,54 @@ const binaries = {
                 path.join(downloadDir, 'ffmpeg-master-latest-linuxarm64-gpl')
             ]
         },
+        // {
+        //     name: 'ffmpeg-universal-apple-darwin',
+        //     platform: 'darwin',
+        //     url: `https://evermeet.cx/ffmpeg/get/zip`,
+        //     src: path.join(downloadDir, 'ffmpeg-universal-apple-darwin.zip'),
+        //     dest: null,
+        //     archive: {
+        //         type: 'zip',
+        //         binSrc: [
+        //             path.join(downloadDir, 'ffmpeg'),
+        //             path.join(downloadDir, 'ffmpeg')
+        //         ],
+        //         binDest: [
+        //             path.join(binDir, 'ffmpeg-x86_64-apple-darwin'),
+        //             path.join(binDir, 'ffmpeg-aarch64-apple-darwin')
+        //         ]
+        //     },
+        //     cleanup: [
+        //         path.join(downloadDir, 'ffmpeg-universal-apple-darwin.zip'),
+        //         path.join(downloadDir, 'ffmpeg')
+        //     ]
+        // },
+        // {
+        //     name: 'ffprobe-universal-apple-darwin',
+        //     platform: 'darwin',
+        //     url: `https://evermeet.cx/ffmpeg/get/ffprobe/zip`,
+        //     src: path.join(downloadDir, 'ffprobe-universal-apple-darwin.zip'),
+        //     dest: null,
+        //     archive: {
+        //         type: 'zip',
+        //         binSrc: [
+        //             path.join(downloadDir, 'ffprobe'),
+        //             path.join(downloadDir, 'ffprobe')
+        //         ],
+        //         binDest: [
+        //             path.join(binDir, 'ffprobe-x86_64-apple-darwin'),
+        //             path.join(binDir, 'ffprobe-aarch64-apple-darwin')
+        //         ]
+        //     },
+        //     cleanup: [
+        //         path.join(downloadDir, 'ffprobe-universal-apple-darwin.zip'),
+        //         path.join(downloadDir, 'ffprobe')
+        //     ]
+        // },
         {
             name: 'ffmpeg-universal-apple-darwin',
             platform: 'darwin',
-            url: `https://evermeet.cx/ffmpeg/get/zip`,
+            url: `https://github.com/neosubhamoy/evermeet-static-ffmpeg/releases${versions['ffmpeg-ffprobe'] === 'latest' ? '/latest' : ''}/download${versions['ffmpeg-ffprobe'] !== 'latest' ? '/'+versions['ffmpeg-ffprobe'] : ''}/ffmpeg-universal-apple-darwin.zip`,
             src: path.join(downloadDir, 'ffmpeg-universal-apple-darwin.zip'),
             dest: null,
             archive: {
@@ -171,7 +215,7 @@ const binaries = {
         {
             name: 'ffprobe-universal-apple-darwin',
             platform: 'darwin',
-            url: `https://evermeet.cx/ffmpeg/get/ffprobe/zip`,
+            url: `https://github.com/neosubhamoy/evermeet-static-ffmpeg/releases${versions['ffmpeg-ffprobe'] === 'latest' ? '/latest' : ''}/download${versions['ffmpeg-ffprobe'] !== 'latest' ? '/'+versions['ffmpeg-ffprobe'] : ''}/ffprobe-universal-apple-darwin.zip`,
             src: path.join(downloadDir, 'ffprobe-universal-apple-darwin.zip'),
             dest: null,
             archive: {
