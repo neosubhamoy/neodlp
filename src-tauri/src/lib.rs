@@ -185,6 +185,16 @@ fn get_current_app_path() -> Result<String, String> {
 }
 
 #[tauri::command]
+fn is_flatpak() -> bool {
+    std::env::var("FLATPAK").is_ok()
+}
+
+#[tauri::command]
+fn get_appimage_path() -> Option<String> {
+    std::env::var("APPDIR").ok()
+}
+
+#[tauri::command]
 async fn update_config(
     new_config: Config,
     state: tauri::State<'_, Arc<Mutex<WebSocketState>>>,
@@ -604,6 +614,8 @@ pub async fn run() {
             get_config_file_path,
             restart_websocket_server,
             get_current_app_path,
+            is_flatpak,
+            get_appimage_path
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

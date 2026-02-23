@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<component type="desktop-application">
+  <id>com.neosubhamoy.neodlp</id>
+  <name>NeoDLP</name>
+  <summary>Modern video/audio downloader based on yt-dlp with browser integration</summary>
+  <developer_name>Subhamoy Biswas</developer_name>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <url type="homepage">https://neodlp.neosubhamoy.com</url>
+  <url type="bugtracker">https://github.com/neosubhamoy/neodlp/issues</url>
+  <description>
+    <p>
+      NeoDLP is a cross-platform desktop application designed for downloading videos and audio from various online sources based on yt-dlp.
+
+      It offers modern user interface, lots of customization options and seamless browser integration.
+    </p>
+  </description>
+  <launchable type="desktop-id">com.neosubhamoy.neodlp.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/neosubhamoy/neodlp/main/.github/images/downloader.png</image>
+      <caption>NeoDLP Downloader</caption>
+    </screenshot>
+  </screenshots>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="0.4.1" date="2026-02-18">
+      <url type="details">https://github.com/neosubhamoy/neodlp/releases/tag/v0.4.1</url>
+    </release>
+  </releases>
+</component>

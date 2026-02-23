@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+
+Name=NeoDLP
+Comment=Modern video/audio downloader based on yt-dlp with browser integration.
+Icon=com.neosubhamoy.neodlp
+Exec=neodlp
+Terminal=false
+Categories=Utility;
+Keywords=neodlp;downloader;yt-dlp-gui;

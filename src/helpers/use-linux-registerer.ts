@@ -2,6 +2,7 @@ import { join, resourceDir, homeDir } from "@tauri-apps/api/path";
 import * as fs from "@tauri-apps/plugin-fs";
 import { useKvPairs } from "@/helpers/use-kvpairs";
 import { useSettingsPageStatesStore } from "@/services/store";
+import { invoke } from "@tauri-apps/api/core";
 
 interface FileMap {
     source: string;
@@ -21,7 +22,8 @@ export function useLinuxRegisterer() {
                 { source: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_http.py', destination: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_http.py', dir: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/' },
             ];
 
-            const resourceDirPath = await resourceDir();
+            const isFlatpak = await invoke<boolean>('is_flatpak');
+            const resourceDirPath = isFlatpak ? '/app/lib/neodlp' : await resourceDir();
             const homeDirPath = await homeDir();
 
             for (const file of filesToCopy) {
