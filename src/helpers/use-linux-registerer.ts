@@ -1,4 +1,4 @@
-import { join, resourceDir, homeDir } from "@tauri-apps/api/path";
+import { join, resourceDir, homeDir, configDir } from "@tauri-apps/api/path";
 import * as fs from "@tauri-apps/plugin-fs";
 import { useKvPairs } from "@/helpers/use-kvpairs";
 import { useSettingsPageStatesStore } from "@/services/store";
@@ -25,11 +25,12 @@ export function useLinuxRegisterer() {
             const isFlatpak = await invoke<boolean>('is_flatpak');
             const resourceDirPath = isFlatpak ? '/app/lib/neodlp' : await resourceDir();
             const homeDirPath = await homeDir();
+            const configDirPath = await configDir();
 
             for (const file of filesToCopy) {
                 const sourcePath = await join(resourceDirPath, file.source);
-                const destinationDir = await join(homeDirPath, file.dir);
-                const destinationPath = await join(homeDirPath, file.destination);
+                const destinationDir = isFlatpak ? await join(configDirPath, file.dir) : await join(homeDirPath, file.dir);
+                const destinationPath = isFlatpak ? await join(configDirPath, file.destination) : await join(homeDirPath, file.destination);
 
                 const dirExists = await fs.exists(destinationDir);
                 if (dirExists) {
