@@ -3,6 +3,7 @@ import * as fs from "@tauri-apps/plugin-fs";
 import { useKvPairs } from "@/helpers/use-kvpairs";
 import { useSettingsPageStatesStore } from "@/services/store";
 import { invoke } from "@tauri-apps/api/core";
+import { useLogger } from "@/helpers/use-logger";
 
 interface FileMap {
     source: string;
@@ -12,6 +13,7 @@ interface FileMap {
 
 export function useLinuxRegisterer() {
     const { saveKvPair } = useKvPairs();
+    const LOG = useLogger();
     const appVersion = useSettingsPageStatesStore(state => state.appVersion);
 
     const registerToLinux = async () => {
@@ -26,6 +28,8 @@ export function useLinuxRegisterer() {
             const resourceDirPath = isFlatpak ? '/app/lib/neodlp' : await resourceDir();
             const homeDirPath = await homeDir();
             const configDirPath = await configDir();
+
+            LOG.info("LINUX REGISTERER", `Starting registration process. isFlatpak: ${isFlatpak}, resourceDirPath: ${resourceDirPath}, homeDirPath: ${homeDirPath}, configDirPath: ${configDirPath}`);
 
             for (const file of filesToCopy) {
                 const sourcePath = await join(resourceDirPath, file.source);
@@ -47,6 +51,7 @@ export function useLinuxRegisterer() {
             return { success: true, message: 'Registered successfully' }
         } catch (error) {
             console.error('Error copying files:', error);
+            LOG.error("LINUX REGISTERER", `Error during registration: ${error}`);
             return { success: false, message: 'Failed to register' }
         }
     }
