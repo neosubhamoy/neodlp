@@ -24,8 +24,8 @@
   </screenshots>
   <content_rating type="oars-1.1" />
   <releases>
-    <release version="0.4.1" date="2026-02-18">
-      <url type="details">https://github.com/neosubhamoy/neodlp/releases/tag/v0.4.1</url>
+    <release version="0.4.2" date="2026-02-23">
+      <url type="details">https://github.com/neosubhamoy/neodlp/releases/tag/v0.4.2</url>
     </release>
   </releases>
 </component>
