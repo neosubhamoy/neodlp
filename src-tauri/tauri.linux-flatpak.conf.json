@@ -1,0 +1,51 @@
+{
+    "identifier": "com.neosubhamoy.neodlp",
+    "build": {
+        "beforeDevCommand": "npm run dev",
+        "beforeBuildCommand": "npm run build",
+        "devUrl": "http://localhost:1420",
+        "frontendDist": "../dist"
+    },
+    "app": {
+        "windows": [
+            {
+                "title": "NeoDLP",
+                "width": 1080,
+                "height": 680,
+                "decorations": false,
+                "visible": false
+            }
+        ],
+        "security": {
+            "csp": null,
+            "capabilities": [
+                "default",
+                "shell-scope"
+            ]
+        }
+    },
+    "bundle": {
+        "active": true,
+        "targets": ["deb"],
+        "createUpdaterArtifacts": true,
+        "licenseFile": "../LICENSE",
+        "icon": [
+            "icons/32x32.png",
+            "icons/128x128.png",
+            "icons/128x128@2x.png",
+            "icons/icon.icns",
+            "icons/icon.ico"
+        ],
+        "externalBin": [
+            "binaries/yt-dlp",
+            "binaries/ffmpeg",
+            "binaries/ffprobe",
+            "binaries/aria2c",
+            "binaries/deno",
+            "binaries/neodlp-pot"
+        ],
+        "resources": {
+            "resources/plugins/yt-dlp-plugins/": "yt-dlp-plugins/"
+        }
+    }
+}
