@@ -17,10 +17,11 @@ export function useYtDlpUpdater() {
 
     const updateYtDlp = async () => {
         const CURRENT_TIMESTAMP = Date.now();
+        const isFlatpak = await invoke<boolean>('is_flatpak');
         setIsUpdatingYtDlp(true);
         LOG.info('NEODLP', 'Updating yt-dlp to latest version');
         try {
-            const command = currentPlatform === 'linux' ? Command.create('pkexec', ['yt-dlp', '--update-to', ytDlpUpdateChannel]) : Command.sidecar('binaries/yt-dlp', ['--update-to', ytDlpUpdateChannel]);
+            const command = currentPlatform === 'linux' && !isFlatpak ? Command.create('pkexec', ['yt-dlp', '--update-to', ytDlpUpdateChannel]) : Command.sidecar('binaries/yt-dlp', ['--update-to', ytDlpUpdateChannel]);
             const output = await command.execute();
             if (output.code === 0) {
                 console.log("yt-dlp updated successfully:", output.stdout);
