@@ -4,6 +4,7 @@ import { useKvPairs } from "@/helpers/use-kvpairs";
 import { useSettingsPageStatesStore } from "@/services/store";
 import { invoke } from "@tauri-apps/api/core";
 import { useLogger } from "@/helpers/use-logger";
+import { Command } from "@tauri-apps/plugin-shell";
 
 interface FileMap {
     source: string;
@@ -54,12 +55,11 @@ export function useLinuxRegisterer() {
             if (isFlatpak) {
                 for (const file of filesToCopyFlatpak) {
                     const sourcePath = await join(resourceDirPath, file.source);
-                    const destinationDir = await join(homeDirPath, file.dir);
                     const destinationPath = await join(homeDirPath, file.destination);
+                    const command = Command.create('cp', [sourcePath, destinationPath]);
 
-                    const dirExists = await fs.exists(destinationDir);
-                    if (dirExists) {
-                        await fs.copyFile(sourcePath, destinationPath);
+                    const output = await command.execute();
+                    if (output.code === 0) {
                         console.log(`File ${file.source} copied successfully to ${destinationPath}`);
                         LOG.info("LINUX REGISTERER", `File ${file.source} copied successfully to ${destinationPath}`);
                         if (file.content) {
@@ -68,17 +68,8 @@ export function useLinuxRegisterer() {
                             LOG.info("LINUX REGISTERER", `Content for ${file.source} written successfully to ${destinationPath}`);
                         }
                     } else {
-                        await fs.mkdir(destinationDir, { recursive: true })
-                        console.log(`Created dir ${destinationDir}`);
-                        LOG.info("LINUX REGISTERER", `Created dir ${destinationDir}`);
-                        await fs.copyFile(sourcePath, destinationPath);
-                        console.log(`File ${file.source} copied successfully to ${destinationPath}`);
-                        LOG.info("LINUX REGISTERER", `File ${file.source} copied successfully to ${destinationPath}`);
-                        if (file.content) {
-                            await fs.writeTextFile(destinationPath, file.content);
-                            console.log(`Content for ${file.source} written successfully to ${destinationPath}`);
-                            LOG.info("LINUX REGISTERER", `Content for ${file.source} written successfully to ${destinationPath}`);
-                        }
+                        console.error(`Failed to copy file ${file.source} to ${destinationPath}:`, output.stderr);
+                        LOG.error("LINUX REGISTERER", `Failed to copy file ${file.source} to ${destinationPath}: ${output.stderr}`);
                     }
                 }
             } else {

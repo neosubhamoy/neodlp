@@ -64,6 +64,11 @@
           "name": "powershell",
           "cmd": "powershell",
           "args": true
+        },
+        {
+            "name": "cp",
+            "cmd": "cp",
+            "args": true
         }
       ]
     },
