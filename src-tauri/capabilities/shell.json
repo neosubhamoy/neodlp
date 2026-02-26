@@ -71,8 +71,8 @@
             "args": true
         },
         {
-            "name": "echo",
-            "cmd": "echo",
+            "name": "cat",
+            "cmd": "cat",
             "args": true
         }
       ]
