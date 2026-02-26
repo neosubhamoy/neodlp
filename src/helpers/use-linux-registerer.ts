@@ -9,6 +9,7 @@ interface FileMap {
     source: string;
     destination: string;
     dir: string;
+    content?: string;
 }
 
 export function useLinuxRegisterer() {
@@ -18,18 +19,6 @@ export function useLinuxRegisterer() {
 
     const registerToLinux = async () => {
         try {
-            const filesToCopy: FileMap[] = [
-                { source: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil.py', destination: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil.py', dir: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/' },
-                { source: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_cli.py', destination: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_cli.py', dir: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/' },
-                { source: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_http.py', destination: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_http.py', dir: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/' },
-            ];
-
-            const filesToCopyFlatpak: FileMap[] = [
-                { source: 'chrome.json', destination: '.config/google-chrome/NativeMessagingHosts/com.neosubhamoy.neodlp.json', dir: '.config/google-chrome/NativeMessagingHosts/' },
-                { source: 'chrome.json', destination: '.config/chromium/NativeMessagingHosts/com.neosubhamoy.neodlp.json', dir: '.config/chromium/NativeMessagingHosts/' },
-                { source: 'firefox.json', destination: '.mozilla/native-messaging-hosts/com.neosubhamoy.neodlp.json', dir: '.mozilla/native-messaging-hosts/' },
-            ];
-
             const isFlatpak = await invoke<boolean>('is_flatpak');
             const resourceDirPath = isFlatpak ? '/app/lib/neodlp' : await resourceDir();
             const homeDirPath = await homeDir();
@@ -48,12 +37,21 @@ export function useLinuxRegisterer() {
                 allowed_extension: ["neodlp@neosubhamoy.com"]
             };
 
+            const filesToCopy: FileMap[] = [
+                { source: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil.py', destination: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil.py', dir: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/' },
+                { source: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_cli.py', destination: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_cli.py', dir: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/' },
+                { source: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_http.py', destination: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_http.py', dir: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/' },
+            ];
+
+            const filesToCopyFlatpak: FileMap[] = [
+                { source: 'chrome.json', destination: '.config/google-chrome/NativeMessagingHosts/com.neosubhamoy.neodlp.json', dir: '.config/google-chrome/NativeMessagingHosts/', content: JSON.stringify(flatpakChromeManifestContent, null, 2) },
+                { source: 'chrome.json', destination: '.config/chromium/NativeMessagingHosts/com.neosubhamoy.neodlp.json', dir: '.config/chromium/NativeMessagingHosts/', content: JSON.stringify(flatpakChromeManifestContent, null, 2) },
+                { source: 'firefox.json', destination: '.mozilla/native-messaging-hosts/com.neosubhamoy.neodlp.json', dir: '.mozilla/native-messaging-hosts/', content: JSON.stringify(flatpakFirefoxManifestContent, null, 2) },
+            ];
+
             LOG.info("LINUX REGISTERER", `Is Flatpak: ${isFlatpak}, Resource dir: ${resourceDirPath}, Home dir: ${homeDirPath}`);
 
             if (isFlatpak) {
-                await fs.writeTextFile('/app/lib/neodlp/chrome.json', JSON.stringify(flatpakChromeManifestContent, null, 2));
-                await fs.writeTextFile('/app/lib/neodlp/firefox.json', JSON.stringify(flatpakFirefoxManifestContent, null, 2));
-
                 for (const file of filesToCopyFlatpak) {
                     const sourcePath = await join(resourceDirPath, file.source);
                     const destinationDir = await join(homeDirPath, file.dir);
@@ -64,6 +62,11 @@ export function useLinuxRegisterer() {
                         await fs.copyFile(sourcePath, destinationPath);
                         console.log(`File ${file.source} copied successfully to ${destinationPath}`);
                         LOG.info("LINUX REGISTERER", `File ${file.source} copied successfully to ${destinationPath}`);
+                        if (file.content) {
+                            await fs.writeTextFile(destinationPath, file.content);
+                            console.log(`Content for ${file.source} written successfully to ${destinationPath}`);
+                            LOG.info("LINUX REGISTERER", `Content for ${file.source} written successfully to ${destinationPath}`);
+                        }
                     } else {
                         await fs.mkdir(destinationDir, { recursive: true })
                         console.log(`Created dir ${destinationDir}`);
@@ -71,6 +74,11 @@ export function useLinuxRegisterer() {
                         await fs.copyFile(sourcePath, destinationPath);
                         console.log(`File ${file.source} copied successfully to ${destinationPath}`);
                         LOG.info("LINUX REGISTERER", `File ${file.source} copied successfully to ${destinationPath}`);
+                        if (file.content) {
+                            await fs.writeTextFile(destinationPath, file.content);
+                            console.log(`Content for ${file.source} written successfully to ${destinationPath}`);
+                            LOG.info("LINUX REGISTERER", `Content for ${file.source} written successfully to ${destinationPath}`);
+                        }
                     }
                 }
             } else {
