@@ -69,6 +69,11 @@
             "name": "cp",
             "cmd": "cp",
             "args": true
+        },
+        {
+            "name": "echo",
+            "cmd": "echo",
+            "args": true
         }
       ]
     },
