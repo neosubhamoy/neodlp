@@ -63,7 +63,8 @@ export function useLinuxRegisterer() {
                         console.log(`File ${file.source} copied successfully to ${destinationPath}`);
                         LOG.info("LINUX REGISTERER", `File ${file.source} copied successfully to ${destinationPath}`);
                         if (file.content) {
-                            const writeCommand = Command.create('cat', ['>', destinationPath, '<<', 'EOF', file.content, 'EOF']);
+                            LOG.info("LINUX REGISTERER", `Writing content to ${destinationPath}: ${file.content}`);
+                            const writeCommand = Command.create('echo', [file.content, '>', destinationPath]);
                             const writeOutput = await writeCommand.execute();
                             if (writeOutput.code === 0) {
                                 console.log(`Content written successfully to ${destinationPath}`);
