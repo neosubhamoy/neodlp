@@ -39,22 +39,22 @@ export function useLinuxRegisterer() {
             if (isFlatpak) {
                 for (const file of filesToCopyFlatpak) {
                     const sourcePath = await join(resourceDirPath, file.source);
-                    const destinationDir = await join(homeDirPath, file.dir);
+                    // const destinationDir = await join(homeDirPath, file.dir);
                     const destinationPath = await join(homeDirPath, file.destination);
 
-                    const dirExists = await fs.exists(destinationDir);
-                    if (dirExists) {
+                    // const dirExists = await fs.exists(destinationDir);
+                    // if (dirExists) {
                         await fs.copyFile(sourcePath, destinationPath);
                         console.log(`File ${file.source} copied successfully to ${destinationPath}`);
                         LOG.info("LINUX REGISTERER", `File ${file.source} copied successfully to ${destinationPath}`);
-                    } else {
-                        await fs.mkdir(destinationDir, { recursive: true })
-                        console.log(`Created dir ${destinationDir}`);
-                        LOG.info("LINUX REGISTERER", `Created dir ${destinationDir}`);
-                        await fs.copyFile(sourcePath, destinationPath);
-                        console.log(`File ${file.source} copied successfully to ${destinationPath}`);
-                        LOG.info("LINUX REGISTERER", `File ${file.source} copied successfully to ${destinationPath}`);
-                    }
+                    // } else {
+                    //     await fs.mkdir(destinationDir, { recursive: true })
+                    //     console.log(`Created dir ${destinationDir}`);
+                    //     LOG.info("LINUX REGISTERER", `Created dir ${destinationDir}`);
+                    //     await fs.copyFile(sourcePath, destinationPath);
+                    //     console.log(`File ${file.source} copied successfully to ${destinationPath}`);
+                    //     LOG.info("LINUX REGISTERER", `File ${file.source} copied successfully to ${destinationPath}`);
+                    // }
                 }
             } else {
                 for (const file of filesToCopy) {
