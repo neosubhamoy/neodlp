@@ -58,7 +58,7 @@ export function useLinuxRegisterer() {
                     const sourcePath = await join(resourceDirPath, file.source);
                     const destinationPath = await join(homeDirPath, file.destination);
                     const escapedContent = file.content?.replace(/'/g, `'\\''`) || '';
-                    const copyCommand = Command.create('sh', ['-c', 'cp', sourcePath, destinationPath]);
+                    const copyCommand = Command.create('sh', ['-c', `cp "${sourcePath}" "${destinationPath}"`]);
                     const writeCommand = Command.create('sh', ['-c', `printf '%s' '${escapedContent}' > "${destinationPath}"`]);
 
                     if (file.content) {
