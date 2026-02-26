@@ -48,6 +48,7 @@ export function useLinuxRegisterer() {
                 { source: 'chrome.json', destination: '.config/google-chrome/NativeMessagingHosts/com.neosubhamoy.neodlp.json', dir: '.config/google-chrome/NativeMessagingHosts/', content: JSON.stringify(flatpakChromeManifestContent) },
                 { source: 'chrome.json', destination: '.config/chromium/NativeMessagingHosts/com.neosubhamoy.neodlp.json', dir: '.config/chromium/NativeMessagingHosts/', content: JSON.stringify(flatpakChromeManifestContent) },
                 { source: 'firefox.json', destination: '.mozilla/native-messaging-hosts/com.neosubhamoy.neodlp.json', dir: '.mozilla/native-messaging-hosts/', content: JSON.stringify(flatpakFirefoxManifestContent) },
+                { source: 'neodlp-msghost', destination: '.local/bin/neodlp-msghost', dir: '.local/bin/' },
             ];
 
             LOG.info("LINUX REGISTERER", `Is Flatpak: ${isFlatpak}, Resource dir: ${resourceDirPath}, Home dir: ${homeDirPath}`);
