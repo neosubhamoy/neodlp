@@ -4,7 +4,6 @@ import { useKvPairs } from "@/helpers/use-kvpairs";
 import { useSettingsPageStatesStore } from "@/services/store";
 import { invoke } from "@tauri-apps/api/core";
 import { useLogger } from "@/helpers/use-logger";
-import { Command } from "@tauri-apps/plugin-shell";
 
 interface FileMap {
     source: string;
@@ -34,38 +33,45 @@ export function useLinuxRegisterer() {
             const isFlatpak = await invoke<boolean>('is_flatpak');
             const resourceDirPath = isFlatpak ? '/app/lib/neodlp' : await resourceDir();
             const homeDirPath = await homeDir();
+            const flatpakChromeManifestContent = {
+                name: "com.neosubhamoy.neodlp",
+                description: "NeoDLP MsgHost",
+                path: `${homeDirPath}/.local/bin/neodlp-msghost`,
+                type: "stdio",
+                allowed_origins: ["chrome-extension://mehopeailfjmiloiiohgicphlcgpompf/"]
+            };
+            const flatpakFirefoxManifestContent = {
+                name: "com.neosubhamoy.neodlp",
+                description: "NeoDLP MsgHost",
+                path: `${homeDirPath}/.local/bin/neodlp-msghost`,
+                type: "stdio",
+                allowed_extension: ["neodlp@neosubhamoy.com"]
+            };
 
             LOG.info("LINUX REGISTERER", `Is Flatpak: ${isFlatpak}, Resource dir: ${resourceDirPath}, Home dir: ${homeDirPath}`);
 
             if (isFlatpak) {
+                await fs.writeTextFile('/app/lib/neodlp/chrome.json', JSON.stringify(flatpakChromeManifestContent, null, 2));
+                await fs.writeTextFile('/app/lib/neodlp/firefox.json', JSON.stringify(flatpakFirefoxManifestContent, null, 2));
+
                 for (const file of filesToCopyFlatpak) {
                     const sourcePath = await join(resourceDirPath, file.source);
-                    // const destinationDir = await join(homeDirPath, file.dir);
+                    const destinationDir = await join(homeDirPath, file.dir);
                     const destinationPath = await join(homeDirPath, file.destination);
-                    const command = Command.create('cp', [sourcePath, destinationPath]);
 
-                    const output = await command.execute();
-                    if (output.code === 0) {
+                    const dirExists = await fs.exists(destinationDir);
+                    if (dirExists) {
+                        await fs.copyFile(sourcePath, destinationPath);
                         console.log(`File ${file.source} copied successfully to ${destinationPath}`);
                         LOG.info("LINUX REGISTERER", `File ${file.source} copied successfully to ${destinationPath}`);
                     } else {
-                        console.error(`Failed to copy file ${file.source} to ${destinationPath}:`, output.stderr);
-                        LOG.error("LINUX REGISTERER", `Failed to copy file ${file.source} to ${destinationPath}: ${output.stderr}`);
+                        await fs.mkdir(destinationDir, { recursive: true })
+                        console.log(`Created dir ${destinationDir}`);
+                        LOG.info("LINUX REGISTERER", `Created dir ${destinationDir}`);
+                        await fs.copyFile(sourcePath, destinationPath);
+                        console.log(`File ${file.source} copied successfully to ${destinationPath}`);
+                        LOG.info("LINUX REGISTERER", `File ${file.source} copied successfully to ${destinationPath}`);
                     }
-
-                    // const dirExists = await fs.exists(destinationDir);
-                    // if (dirExists) {
-                        // await fs.copyFile(sourcePath, destinationPath);
-                        // console.log(`File ${file.source} copied successfully to ${destinationPath}`);
-                        // LOG.info("LINUX REGISTERER", `File ${file.source} copied successfully to ${destinationPath}`);
-                    // } else {
-                    //     await fs.mkdir(destinationDir, { recursive: true })
-                    //     console.log(`Created dir ${destinationDir}`);
-                    //     LOG.info("LINUX REGISTERER", `Created dir ${destinationDir}`);
-                    //     await fs.copyFile(sourcePath, destinationPath);
-                    //     console.log(`File ${file.source} copied successfully to ${destinationPath}`);
-                    //     LOG.info("LINUX REGISTERER", `File ${file.source} copied successfully to ${destinationPath}`);
-                    // }
                 }
             } else {
                 for (const file of filesToCopy) {

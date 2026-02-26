@@ -64,11 +64,6 @@
           "name": "powershell",
           "cmd": "powershell",
           "args": true
-        },
-        {
-            "name": "cp",
-            "cmd": "cp",
-            "args": true
         }
       ]
     },
@@ -119,11 +114,6 @@
           "name": "deno",
           "cmd": "deno",
           "args": true
-        },
-        {
-            "name": "cp",
-            "cmd": "cp",
-            "args": true
         }
       ]
     }
