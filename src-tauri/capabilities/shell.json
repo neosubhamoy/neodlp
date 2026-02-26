@@ -66,13 +66,8 @@
           "args": true
         },
         {
-            "name": "cp",
-            "cmd": "cp",
-            "args": true
-        },
-        {
-            "name": "echo",
-            "cmd": "echo",
+            "name": "sh",
+            "cmd": "sh",
             "args": true
         }
       ]

@@ -35,7 +35,7 @@ export function useLinuxRegisterer() {
                 description: "NeoDLP MsgHost",
                 path: `${homeDirPath}/.local/bin/neodlp-msghost`,
                 type: "stdio",
-                allowed_extension: ["neodlp@neosubhamoy.com"]
+                allowed_extensions: ["neodlp@neosubhamoy.com"]
             };
 
             const filesToCopy: FileMap[] = [
@@ -56,8 +56,9 @@ export function useLinuxRegisterer() {
                 for (const file of filesToCopyFlatpak) {
                     const sourcePath = await join(resourceDirPath, file.source);
                     const destinationPath = await join(homeDirPath, file.destination);
-                    const copyCommand = Command.create('cp', [sourcePath, destinationPath]);
-                    const writeCommand = Command.create('echo', [file.content || '', '>', destinationPath]);
+                    const escapedContent = file.content?.replace(/'/g, `'\\''`) || '';
+                    const copyCommand = Command.create('sh', ['-c', 'cp', sourcePath, destinationPath]);
+                    const writeCommand = Command.create('sh', ['-c', `printf '%s' '${escapedContent}' > "${destinationPath}"`]);
 
                     if (file.content) {
                         const writeOutput = await writeCommand.execute();
