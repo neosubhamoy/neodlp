@@ -1,8 +1,9 @@
 import { join, resourceDir, homeDir } from "@tauri-apps/api/path";
 import * as fs from "@tauri-apps/plugin-fs";
 import { useKvPairs } from "@/helpers/use-kvpairs";
-import { useEnvironmentStore, useSettingsPageStatesStore } from "@/services/store";
+import { useSettingsPageStatesStore } from "@/services/store";
 import { Command } from "@tauri-apps/plugin-shell";
+import { invoke } from "@tauri-apps/api/core";
 
 interface FileMap {
     source: string;
@@ -17,7 +18,7 @@ export function useLinuxRegisterer() {
 
     const registerToLinux = async () => {
         try {
-            const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
+            const isFlatpak = await invoke<boolean>('is_flatpak');
             const resourceDirPath = isFlatpak ? '/app/lib/neodlp' : await resourceDir();
             const homeDirPath = await homeDir();
             const flatpakChromeManifestContent = {

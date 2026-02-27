@@ -152,12 +152,3 @@ export interface LogsStore {
     addLog: (log: Log) => void;
     clearLogs: () => void;
 }
-
-export interface EnvironmentStore {
-    isFlatpak: boolean;
-    isAppimage: boolean;
-    appDirPath: string | null;
-    setIsFlatpak: (isFlatpak: boolean) => void;
-    setIsAppimage: (isAppimage: boolean) => void;
-    setAppDirPath: (path: string) => void;
-}

@@ -4,7 +4,7 @@ import { AppContext } from "@/providers/appContextProvider";
 import { useEffect, useRef, useState } from "react";
 import { arch, exeExtension } from "@tauri-apps/plugin-os";
 import { downloadDir, join, resourceDir, tempDir } from "@tauri-apps/api/path";
-import { useBasePathsStore, useCurrentVideoMetadataStore, useDownloaderPageStatesStore, useDownloadStatesStore, useEnvironmentStore, useKvPairsStatesStore, useSettingsPageStatesStore } from "@/services/store";
+import { useBasePathsStore, useCurrentVideoMetadataStore, useDownloaderPageStatesStore, useDownloadStatesStore, useKvPairsStatesStore, useSettingsPageStatesStore } from "@/services/store";
 import { isObjEmpty} from "@/utils";
 import { Command } from "@tauri-apps/plugin-shell";
 import { useUpdateDownloadStatus } from "@/services/mutations";
@@ -39,10 +39,6 @@ export default function App({ children }: { children: React.ReactNode }) {
     const globalDownloadStates = useDownloadStatesStore((state) => state.downloadStates);
     const setDownloadStates = useDownloadStatesStore((state) => state.setDownloadStates);
     const setPath = useBasePathsStore((state) => state.setPath);
-    const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
-    const setIsFlatpak = useEnvironmentStore((state) => state.setIsFlatpak);
-    const setIsAppimage = useEnvironmentStore((state) => state.setIsAppimage);
-    const setAppDirPath = useEnvironmentStore((state) => state.setAppDirPath);
 
     const setIsUsingDefaultSettings = useSettingsPageStatesStore((state) => state.setIsUsingDefaultSettings);
     const setSettingsKey = useSettingsPageStatesStore((state) => state.setSettingsKey);
@@ -126,26 +122,6 @@ export default function App({ children }: { children: React.ReactNode }) {
         };
     }, [stopPotServer]);
 
-    // Detect sandboxed environments
-    useEffect(() => {
-        const detectEnvironment = async () => {
-            try {
-                const flatpak = await invoke<boolean>('is_flatpak');
-                setIsFlatpak(flatpak);
-                const appimage = await invoke<string | null>('is_appimage');
-                if (appimage) {
-                    setIsAppimage(true);
-                    setAppDirPath(appimage);
-                } else {
-                    setIsAppimage(false);
-                }
-            } catch (e) {
-                console.error('Failed to detect environment:', e);
-            }
-        };
-        detectEnvironment();
-    }, [setIsFlatpak, setIsAppimage, setAppDirPath]);
-
     // Listen for websocket messages
     useEffect(() => {
         const unlisten = listen<WebSocketMessage>('websocket-message', (event) => {
@@ -208,6 +184,7 @@ export default function App({ children }: { children: React.ReactNode }) {
             try {
                 const currentArch = arch();
                 const currentExeExtension = exeExtension();
+                const isFlatpak = await invoke<boolean>('is_flatpak');
                 const downloadDirPath = await downloadDir();
                 const tempDirPath = await tempDir();
                 const resourceDirPath = await resourceDir();
@@ -232,7 +209,7 @@ export default function App({ children }: { children: React.ReactNode }) {
             }
         };
         initPaths();
-    }, [DOWNLOAD_DIR, setPath, isFlatpak]);
+    }, [DOWNLOAD_DIR, setPath]);
 
     // Fetch app version
     useEffect(() => {
@@ -294,34 +271,38 @@ export default function App({ children }: { children: React.ReactNode }) {
 
     // Check for yt-dlp auto-update
     useEffect(() => {
-        // Only run once when both settings and KV pairs are loaded
-        if (!isSettingsStatePropagated || !isKvPairsStatePropagated) {
-            console.log("Skipping yt-dlp auto-update check, waiting for configs to load...");
-            return;
+        const handleYtDlpAutoUpdate = async () => {
+            // Only run once when both settings and KV pairs are loaded
+            if (!isSettingsStatePropagated || !isKvPairsStatePropagated) {
+                console.log("Skipping yt-dlp auto-update check, waiting for configs to load...");
+                return;
+            }
+            // Skip if we've already run the auto-update once
+            if (hasRunYtDlpAutoUpdateRef.current) {
+                console.log("Auto-update check already performed in this session, skipping");
+                return;
+            }
+            const isFlatpak = await invoke<boolean>('is_flatpak');
+            if (isFlatpak) {
+                console.log("Flatpak detected! Skipping yt-dlp auto-update");
+                return;
+            }
+            hasRunYtDlpAutoUpdateRef.current = true;
+            console.log("Checking yt-dlp auto-update with loaded config values:", {
+                autoUpdate: YTDLP_AUTO_UPDATE,
+                updateChannel: YTDLP_UPDATE_CHANNEL,
+                lastCheck: ytDlpUpdateLastCheck
+            });
+            const currentTimestamp = Date.now()
+            const YTDLP_UPDATE_INTERVAL = 86400000   // 24H;
+            if (YTDLP_AUTO_UPDATE && (ytDlpUpdateLastCheck === null || currentTimestamp - ytDlpUpdateLastCheck > YTDLP_UPDATE_INTERVAL)) {
+                console.log("Running auto-update for yt-dlp...");
+                updateYtDlp();
+            } else {
+                console.log("Skipping yt-dlp auto-update, either disabled or recently updated.");
+            }
         }
-        // Skip if we've already run the auto-update once
-        if (hasRunYtDlpAutoUpdateRef.current) {
-            console.log("Auto-update check already performed in this session, skipping");
-            return;
-        }
-        if (isFlatpak) {
-            console.log("Flatpak detected! Skipping yt-dlp auto-update");
-            return;
-        }
-        hasRunYtDlpAutoUpdateRef.current = true;
-        console.log("Checking yt-dlp auto-update with loaded config values:", {
-            autoUpdate: YTDLP_AUTO_UPDATE,
-            updateChannel: YTDLP_UPDATE_CHANNEL,
-            lastCheck: ytDlpUpdateLastCheck
-        });
-        const currentTimestamp = Date.now()
-        const YTDLP_UPDATE_INTERVAL = 86400000   // 24H;
-        if (YTDLP_AUTO_UPDATE && (ytDlpUpdateLastCheck === null || currentTimestamp - ytDlpUpdateLastCheck > YTDLP_UPDATE_INTERVAL)) {
-            console.log("Running auto-update for yt-dlp...");
-            updateYtDlp();
-        } else {
-            console.log("Skipping yt-dlp auto-update, either disabled or recently updated.");
-        }
+        handleYtDlpAutoUpdate()
     }, [isSettingsStatePropagated, isKvPairsStatePropagated]);
 
     // Check POT server status and auto-start if enabled
