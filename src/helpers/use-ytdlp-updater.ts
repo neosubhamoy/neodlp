@@ -1,4 +1,4 @@
-import { useSettingsPageStatesStore } from "@/services/store";
+import { useEnvironmentStore, useSettingsPageStatesStore } from "@/services/store";
 import { useKvPairs } from "@/helpers/use-kvpairs";
 import { Command } from "@tauri-apps/plugin-shell";
 import { invoke } from "@tauri-apps/api/core";
@@ -17,7 +17,7 @@ export function useYtDlpUpdater() {
 
     const updateYtDlp = async () => {
         const CURRENT_TIMESTAMP = Date.now();
-        const isFlatpak = await invoke<boolean>('is_flatpak');
+        const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
         setIsUpdatingYtDlp(true);
         LOG.info('NEODLP', 'Updating yt-dlp to latest version');
         try {

@@ -1,9 +1,7 @@
 import { join, resourceDir, homeDir } from "@tauri-apps/api/path";
 import * as fs from "@tauri-apps/plugin-fs";
 import { useKvPairs } from "@/helpers/use-kvpairs";
-import { useSettingsPageStatesStore } from "@/services/store";
-import { invoke } from "@tauri-apps/api/core";
-import { useLogger } from "@/helpers/use-logger";
+import { useEnvironmentStore, useSettingsPageStatesStore } from "@/services/store";
 import { Command } from "@tauri-apps/plugin-shell";
 
 interface FileMap {
@@ -16,11 +14,10 @@ interface FileMap {
 export function useLinuxRegisterer() {
     const { saveKvPair } = useKvPairs();
     const appVersion = useSettingsPageStatesStore(state => state.appVersion);
-    const LOG = useLogger();
 
     const registerToLinux = async () => {
         try {
-            const isFlatpak = await invoke<boolean>('is_flatpak');
+            const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
             const resourceDirPath = isFlatpak ? '/app/lib/neodlp' : await resourceDir();
             const homeDirPath = await homeDir();
             const flatpakChromeManifestContent = {
@@ -51,8 +48,6 @@ export function useLinuxRegisterer() {
                 { source: 'neodlp-msghost', destination: '.local/bin/neodlp-msghost', dir: '.local/bin/' },
             ];
 
-            LOG.info("LINUX REGISTERER", `Is Flatpak: ${isFlatpak}, Resource dir: ${resourceDirPath}, Home dir: ${homeDirPath}`);
-
             if (isFlatpak) {
                 for (const file of filesToCopyFlatpak) {
                     const sourcePath = await join(resourceDirPath, file.source);
@@ -65,20 +60,16 @@ export function useLinuxRegisterer() {
                         const writeOutput = await writeCommand.execute();
                         if (writeOutput.code === 0) {
                             console.log(`File ${file.destination} created successfully at ${destinationPath}`);
-                            LOG.info("LINUX REGISTERER", `File ${file.destination} created successfully at ${destinationPath}`);
                         } else {
                             console.error(`Failed to create file ${file.destination} at ${destinationPath}:`, writeOutput.stderr);
-                            LOG.error("LINUX REGISTERER", `Failed to create file ${file.destination} at ${destinationPath}: ${writeOutput.stderr}`);
                             return { success: false, message: 'Failed to register' };
                         }
                     } else {
                         const copyOutput = await copyCommand.execute();
                         if (copyOutput.code === 0) {
                             console.log(`File ${file.source} copied successfully to ${destinationPath}`);
-                            LOG.info("LINUX REGISTERER", `File ${file.source} copied successfully to ${destinationPath}`);
                         } else {
                             console.error(`Failed to copy file ${file.source} to ${destinationPath}:`, copyOutput.stderr);
-                            LOG.error("LINUX REGISTERER", `Failed to copy file ${file.source} to ${destinationPath}: ${copyOutput.stderr}`);
                             return { success: false, message: 'Failed to register' };
                         }
                     }
@@ -93,14 +84,11 @@ export function useLinuxRegisterer() {
                     if (dirExists) {
                         await fs.copyFile(sourcePath, destinationPath);
                         console.log(`File ${file.source} copied successfully to ${destinationPath}`);
-                        LOG.info("LINUX REGISTERER", `File ${file.source} copied successfully to ${destinationPath}`);
                     } else {
                         await fs.mkdir(destinationDir, { recursive: true })
                         console.log(`Created dir ${destinationDir}`);
-                        LOG.info("LINUX REGISTERER", `Created dir ${destinationDir}`);
                         await fs.copyFile(sourcePath, destinationPath);
                         console.log(`File ${file.source} copied successfully to ${destinationPath}`);
-                        LOG.info("LINUX REGISTERER", `File ${file.source} copied successfully to ${destinationPath}`);
                     }
                 }
             }
@@ -108,7 +96,6 @@ export function useLinuxRegisterer() {
             return { success: true, message: 'Registered successfully' }
         } catch (error) {
             console.error('Error copying files:', error);
-            LOG.error("LINUX REGISTERER", `Error copying files: ${error}`);
             return { success: false, message: 'Failed to register' }
         }
     }

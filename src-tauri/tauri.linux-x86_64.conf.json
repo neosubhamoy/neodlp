@@ -29,6 +29,7 @@
         "targets": ["deb", "rpm", "appimage"],
         "createUpdaterArtifacts": true,
         "licenseFile": "../LICENSE",
+        "category": "Utility",
         "icon": [
             "icons/32x32.png",
             "icons/128x128.png",

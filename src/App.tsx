@@ -4,7 +4,7 @@ import { AppContext } from "@/providers/appContextProvider";
 import { useEffect, useRef, useState } from "react";
 import { arch, exeExtension } from "@tauri-apps/plugin-os";
 import { downloadDir, join, resourceDir, tempDir } from "@tauri-apps/api/path";
-import { useBasePathsStore, useCurrentVideoMetadataStore, useDownloaderPageStatesStore, useDownloadStatesStore, useKvPairsStatesStore, useSettingsPageStatesStore } from "@/services/store";
+import { useBasePathsStore, useCurrentVideoMetadataStore, useDownloaderPageStatesStore, useDownloadStatesStore, useEnvironmentStore, useKvPairsStatesStore, useSettingsPageStatesStore } from "@/services/store";
 import { isObjEmpty} from "@/utils";
 import { Command } from "@tauri-apps/plugin-shell";
 import { useUpdateDownloadStatus } from "@/services/mutations";
@@ -27,6 +27,8 @@ import { useLogger } from "@/helpers/use-logger";
 import useDownloader from "@/helpers/use-downloader";
 import usePotServer from "@/helpers/use-pot-server";
 import { useLinuxRegisterer } from "@/helpers/use-linux-registerer";
+import { invoke } from "@tauri-apps/api/core";
+
 
 export default function App({ children }: { children: React.ReactNode }) {
     const { data: downloadStates, isSuccess: isSuccessFetchingDownloadStates } = useFetchAllDownloadStates();
@@ -37,6 +39,10 @@ export default function App({ children }: { children: React.ReactNode }) {
     const globalDownloadStates = useDownloadStatesStore((state) => state.downloadStates);
     const setDownloadStates = useDownloadStatesStore((state) => state.setDownloadStates);
     const setPath = useBasePathsStore((state) => state.setPath);
+    const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
+    const setIsFlatpak = useEnvironmentStore((state) => state.setIsFlatpak);
+    const setIsAppimage = useEnvironmentStore((state) => state.setIsAppimage);
+    const setAppDirPath = useEnvironmentStore((state) => state.setAppDirPath);
 
     const setIsUsingDefaultSettings = useSettingsPageStatesStore((state) => state.setIsUsingDefaultSettings);
     const setSettingsKey = useSettingsPageStatesStore((state) => state.setSettingsKey);
@@ -120,6 +126,26 @@ export default function App({ children }: { children: React.ReactNode }) {
         };
     }, [stopPotServer]);
 
+    // Detect sandboxed environments
+    useEffect(() => {
+        const detectEnvironment = async () => {
+            try {
+                const flatpak = await invoke<boolean>('is_flatpak');
+                setIsFlatpak(flatpak);
+                const appimage = await invoke<string | null>('is_appimage');
+                if (appimage) {
+                    setIsAppimage(true);
+                    setAppDirPath(appimage);
+                } else {
+                    setIsAppimage(false);
+                }
+            } catch (e) {
+                console.error('Failed to detect environment:', e);
+            }
+        };
+        detectEnvironment();
+    }, [setIsFlatpak, setIsAppimage, setAppDirPath]);
+
     // Listen for websocket messages
     useEffect(() => {
         const unlisten = listen<WebSocketMessage>('websocket-message', (event) => {
@@ -187,7 +213,7 @@ export default function App({ children }: { children: React.ReactNode }) {
                 const resourceDirPath = await resourceDir();
 
                 const ffmpegPath = await join(resourceDirPath, 'binaries', `ffmpeg-${currentArch}${currentExeExtension ? '.' + currentExeExtension : ''}`);
-                const tempDownloadDirPath = await join(tempDirPath, config.appPkgName, 'downloads');
+                const tempDownloadDirPath = isFlatpak ? await join(downloadDirPath, config.appName, '.tempdownloads') : await join(tempDirPath, config.appPkgName, 'downloads');
                 const appDownloadDirPath = await join(downloadDirPath, config.appName);
 
                 if (!await fs.exists(tempDownloadDirPath)) fs.mkdir(tempDownloadDirPath, { recursive: true }).then(() => { console.log(`Created DIR: ${tempDownloadDirPath}`) });
@@ -206,7 +232,7 @@ export default function App({ children }: { children: React.ReactNode }) {
             }
         };
         initPaths();
-    }, [DOWNLOAD_DIR, setPath]);
+    }, [DOWNLOAD_DIR, setPath, isFlatpak]);
 
     // Fetch app version
     useEffect(() => {
@@ -276,6 +302,10 @@ export default function App({ children }: { children: React.ReactNode }) {
         // Skip if we've already run the auto-update once
         if (hasRunYtDlpAutoUpdateRef.current) {
             console.log("Auto-update check already performed in this session, skipping");
+            return;
+        }
+        if (isFlatpak) {
+            console.log("Flatpak detected! Skipping yt-dlp auto-update");
             return;
         }
         hasRunYtDlpAutoUpdateRef.current = true;
