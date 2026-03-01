@@ -21,6 +21,7 @@ use std::{
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
+    path::BaseDirectory,
     Emitter, Manager, State,
 };
 use tauri_plugin_opener::OpenerExt;
@@ -583,6 +584,20 @@ pub async fn run() {
                 })
                 .build(app)
                 .map_err(|e| format!("Failed to create tray: {}", e))?;
+
+            // Fix tray icon in sandboxed environments (e.g., Flatpak)
+            // libappindicator uses the full path of the icon in dbus messages,
+            // so the path needs to be accessible from both the host and the sandbox.
+            // The default /tmp path doesn't work across sandbox boundaries.
+            if let Ok(local_data_path) = app
+                .path()
+                .resolve("tray-icon", BaseDirectory::AppLocalData)
+            {
+                let _ = fs::create_dir_all(&local_data_path);
+                let _ = tray.set_temp_dir_path(Some(local_data_path));
+                // Re-set the icon so it gets written to the new temp dir path
+                let _ = tray.set_icon(Some(app.default_window_icon().unwrap().clone()));
+            }
 
             app.manage(tray);
 
