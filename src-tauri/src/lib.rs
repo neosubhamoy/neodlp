@@ -358,7 +358,7 @@ async fn open_file_with_app(
 ) -> Result<(), String> {
     if let Some(name) = &app_name {
         if name == "explorer" {
-            println!("Revealing file: {} in explorer", file_path);
+            info!("Revealing file: {} in explorer", file_path);
             return app_handle
                 .opener()
                 .reveal_item_in_dir(file_path)
@@ -377,6 +377,27 @@ async fn open_file_with_app(
         .open_path(file_path, app_name)
         .map_err(|e| {
             error!("Failed to open file: {}", e);
+            e.to_string()
+        })
+}
+
+#[tauri::command]
+async fn open_link_with_app(
+    app_handle: tauri::AppHandle,
+    url: String,
+    app_name: Option<String>,
+) -> Result<(), String> {
+    if let Some(name) = &app_name {
+        info!("Opening link: {} with app: {}", url, name);
+    } else {
+        info!("Opening link: {} with default app", url);
+    }
+
+    app_handle
+        .opener()
+        .open_url(url, app_name)
+        .map_err(|e| {
+            error!("Failed to open link: {}", e);
             e.to_string()
         })
 }
@@ -626,6 +647,7 @@ pub async fn run() {
             kill_all_process,
             fetch_image,
             open_file_with_app,
+            open_link_with_app,
             list_ongoing_downloads,
             pause_ongoing_downloads,
             send_to_extension,
