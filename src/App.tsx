@@ -11,7 +11,7 @@ import { useUpdateDownloadStatus } from "@/services/mutations";
 import { useQueryClient } from "@tanstack/react-query";
 import { useFetchAllDownloadStates, useFetchAllkVPairs, useFetchAllSettings } from "@/services/queries";
 import { config } from "@/config";
-import * as fs from "@tauri-apps/plugin-fs";
+// import * as fs from "@tauri-apps/plugin-fs";
 import { useYtDlpUpdater } from "@/helpers/use-ytdlp-updater";
 import { getVersion } from "@tauri-apps/api/app";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
