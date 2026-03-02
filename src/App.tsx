@@ -4,7 +4,7 @@ import { AppContext } from "@/providers/appContextProvider";
 import { useEffect, useRef, useState } from "react";
 import { arch, exeExtension } from "@tauri-apps/plugin-os";
 import { downloadDir, join, resourceDir, tempDir } from "@tauri-apps/api/path";
-import { useBasePathsStore, useCurrentVideoMetadataStore, useDownloaderPageStatesStore, useDownloadStatesStore, useKvPairsStatesStore, useSettingsPageStatesStore } from "@/services/store";
+import { useBasePathsStore, useCurrentVideoMetadataStore, useDownloaderPageStatesStore, useDownloadStatesStore, useEnvironmentStore, useKvPairsStatesStore, useSettingsPageStatesStore } from "@/services/store";
 import { isObjEmpty} from "@/utils";
 import { Command } from "@tauri-apps/plugin-shell";
 import { useUpdateDownloadStatus } from "@/services/mutations";
@@ -39,6 +39,10 @@ export default function App({ children }: { children: React.ReactNode }) {
     const globalDownloadStates = useDownloadStatesStore((state) => state.downloadStates);
     const setDownloadStates = useDownloadStatesStore((state) => state.setDownloadStates);
     const setPath = useBasePathsStore((state) => state.setPath);
+
+    const setIsFlatpak = useEnvironmentStore((state) => state.setIsFlatpak);
+    const setIsAppimage = useEnvironmentStore((state) => state.setIsAppimage);
+    const setAppDirPath = useEnvironmentStore((state) => state.setAppDirPath);
 
     const setIsUsingDefaultSettings = useSettingsPageStatesStore((state) => state.setIsUsingDefaultSettings);
     const setSettingsKey = useSettingsPageStatesStore((state) => state.setSettingsKey);
@@ -121,6 +125,26 @@ export default function App({ children }: { children: React.ReactNode }) {
             window.removeEventListener('beforeunload', handleBeforeUnload);
         };
     }, [stopPotServer]);
+
+    // Detect sandbox environments
+    useEffect(() => {
+        const detectEnvironment = async () => {
+            try {
+                const isFlatpak = await invoke<boolean>('is_flatpak');
+                const appimagePath = await invoke<string | null>('get_appimage_path');
+                console.log('Environment detection results:', { isFlatpak, appimagePath });
+
+                if (isFlatpak) setIsFlatpak(true);
+                if (appimagePath) {
+                    setIsAppimage(true);
+                    setAppDirPath(appimagePath);
+                }
+            } catch (e) {
+                console.error('Failed to detect environment:', e);
+            }
+        }
+        detectEnvironment();
+    }, [setIsFlatpak, setIsAppimage, setAppDirPath]);
 
     // Listen for websocket messages
     useEffect(() => {

@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useBasePathsStore, useDownloaderPageStatesStore, useDownloadStatesStore, useSettingsPageStatesStore } from "@/services/store";
+import { useBasePathsStore, useDownloaderPageStatesStore, useDownloadStatesStore, useEnvironmentStore, useSettingsPageStatesStore } from "@/services/store";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { BadgeCheck, BellRing, BrushCleaning, Bug, Cookie, ExternalLink, FilePen, FileVideo, Folder, FolderOpen, Github, Globe, Heart, Info, KeyRound, Loader2, LucideIcon, Mail, Monitor, Moon, Package, Scale, ShieldMinus, SquareTerminal, Sun, Terminal, Timer, Trash, TriangleAlert, WandSparkles, Wifi, Wrench } from "lucide-react";
+import { BadgeCheck, BellRing, BrushCleaning, Bug, CircleCheck, Cookie, ExternalLink, FilePen, FileVideo, Folder, FolderOpen, Github, Globe, Heart, Info, KeyRound, Loader2, LucideIcon, Mail, Monitor, Moon, Package, Scale, ShieldMinus, SquareTerminal, Sun, Terminal, Timer, Trash, TriangleAlert, WandSparkles, Wifi, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
@@ -285,6 +285,8 @@ function AppAppearanceSettings() {
 function AppFolderSettings() {
     const { saveSettingsKey } = useSettings();
 
+    const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
+
     const formResetTrigger = useSettingsPageStatesStore(state => state.formResetTrigger);
     const acknowledgeFormReset = useSettingsPageStatesStore(state => state.acknowledgeFormReset);
 
@@ -364,6 +366,7 @@ function AppFolderSettings() {
                 <Input className="focus-visible:ring-0" type="text" placeholder="Select download directory" value={downloadDirPath ?? 'Unknown'} readOnly/>
                 <Button
                 variant="outline"
+                disabled={isFlatpak}
                 onClick={async () => {
                     try {
                         const folder = await open({
@@ -1686,6 +1689,9 @@ function AppDebugSettings() {
 }
 
 function AppInfoSettings() {
+    const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
+    const isAppimage = useEnvironmentStore(state => state.isAppimage);
+
     const appVersion = useSettingsPageStatesStore(state => state.appVersion);
 
     const binDepsList = [
@@ -1799,6 +1805,35 @@ function AppInfoSettings() {
                 </Button>
             </Card>
         </div>
+        <div className="healthcheck">
+            <h3 className="font-semibold">Health Check</h3>
+            <p className="text-xs text-muted-foreground mb-3">Ensure everything is working fine</p>
+            {isFlatpak ? (
+                <Alert className="">
+                    <TriangleAlert className="size-4 stroke-primary" />
+                    <AlertTitle className="text-sm">Flatpak Sandbox Detected!</AlertTitle>
+                    <AlertDescription className="text-xs">
+                        It looks like you are running NeoDLP in a Flatpak sandbox. Some features like changing download folder, revealing completed downloads in explorer and automatic yt-dlp updates are not available in Flatpak due to sandbox restrictions. To use these features, please install the native build (DEB, RPM or AUR) of NeoDLP.
+                    </AlertDescription>
+                </Alert>
+            ) : isAppimage ? (
+                <Alert className="">
+                    <TriangleAlert className="size-4 stroke-primary" />
+                    <AlertTitle className="text-sm">Appimage Environment Detected!</AlertTitle>
+                    <AlertDescription className="text-xs">
+                        Looks like you are using NeoDLP Appimage. NeoDLP's browser integration features are not available on Appimage environment due to it's limitations. To use NeoDLP's browser integration features please install the native build (DEB, RPM or AUR) of NeoDLP.
+                    </AlertDescription>
+                </Alert>
+            ) : (
+                <Alert className="">
+                    <CircleCheck className="size-4 stroke-primary" />
+                    <AlertTitle className="text-sm">All Set! Cheers :)</AlertTitle>
+                    <AlertDescription className="text-xs">
+                        NeoDLP is running as normal without any limitations! You should be able to use all the features of NeoDLP without any issues. If you face any problem, feel free to report it to us.
+                    </AlertDescription>
+                </Alert>
+            )}
+        </div>
         <div className="bug-report">
             <h3 className="font-semibold">Bug Report</h3>
             <p className="text-xs text-muted-foreground mb-3">Noticed any bug or inconsistencies? Report it to help us improve</p>
@@ -1869,6 +1904,8 @@ function AppInfoSettings() {
 }
 
 export function ApplicationSettings() {
+    const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
+
     const activeSubAppTab = useSettingsPageStatesStore(state => state.activeSubAppTab);
     const setActiveSubAppTab = useSettingsPageStatesStore(state => state.setActiveSubAppTab);
 
@@ -1926,12 +1963,14 @@ export function ApplicationSettings() {
                         <Switch
                         id="ytdlp-auto-update"
                         checked={ytDlpAutoUpdate}
+                        disabled={isFlatpak}
                         onCheckedChange={(checked) => saveSettingsKey('ytdlp_auto_update', checked)}
                         />
                         <Label htmlFor="ytdlp-auto-update">Auto Update</Label>
                     </div>
                     <Select
                     value={ytDlpUpdateChannel}
+                    disabled={isFlatpak}
                     onValueChange={(value) => saveSettingsKey('ytdlp_update_channel', value)}
                     >
                         <SelectTrigger className="w-37.5 ring-0 focus:ring-0">
@@ -1946,7 +1985,7 @@ export function ApplicationSettings() {
                         </SelectContent>
                     </Select>
                     <Button
-                    disabled={ytDlpAutoUpdate || isUpdatingYtDlp || ongoingDownloads.length > 0}
+                    disabled={ytDlpAutoUpdate || isUpdatingYtDlp || ongoingDownloads.length > 0 || isFlatpak}
                     onClick={async () => await updateYtDlp()}
                     >
                         {isUpdatingYtDlp ? (

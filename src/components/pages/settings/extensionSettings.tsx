@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useSettingsPageStatesStore } from "@/services/store";
+import { useEnvironmentStore, useSettingsPageStatesStore } from "@/services/store";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -32,6 +32,9 @@ const websocketPortSchema = z.object({
 });
 
 function ExtInstallSettings() {
+    const currentPlatform = platform();
+    const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
+
     const openLink = async (url: string, app: string | null) => {
         try {
             await invoke('open_link_with_app', { url: url, appName: app }).then(() => {
@@ -59,11 +62,7 @@ function ExtInstallSettings() {
                             <span>Get Now</span>
                         </div>
                     }
-                    onClick={async() => {
-                        const isFlatpak = await invoke<boolean>('is_flatpak');
-                        const currentPlatform = platform();
-                        openLink('https://chromewebstore.google.com/detail/neo-downloader-plus/mehopeailfjmiloiiohgicphlcgpompf', isFlatpak ? null : currentPlatform === "linux" ? 'google-chrome' : 'chrome');
-                    }}
+                    onClick={() => openLink('https://chromewebstore.google.com/detail/neo-downloader-plus/mehopeailfjmiloiiohgicphlcgpompf', isFlatpak ? null : currentPlatform === "linux" ? 'google-chrome' : 'chrome')}
                     >
                     <span className="font-semibold flex items-center gap-2">
                         <svg className="size-4 fill-primary-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
@@ -80,10 +79,7 @@ function ExtInstallSettings() {
                             <span>Get Now</span>
                         </div>
                     }
-                    onClick={async() => {
-                        const isFlatpak = await invoke<boolean>('is_flatpak');
-                        openLink('https://addons.mozilla.org/en-US/firefox/addon/neo-downloader-plus', isFlatpak ? null : 'firefox');
-                    }}
+                    onClick={() => openLink('https://addons.mozilla.org/en-US/firefox/addon/neo-downloader-plus', isFlatpak ? null : 'firefox')}
                     >
                     <span className="font-semibold flex items-center gap-2">
                         <svg className="size-4 fill-primary-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
@@ -95,38 +91,13 @@ function ExtInstallSettings() {
                 </SlidingButton>
             </div>
             <div className="flex gap-2 mb-4">
-                <Button variant="outline" onClick={async() => {
-                    const isFlatpak = await invoke<boolean>('is_flatpak');
-                    openLink('https://chromewebstore.google.com/detail/neo-downloader-plus/mehopeailfjmiloiiohgicphlcgpompf', isFlatpak ? null : 'msedge');
-                }}>
-                    Edge
-                </Button>
-                <Button variant="outline" onClick={async() => {
-                    const isFlatpak = await invoke<boolean>('is_flatpak');
-                    openLink('https://chromewebstore.google.com/detail/neo-downloader-plus/mehopeailfjmiloiiohgicphlcgpompf', isFlatpak ? null : 'opera');
-                }}>
-                    Opera
-                </Button>
-                <Button variant="outline" onClick={async() => {
-                    const isFlatpak = await invoke<boolean>('is_flatpak');
-                    openLink('https://chromewebstore.google.com/detail/neo-downloader-plus/mehopeailfjmiloiiohgicphlcgpompf', isFlatpak ? null : 'brave');
-                }}>
-                    Brave
-                </Button>
-                <Button variant="outline" onClick={async() => {
-                    const isFlatpak = await invoke<boolean>('is_flatpak');
-                    openLink('https://chromewebstore.google.com/detail/neo-downloader-plus/mehopeailfjmiloiiohgicphlcgpompf', isFlatpak ? null : 'vivaldi');
-                }}>
-                    Vivaldi
-                </Button>
-                <Button variant="outline" onClick={async() => {
-                    const isFlatpak = await invoke<boolean>('is_flatpak');
-                    openLink('https://addons.mozilla.org/en-US/firefox/addon/neo-downloader-plus', isFlatpak ? null : 'zen');
-                }}>
-                    Zen
-                </Button>
+                <Button variant="outline" onClick={() => openLink('https://chromewebstore.google.com/detail/neo-downloader-plus/mehopeailfjmiloiiohgicphlcgpompf', isFlatpak ? null : 'msedge')}>Edge</Button>
+                <Button variant="outline" onClick={() => openLink('https://chromewebstore.google.com/detail/neo-downloader-plus/mehopeailfjmiloiiohgicphlcgpompf', isFlatpak ? null : 'opera')}>Opera</Button>
+                <Button variant="outline" onClick={() => openLink('https://chromewebstore.google.com/detail/neo-downloader-plus/mehopeailfjmiloiiohgicphlcgpompf', isFlatpak ? null : 'brave')}>Brave</Button>
+                <Button variant="outline" onClick={() => openLink('https://chromewebstore.google.com/detail/neo-downloader-plus/mehopeailfjmiloiiohgicphlcgpompf', isFlatpak ? null : 'vivaldi')}>Vivaldi</Button>
+                <Button variant="outline" onClick={() => openLink('https://addons.mozilla.org/en-US/firefox/addon/neo-downloader-plus', isFlatpak ? null : 'zen')}>Zen</Button>
             </div>
-            <p className="text-xs text-muted-foreground mb-2">* These links opens with coresponding browsers only (except on flatpak). Make sure the browser is installed before clicking the link</p>
+            <p className="text-xs text-muted-foreground mb-2">* These links opens with coresponding browsers only. Make sure the browser is installed before clicking the link</p>
         </div>
     );
 }

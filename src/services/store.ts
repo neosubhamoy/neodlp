@@ -1,4 +1,4 @@
-import { BasePathsStore, CurrentVideoMetadataStore, DownloadActionStatesStore, DownloaderPageStatesStore, DownloadStatesStore, KvPairsStatesStore, LibraryPageStatesStore, LogsStore, SettingsPageStatesStore } from '@/types/store';
+import { BasePathsStore, CurrentVideoMetadataStore, DownloadActionStatesStore, DownloaderPageStatesStore, DownloadStatesStore, EnvironmentStore, KvPairsStatesStore, LibraryPageStatesStore, LogsStore, SettingsPageStatesStore } from '@/types/store';
 import { create } from 'zustand';
 
 export const useBasePathsStore = create<BasePathsStore>((set) => ({
@@ -351,4 +351,13 @@ export const useLogsStore = create<LogsStore>((set) => ({
     setLogs: (logs) => set(() => ({ logs })),
     addLog: (log) => set((state) => ({ logs: [...state.logs, log] })),
     clearLogs: () => set(() => ({ logs: [] }))
+}));
+
+export const useEnvironmentStore = create<EnvironmentStore>((set) => ({
+    isFlatpak: false,
+    isAppimage: false,
+    appDirPath: null,
+    setIsFlatpak: (isFlatpak) => set(() => ({ isFlatpak })),
+    setIsAppimage: (isAppimage) => set(() => ({ isAppimage })),
+    setAppDirPath: (path) => set(() => ({ appDirPath: path }))
 }));

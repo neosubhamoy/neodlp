@@ -4,7 +4,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { useCurrentVideoMetadataStore, useDownloadActionStatesStore, useLibraryPageStatesStore } from "@/services/store";
+import { useCurrentVideoMetadataStore, useDownloadActionStatesStore, useEnvironmentStore, useLibraryPageStatesStore } from "@/services/store";
 import { formatBitrate, formatCodec, formatDurationString, formatFileSize, paginate } from "@/utils";
 import { ArrowUpRightIcon, AudioLines, CircleArrowDown, Clock, File, FileAudio2, FileQuestion, FileVideo2, FolderInput, ListVideo, Music, Play, Search, Trash2, Video } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
@@ -32,6 +32,8 @@ interface CompletedDownloadsProps {
 export function CompletedDownload({ state }: CompletedDownloadProps) {
     const downloadActions = useDownloadActionStatesStore(state => state.downloadActions);
     const setIsDeleteFileChecked = useDownloadActionStatesStore(state => state.setIsDeleteFileChecked);
+
+    const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
 
     const queryClient = useQueryClient();
     const downloadStateDeleter = useDeleteDownloadState();
@@ -276,10 +278,12 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                         <Play className="w-4 h-4" />
                         Open
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => openFile(state.filepath, 'explorer')}>
-                        <FolderInput className="w-4 h-4" />
-                        Reveal
-                    </Button>
+                    {!isFlatpak && (
+                        <Button size="sm" variant="outline" onClick={() => openFile(state.filepath, 'explorer')}>
+                            <FolderInput className="w-4 h-4" />
+                            Reveal
+                        </Button>
+                    )}
                     <Button size="sm" variant="outline" onClick={() => handleSearch(state.url, state.playlist_id ? true : false)}>
                         <Search className="w-4 h-4" />
                         Search

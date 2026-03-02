@@ -46,7 +46,7 @@ export function AppSidebar() {
     ];
 
     useEffect(() => {
-        let timeout: NodeJS.Timeout;
+        let timeout: ReturnType<typeof setTimeout>;
         if (open) {
             timeout = setTimeout(() => {
                 setShowBadge(true);
