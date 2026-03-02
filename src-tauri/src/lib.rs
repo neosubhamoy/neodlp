@@ -31,6 +31,7 @@ use tokio::{
     time::sleep,
 };
 use tokio_tungstenite::accept_async;
+use log::{info, error};
 
 struct ImageCache(StdMutex<HashMap<String, String>>);
 
@@ -361,17 +362,23 @@ async fn open_file_with_app(
             return app_handle
                 .opener()
                 .reveal_item_in_dir(file_path)
-                .map_err(|e| e.to_string());
+                .map_err(|e| {
+                    error!("Failed to reveal file in explorer: {}", e);
+                    e.to_string()
+                });
         }
-        println!("Opening file: {} with app: {}", file_path, name);
+        info!("Opening file: {} with app: {}", file_path, name);
     } else {
-        println!("Opening file: {} with default app", file_path);
+        info!("Opening file: {} with default app", file_path);
     }
 
     app_handle
         .opener()
         .open_path(file_path, app_name)
-        .map_err(|e| e.to_string())
+        .map_err(|e| {
+            error!("Failed to open file: {}", e);
+            e.to_string()
+        })
 }
 
 #[tauri::command]
