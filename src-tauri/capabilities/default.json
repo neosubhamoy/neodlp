@@ -31,6 +31,14 @@
     "notification:default",
     "log:default",
     {
+      "identifier": "fs:scope",
+      "allow": [
+        {
+          "path": "**"
+        }
+      ]
+    },
+    {
       "identifier": "opener:allow-open-path",
       "allow": [
         {
@@ -50,15 +58,13 @@
       "identifier": "opener:allow-open-url",
       "allow": [
         {
-          "url": "**"
-        }
-      ]
-    },
-    {
-      "identifier": "fs:scope",
-      "allow": [
+          "url": "https://chromewebstore.google.com"
+        },
         {
-          "path": "**"
+          "url": "https://addons.mozilla.org"
+        },
+        {
+          "url": "https://github.com"
         }
       ]
     }
