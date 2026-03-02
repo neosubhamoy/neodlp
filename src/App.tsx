@@ -193,6 +193,8 @@ export default function App({ children }: { children: React.ReactNode }) {
                 const tempDownloadDirPath = isFlatpak ? await join(downloadDirPath, config.appName, '.tempdownloads') : await join(tempDirPath, config.appPkgName, 'downloads');
                 const appDownloadDirPath = await join(downloadDirPath, config.appName);
 
+                LOG.info('NEODLP', `Resolved paths: isFlatpak: ${isFlatpak}, downloadDir: ${downloadDirPath}, tempDir: ${tempDirPath}, tempDownloadDir: ${tempDownloadDirPath}, appDownloadDir: ${appDownloadDirPath}`);
+
                 if (!await fs.exists(tempDownloadDirPath)) fs.mkdir(tempDownloadDirPath, { recursive: true }).then(() => { console.log(`Created DIR: ${tempDownloadDirPath}`) });
 
                 setPath('ffmpegPath', ffmpegPath);
@@ -205,6 +207,7 @@ export default function App({ children }: { children: React.ReactNode }) {
                 }
                 console.log('Paths initialized:', { ffmpegPath, tempDownloadDirPath, downloadDirPath: DOWNLOAD_DIR || appDownloadDirPath });
             } catch (e) {
+                LOG.error('NEODLP', `Failed to fetch paths: ${e}`);
                 console.error('Failed to fetch paths:', e);
             }
         };
