@@ -15,6 +15,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { SlidingButton } from "@/components/custom/slidingButton";
 import clsx from "clsx";
 import { NumberInput } from "@/components/custom/numberInput";
+import { openUrl } from "@tauri-apps/plugin-opener";
+import { useLogger } from "@/helpers/use-logger";
 
 const websocketPortSchema = z.object({
     port: z.coerce.number<number>({
@@ -31,14 +33,21 @@ const websocketPortSchema = z.object({
 });
 
 function ExtInstallSettings() {
-    const openLink = async (url: string, app: string | null) => {
+    const LOG = useLogger();
+    const openLink = async (url: string, app: string | undefined) => {
         try {
-            await invoke('open_file_with_app', { filePath: url, appName: app }).then(() => {
+            // await invoke('open_file_with_app', { filePath: url, appName: app }).then(() => {
+            //     toast.info("Opening link", {
+            //         description: `Opening link with ${app ? app : 'default app'}.`,
+            //     })
+            // });
+            await openUrl(url, app).then(() => {
                 toast.info("Opening link", {
                     description: `Opening link with ${app ? app : 'default app'}.`,
                 })
             });
         } catch (e) {
+            LOG.error('NEODLP', `Failed to open link: ${e}`);
             console.error(e);
             toast.error("Failed to open link", {
                 description: "An error occurred while trying to open the link.",
