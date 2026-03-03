@@ -9,6 +9,7 @@
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
   <url type="homepage">https://neodlp.neosubhamoy.com</url>
+  <url type="vcs-browser">https://github.com/neosubhamoy/neodlp</url>
   <url type="bugtracker">https://github.com/neosubhamoy/neodlp/issues</url>
   <description>
     <p>
@@ -20,8 +21,20 @@
   <launchable type="desktop-id">com.neosubhamoy.neodlp.desktop</launchable>
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/neosubhamoy/neodlp/main/.github/images/downloader.png</image>
-      <caption>NeoDLP Downloader</caption>
+      <image>https://raw.githubusercontent.com/neosubhamoy/neodlp/main/.github/images/flathub/downloader.png</image>
+      <caption>Downloader page of NeoDLP</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/neosubhamoy/neodlp/main/.github/images/flathub/completed-downloads.png</image>
+      <caption>Completed downloads page of NeoDLP</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/neosubhamoy/neodlp/main/.github/images/flathub/ongoing-downloads.png</image>
+      <caption>Ongoing downloads page of NeoDLP</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/neosubhamoy/neodlp/main/.github/images/flathub/settings.png</image>
+      <caption>Settings page of NeoDLP</caption>
     </screenshot>
   </screenshots>
   <content_rating type="oars-1.1" />
