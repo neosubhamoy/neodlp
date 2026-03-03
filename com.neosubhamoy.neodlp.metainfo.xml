@@ -3,7 +3,9 @@
   <id>com.neosubhamoy.neodlp</id>
   <name>NeoDLP</name>
   <summary>Modern video/audio downloader based on yt-dlp with browser integration</summary>
-  <developer_name>Subhamoy Biswas</developer_name>
+  <developer id="com.neosubhamoy">
+    <name>Subhamoy Biswas</name>
+  </developer>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
   <url type="homepage">https://neodlp.neosubhamoy.com</url>
