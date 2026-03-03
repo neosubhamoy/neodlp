@@ -398,7 +398,7 @@ function AppFolderSettings() {
                     <AlertDialogTrigger asChild>
                         <Button
                         variant="destructive"
-                        disabled={ongoingDownloads.length > 0}
+                        disabled={ongoingDownloads.length > 0 || isFlatpak}
                         >
                             <BrushCleaning className="size-4" /> Clean
                         </Button>

@@ -1,10 +1,8 @@
 ### ✨ Changelog
 
-- Added delay/sleep configuration settings (delay is now also configurable on search)
-- Added support for YouTube PO Token generation (based on [bgutil-ytdlp-pot-provider-rs](https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs))
-- Implemented custom app titlebar on windows and linux
-- Further improved and persisted app logs (stored in [platform specific log directory](https://v2.tauri.app/plugin/logging/#persisting-logs))
-- Fixed webview window creation is failing on wayland with nvidia gpu
+- Added 'Health Check' section in app info
+- Added Homebrew package for macOS
+- Added initial compatibility with Flatpak for Linux
 - Other minor fixes and improvements
 
 ### 📝 Notes
@@ -23,7 +21,7 @@
 
 | yt-dlp (updateable) | ffmpeg | ffprobe | aria2c | deno | bgutil-pot-rs |
 | :---- | :---- | :---- | :---- | :---- | :---- |
-| v2026.02.17.233631 (nightly) | v7.1.1 | v7.1.1 | v1.37.0 | v2.6.10 | v0.7.1-1.2.2 |
+| v2026.03.02.233544 (nightly) | v7.1.1 | v7.1.1 | v1.37.0 | v2.7.1 | v0.7.2-1.3.0 |
 
 > ‼️ Linux builds (deb, rpm) does not ships with `ffmpeg` and `ffprobe` (though it will be auto installed as a dependency by your package manager, if you are on fedora make sure to [enable rpmfusion free+nonfree repos](https://docs.fedoraproject.org/en-US/quick-docs/rpmfusion-setup/#_enabling_the_rpm_fusion_repositories_using_command_line_utilities) before installing the rpm package)
 

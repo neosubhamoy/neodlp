@@ -20,7 +20,7 @@ const versions = {
     'ffmpeg-ffprobe': 'latest',
     'deno': 'latest',
     'aria2c': '1.37.0',
-    'neodlp-pot': 'latest'
+    'neodlp-pot': '0.7.2'
 };
 
 const binaries = {
@@ -403,7 +403,7 @@ const binaries = {
         {
             name: 'neodlp-pot-x86_64-pc-windows-msvc',
             platform: 'win32',
-            url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions['neodlp-pot'] === 'latest' ? '/latest' : ''}/download${versions['neodlp-pot'] !== 'latest' ? '/'+versions['neodlp-pot'] : ''}/bgutil-pot-windows-x86_64.exe`,
+            url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions['neodlp-pot'] === 'latest' ? '/latest' : ''}/download${versions['neodlp-pot'] !== 'latest' ? '/v'+versions['neodlp-pot'] : ''}/bgutil-pot-windows-x86_64.exe`,
             src: path.join(downloadDir, 'bgutil-pot-windows-x86_64.exe'),
             dest: [
                 path.join(binDir, 'neodlp-pot-x86_64-pc-windows-msvc.exe')
@@ -416,7 +416,7 @@ const binaries = {
         {
             name: 'neodlp-pot-x86_64-unknown-linux-gnu',
             platform: 'linux',
-            url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions['neodlp-pot'] === 'latest' ? '/latest' : ''}/download${versions['neodlp-pot'] !== 'latest' ? '/'+versions['neodlp-pot'] : ''}/bgutil-pot-linux-x86_64`,
+            url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions['neodlp-pot'] === 'latest' ? '/latest' : ''}/download${versions['neodlp-pot'] !== 'latest' ? '/v'+versions['neodlp-pot'] : ''}/bgutil-pot-linux-x86_64`,
             src: path.join(downloadDir, 'bgutil-pot-linux-x86_64'),
             dest: [
                 path.join(binDir, 'neodlp-pot-x86_64-unknown-linux-gnu')
@@ -429,7 +429,7 @@ const binaries = {
         {
             name: 'neodlp-pot-aarch64-unknown-linux-gnu',
             platform: 'linux',
-            url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions['neodlp-pot'] === 'latest' ? '/latest' : ''}/download${versions['neodlp-pot'] !== 'latest' ? '/'+versions['neodlp-pot'] : ''}/bgutil-pot-linux-aarch64`,
+            url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions['neodlp-pot'] === 'latest' ? '/latest' : ''}/download${versions['neodlp-pot'] !== 'latest' ? '/v'+versions['neodlp-pot'] : ''}/bgutil-pot-linux-aarch64`,
             src: path.join(downloadDir, 'bgutil-pot-linux-aarch64'),
             dest: [
                 path.join(binDir, 'neodlp-pot-aarch64-unknown-linux-gnu')
@@ -442,7 +442,7 @@ const binaries = {
         {
             name: 'neodlp-pot-x86_64-apple-darwin',
             platform: 'darwin',
-            url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions['neodlp-pot'] === 'latest' ? '/latest' : ''}/download${versions['neodlp-pot'] !== 'latest' ? '/'+versions['neodlp-pot'] : ''}/bgutil-pot-macos-x86_64`,
+            url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions['neodlp-pot'] === 'latest' ? '/latest' : ''}/download${versions['neodlp-pot'] !== 'latest' ? '/v'+versions['neodlp-pot'] : ''}/bgutil-pot-macos-x86_64`,
             src: path.join(downloadDir, 'bgutil-pot-macos-x86_64'),
             dest: [
                 path.join(binDir, 'neodlp-pot-x86_64-apple-darwin')
@@ -455,7 +455,7 @@ const binaries = {
         {
             name: 'neodlp-pot-aarch64-apple-darwin',
             platform: 'darwin',
-            url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions['neodlp-pot'] === 'latest' ? '/latest' : ''}/download${versions['neodlp-pot'] !== 'latest' ? '/'+versions['neodlp-pot'] : ''}/bgutil-pot-macos-aarch64`,
+            url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions['neodlp-pot'] === 'latest' ? '/latest' : ''}/download${versions['neodlp-pot'] !== 'latest' ? '/v'+versions['neodlp-pot'] : ''}/bgutil-pot-macos-aarch64`,
             src: path.join(downloadDir, 'bgutil-pot-macos-aarch64'),
             dest: [
                 path.join(binDir, 'neodlp-pot-aarch64-apple-darwin')
