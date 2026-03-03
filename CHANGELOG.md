@@ -25,7 +25,7 @@
 
 > ‼️ Linux builds (deb, rpm) does not ships with `ffmpeg` and `ffprobe` (though it will be auto installed as a dependency by your package manager, if you are on fedora make sure to [enable rpmfusion free+nonfree repos](https://docs.fedoraproject.org/en-US/quick-docs/rpmfusion-setup/#_enabling_the_rpm_fusion_repositories_using_command_line_utilities) before installing the rpm package)
 
-> ‼️ MacOS builds (dmg, app) does not ships with `aria2c`, If you want to use [aria2](https://formulae.brew.sh/formula/aria2) install it via [homebrew](https://brew.sh)
+> ‼️ MacOS builds (dmg, app) does not ships with `aria2c`, If you want to use [aria2](https://formulae.brew.sh/formula/aria2) install it via [homebrew](https://brew.sh) (though it will be auto installed as a dependency if you install neodlp via homebrew)
 
 ### ⬇️ Download Section
 
