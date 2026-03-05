@@ -259,7 +259,7 @@ export default function App({ children }: { children: React.ReactNode }) {
             try {
                 const isFlatpak = await invoke<boolean>('is_flatpak');
                 const command = isFlatpak
-                ? Command.create('yt-dlp', [' --version'])
+                ? Command.create('sh', ['-c', `yt-dlp --version`])
                 : Command.sidecar('binaries/yt-dlp', ['--version']);
                 const output = await command.execute();
                 if (output.code === 0) {

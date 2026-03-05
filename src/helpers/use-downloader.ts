@@ -198,7 +198,7 @@ export default function useDownloader() {
 
             const isFlatpak = await invoke<boolean>('is_flatpak');
             const command = isFlatpak
-            ? Command.create('yt-dlp', args)
+            ? Command.create('sh', ['-c', `yt-dlp ${args.map(arg => arg.includes(' ') ? `"${arg}"` : arg).join(' ')}`])
             : Command.sidecar('binaries/yt-dlp', args);
 
             let jsonOutput = '';
@@ -562,7 +562,7 @@ export default function useDownloader() {
         console.log('Starting download with args:', args);
         const isFlatpak = await invoke<boolean>('is_flatpak');
         const command = isFlatpak
-        ? Command.create('yt-dlp', args)
+        ? Command.create('sh', ['-c', `yt-dlp ${args.map(arg => arg.includes(' ') ? `"${arg}"` : arg).join(' ')}`])
         : Command.sidecar('binaries/yt-dlp', args);
 
         command.on('close', async (data) => {
