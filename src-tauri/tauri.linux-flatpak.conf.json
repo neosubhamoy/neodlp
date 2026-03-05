@@ -38,8 +38,7 @@
         ],
         "externalBin": [
             "binaries/yt-dlp",
-            "binaries/deno",
-            "binaries/neodlp-pot"
+            "binaries/deno"
         ],
         "resources": {
             "resources/plugins/yt-dlp-plugins/": "yt-dlp-plugins/"
