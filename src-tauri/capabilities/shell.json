@@ -119,6 +119,21 @@
           "name": "deno",
           "cmd": "deno",
           "args": true
+        },
+        {
+          "name": "pkexec",
+          "cmd": "pkexec",
+          "args": true
+        },
+        {
+          "name": "powershell",
+          "cmd": "powershell",
+          "args": true
+        },
+        {
+            "name": "sh",
+            "cmd": "sh",
+            "args": true
         }
       ]
     }
