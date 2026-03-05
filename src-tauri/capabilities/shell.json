@@ -41,6 +41,11 @@
           "sidecar": true
         },
         {
+          "name": "yt-dlp",
+          "cmd": "yt-dlp",
+          "args": true
+        },
+        {
           "name": "ffmpeg",
           "cmd": "ffmpeg",
           "args": true
@@ -104,6 +109,11 @@
           "name": "binaries/neodlp-pot",
           "args": true,
           "sidecar": true
+        },
+        {
+          "name": "yt-dlp",
+          "cmd": "yt-dlp",
+          "args": true
         },
         {
           "name": "ffmpeg",
