@@ -2,7 +2,7 @@
 Type=Application
 
 Name=NeoDLP
-Comment=Modern video/audio downloader based on yt-dlp with browser integration.
+Comment=Modern feature-rich video/audio downloader based on yt-dlp.
 Icon=com.neosubhamoy.neodlp
 Exec=neodlp
 Terminal=false

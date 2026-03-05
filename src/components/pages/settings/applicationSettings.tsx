@@ -1403,6 +1403,8 @@ function AppPoTokenSettings() {
 function AppNotificationSettings() {
     const { saveSettingsKey } = useSettings();
 
+    const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
+
     const enableNotifications = useSettingsPageStatesStore(state => state.settings.enable_notifications);
     const updateNotification = useSettingsPageStatesStore(state => state.settings.update_notification);
     const downloadCompletionNotification = useSettingsPageStatesStore(state => state.settings.download_completion_notification);
@@ -1416,6 +1418,7 @@ function AppNotificationSettings() {
                 <Switch
                 id="enable-notifications"
                 checked={enableNotifications}
+                disabled={isFlatpak}
                 onCheckedChange={async (checked) => {
                     if (checked) {
                         const granted = await isPermissionGranted();
@@ -1441,7 +1444,7 @@ function AppNotificationSettings() {
                     id="update-notification"
                     checked={updateNotification}
                     onCheckedChange={(checked) => saveSettingsKey('update_notification', checked)}
-                    disabled={!enableNotifications}
+                    disabled={!enableNotifications || isFlatpak}
                     />
                     <Label htmlFor="update-notification">App Updates</Label>
                 </div>
@@ -1450,7 +1453,7 @@ function AppNotificationSettings() {
                     id="download-completion-notification"
                     checked={downloadCompletionNotification}
                     onCheckedChange={(checked) => saveSettingsKey('download_completion_notification', checked)}
-                    disabled={!enableNotifications}
+                    disabled={!enableNotifications || isFlatpak}
                     />
                     <Label htmlFor="download-completion-notification">Download Completion</Label>
                 </div>
@@ -1813,7 +1816,7 @@ function AppInfoSettings() {
                     <TriangleAlert className="size-4 stroke-primary" />
                     <AlertTitle className="text-sm">Flatpak Sandbox Detected!</AlertTitle>
                     <AlertDescription className="text-xs">
-                        It looks like you are running NeoDLP in a Flatpak sandbox. Some features like changing download folder, revealing completed downloads in explorer and automatic yt-dlp updates are not available in Flatpak due to sandbox restrictions. To use these features, please install the native build (DEB, RPM or AUR) of NeoDLP.
+                        It looks like you are running NeoDLP in a Flatpak sandbox. Some features like browser integration, desktop notifications, changing download folder, revealing completed downloads in explorer, automatic yt-dlp updates and auto-launch on startup are not available in Flatpak due to sandbox restrictions. To use these features, please install the native linux build (DEB, RPM or AUR) of NeoDLP.
                     </AlertDescription>
                 </Alert>
             ) : isAppimage ? (
@@ -1821,7 +1824,7 @@ function AppInfoSettings() {
                     <TriangleAlert className="size-4 stroke-primary" />
                     <AlertTitle className="text-sm">Appimage Environment Detected!</AlertTitle>
                     <AlertDescription className="text-xs">
-                        Looks like you are using NeoDLP Appimage. NeoDLP's browser integration features are not available on Appimage environment due to it's limitations. To use NeoDLP's browser integration features please install the native build (DEB, RPM or AUR) of NeoDLP.
+                        Looks like you are using NeoDLP Appimage. NeoDLP's browser integration features are not available on Appimage environment due to it's limitations. To use NeoDLP's browser integration features please install the native linux build (DEB, RPM or AUR) of NeoDLP.
                     </AlertDescription>
                 </Alert>
             ) : (

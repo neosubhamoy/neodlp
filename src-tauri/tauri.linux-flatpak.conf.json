@@ -1,8 +1,8 @@
 {
     "identifier": "com.neosubhamoy.neodlp",
     "build": {
-        "beforeDevCommand": "cargo build --manifest-path=./src-tauri/msghost/Cargo.toml && npm run dev",
-        "beforeBuildCommand": "cargo build --release --manifest-path=./src-tauri/msghost/Cargo.toml && npm run build",
+        "beforeDevCommand": "npm run dev",
+        "beforeBuildCommand": "npm run build",
         "devUrl": "http://localhost:1420",
         "frontendDist": "../dist"
     },
@@ -38,8 +38,6 @@
         ],
         "externalBin": [
             "binaries/yt-dlp",
-            "binaries/ffmpeg",
-            "binaries/ffprobe",
             "binaries/aria2c",
             "binaries/deno",
             "binaries/neodlp-pot"
