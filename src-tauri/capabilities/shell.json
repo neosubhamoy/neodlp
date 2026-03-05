@@ -66,9 +66,9 @@
           "args": true
         },
         {
-            "name": "sh",
-            "cmd": "sh",
-            "args": true
+          "name": "sh",
+          "cmd": "sh",
+          "args": true
         }
       ]
     },
@@ -131,9 +131,9 @@
           "args": true
         },
         {
-            "name": "sh",
-            "cmd": "sh",
-            "args": true
+          "name": "sh",
+          "cmd": "sh",
+          "args": true
         }
       ]
     }

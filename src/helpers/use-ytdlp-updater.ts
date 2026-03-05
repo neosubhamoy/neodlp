@@ -21,7 +21,13 @@ export function useYtDlpUpdater() {
         setIsUpdatingYtDlp(true);
         LOG.info('NEODLP', 'Updating yt-dlp to latest version');
         try {
-            const command = currentPlatform === 'linux' && !isFlatpak ? Command.create('pkexec', ['yt-dlp', '--update-to', ytDlpUpdateChannel]) : Command.sidecar('binaries/yt-dlp', ['--update-to', ytDlpUpdateChannel]);
+            const command = currentPlatform === 'linux' && isFlatpak
+            ? ytDlpUpdateChannel === 'nightly'
+              ? Command.create('sh', ['-c', 'pip3 install -U --pre "yt-dlp[default,curl-cffi]"'])
+              : Command.create('sh', ['-c', 'pip3 install -U "yt-dlp[default,curl-cffi]"'])
+            : currentPlatform === 'linux'
+              ? Command.create('pkexec', ['yt-dlp', '--update-to', ytDlpUpdateChannel])
+              : Command.sidecar('binaries/yt-dlp', ['--update-to', ytDlpUpdateChannel]);
             const output = await command.execute();
             if (output.code === 0) {
                 console.log("yt-dlp updated successfully:", output.stdout);

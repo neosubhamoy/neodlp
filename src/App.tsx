@@ -257,7 +257,10 @@ export default function App({ children }: { children: React.ReactNode }) {
         const fetchYtDlpVersion = async () => {
             setIsFetchingYtDlpVersion(true);
             try {
-                const command = Command.sidecar('binaries/yt-dlp', ['--version']);
+                const isFlatpak = await invoke<boolean>('is_flatpak');
+                const command = isFlatpak
+                ? Command.create('sh', ['-c', `yt-dlp --version`])
+                : Command.sidecar('binaries/yt-dlp', ['--version']);
                 const output = await command.execute();
                 if (output.code === 0) {
                     const version = output.stdout.trim();
