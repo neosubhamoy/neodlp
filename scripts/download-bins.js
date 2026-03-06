@@ -319,7 +319,7 @@ const binaries = {
         {
             name: 'deno-aarch64-apple-darwin',
             platform: 'darwin',
-            url: `https://github.com/denoland/deno/releases${versions['deno'] === 'latest' ? '/latest' : ''}/download${versions['deno'] !== 'latest' ? '/'+versions['deno'] : ''}/deno-aarch64-apple-darwin.zip`,
+            url: `https://github.com/denoland/deno/releases${versions['deno'] === 'latest' ? '/latest' : ''}/download${versions['deno'] !== 'latest' ? 'v/'+versions['deno'] : ''}/deno-aarch64-apple-darwin.zip`,
             src: path.join(downloadDir, 'deno-aarch64-apple-darwin.zip'),
             dest: null,
             archive: {
