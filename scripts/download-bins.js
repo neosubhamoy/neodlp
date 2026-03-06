@@ -16,9 +16,9 @@ const targetPlatform = process.argv[2];
 const targetBin = process.argv[3];
 
 const versions = {
-    'yt-dlp': 'latest',
+    'yt-dlp': '2026.03.03.162408',
     'ffmpeg-ffprobe': 'latest',
-    'deno': 'latest',
+    'deno': '2.7.4',
     'aria2c': '1.37.0',
     'neodlp-pot': '0.7.2'
 };
@@ -239,7 +239,7 @@ const binaries = {
         {
             name: 'deno-x86_64-pc-windows-msvc',
             platform: 'win32',
-            url: `https://github.com/denoland/deno/releases${versions['deno'] === 'latest' ? '/latest' : ''}/download${versions['deno'] !== 'latest' ? '/'+versions['deno'] : ''}/deno-x86_64-pc-windows-msvc.zip`,
+            url: `https://github.com/denoland/deno/releases${versions['deno'] === 'latest' ? '/latest' : ''}/download${versions['deno'] !== 'latest' ? '/v'+versions['deno'] : ''}/deno-x86_64-pc-windows-msvc.zip`,
             src: path.join(downloadDir, 'deno-x86_64-pc-windows-msvc.zip'),
             dest: null,
             archive: {
@@ -259,7 +259,7 @@ const binaries = {
         {
             name: 'deno-x86_64-unknown-linux-gnu',
             platform: 'linux',
-            url: `https://github.com/denoland/deno/releases${versions['deno'] === 'latest' ? '/latest' : ''}/download${versions['deno'] !== 'latest' ? '/'+versions['deno'] : ''}/deno-x86_64-unknown-linux-gnu.zip`,
+            url: `https://github.com/denoland/deno/releases${versions['deno'] === 'latest' ? '/latest' : ''}/download${versions['deno'] !== 'latest' ? '/v'+versions['deno'] : ''}/deno-x86_64-unknown-linux-gnu.zip`,
             src: path.join(downloadDir, 'deno-x86_64-unknown-linux-gnu.zip'),
             dest: null,
             archive: {
@@ -279,7 +279,7 @@ const binaries = {
         {
             name: 'deno-aarch64-unknown-linux-gnu',
             platform: 'linux',
-            url: `https://github.com/denoland/deno/releases${versions['deno'] === 'latest' ? '/latest' : ''}/download${versions['deno'] !== 'latest' ? '/'+versions['deno'] : ''}/deno-aarch64-unknown-linux-gnu.zip`,
+            url: `https://github.com/denoland/deno/releases${versions['deno'] === 'latest' ? '/latest' : ''}/download${versions['deno'] !== 'latest' ? '/v'+versions['deno'] : ''}/deno-aarch64-unknown-linux-gnu.zip`,
             src: path.join(downloadDir, 'deno-aarch64-unknown-linux-gnu.zip'),
             dest: null,
             archive: {
@@ -299,7 +299,7 @@ const binaries = {
         {
             name: 'deno-x86_64-apple-darwin',
             platform: 'darwin',
-            url: `https://github.com/denoland/deno/releases${versions['deno'] === 'latest' ? '/latest' : ''}/download${versions['deno'] !== 'latest' ? '/'+versions['deno'] : ''}/deno-x86_64-apple-darwin.zip`,
+            url: `https://github.com/denoland/deno/releases${versions['deno'] === 'latest' ? '/latest' : ''}/download${versions['deno'] !== 'latest' ? '/v'+versions['deno'] : ''}/deno-x86_64-apple-darwin.zip`,
             src: path.join(downloadDir, 'deno-x86_64-apple-darwin.zip'),
             dest: null,
             archive: {
