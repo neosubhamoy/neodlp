@@ -785,6 +785,8 @@ function AppNetworkSettings() {
 function AppCookiesSettings() {
     const { saveSettingsKey } = useSettings();
 
+    const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
+
     const useCookies = useSettingsPageStatesStore(state => state.settings.use_cookies);
     const importCookiesFrom = useSettingsPageStatesStore(state => state.settings.import_cookies_from);
     const cookiesBrowser = useSettingsPageStatesStore(state => state.settings.cookies_browser);
@@ -801,7 +803,7 @@ function AppCookiesSettings() {
                 id="use-cookies"
                 checked={useCookies}
                 onCheckedChange={(checked) => saveSettingsKey('use_cookies', checked)}
-                disabled={useCustomCommands}
+                disabled={useCustomCommands || isFlatpak}
                 />
                 <Label htmlFor="use-cookies">Use Cookies</Label>
             </div>
@@ -810,7 +812,7 @@ function AppCookiesSettings() {
             className="flex items-center gap-4"
             value={importCookiesFrom}
             onValueChange={(value) => saveSettingsKey('import_cookies_from', value)}
-            disabled={!useCookies || useCustomCommands}
+            disabled={!useCookies || useCustomCommands || isFlatpak}
             >
                 <div className="flex items-center gap-3">
                     <RadioGroupItem value="browser" id="cookies-browser" />
@@ -826,7 +828,7 @@ function AppCookiesSettings() {
                 <Select
                 value={cookiesBrowser}
                 onValueChange={(value) => saveSettingsKey('cookies_browser', value)}
-                disabled={importCookiesFrom !== "browser" || !useCookies || useCustomCommands}
+                disabled={importCookiesFrom !== "browser" || !useCookies || useCustomCommands || isFlatpak}
                 >
                     <SelectTrigger className="w-57.5 ring-0 focus:ring-0">
                         <SelectValue placeholder="Select browser to import cookies" />
@@ -853,7 +855,7 @@ function AppCookiesSettings() {
                     <Input className="focus-visible:ring-0" type="text" placeholder="Select cookies text file" value={cookiesFile ?? ''} disabled={importCookiesFrom !== "file" || !useCookies} readOnly/>
                     <Button
                     variant="outline"
-                    disabled={importCookiesFrom !== "file" || !useCookies || useCustomCommands}
+                    disabled={importCookiesFrom !== "file" || !useCookies || useCustomCommands || isFlatpak}
                     onClick={async () => {
                         try {
                             const file = await open({
@@ -1816,7 +1818,7 @@ function AppInfoSettings() {
                     <TriangleAlert className="size-4 stroke-primary" />
                     <AlertTitle className="text-sm">Flatpak Sandbox Detected!</AlertTitle>
                     <AlertDescription className="text-xs">
-                        It looks like you are running NeoDLP in a Flatpak sandbox. Some features like browser integration, desktop notifications, changing download folder, revealing completed downloads in explorer, automatic yt-dlp updates and auto-launch on startup are not available in Flatpak due to sandbox restrictions. To use these features, please install the native linux build (DEB, RPM or AUR) of NeoDLP.
+                        It looks like you are running NeoDLP in a Flatpak sandbox. Some features like browser integration, desktop notifications, cookies, changing download folder, revealing completed downloads in explorer, automatic yt-dlp updates and auto-launch on startup are not available in Flatpak due to sandbox restrictions. To use these features, please install the native linux build (DEB, RPM or AUR) of NeoDLP.
                     </AlertDescription>
                 </Alert>
             ) : isAppimage ? (
