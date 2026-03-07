@@ -20,7 +20,8 @@ export default function usePotServer() {
         const isFlatpak = await invoke<boolean>('is_flatpak');
         const runCommand = isFlatpak
         ? Command.create('sh', [
-            '-c', `/app/bin/neodlp-pot server --port ${port ? port.toString() : potServerPort.toString()}`
+            '-c',
+            `neodlp-pot server --port ${port ? port.toString() : potServerPort.toString()}`
         ])
         : Command.sidecar('binaries/neodlp-pot', [
             'server',

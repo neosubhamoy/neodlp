@@ -1254,6 +1254,8 @@ function AppDelaySettings() {
 }
 
 function AppPoTokenSettings() {
+    const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
+
     const formResetTrigger = useSettingsPageStatesStore(state => state.formResetTrigger);
     const acknowledgeFormReset = useSettingsPageStatesStore(state => state.acknowledgeFormReset);
 
@@ -1325,7 +1327,7 @@ function AppPoTokenSettings() {
                         await stopPotServer();
                     }
                 }}
-                disabled={useCustomCommands || isStartingPotServer || isChangingPotServerPort}
+                disabled={useCustomCommands || isStartingPotServer || isChangingPotServerPort || isFlatpak}
                 />
                 <Label htmlFor="use-potoken">Use PO Token</Label>
             </div>
@@ -1351,7 +1353,7 @@ function AppPoTokenSettings() {
                 id="disable-innertube"
                 checked={disableInnertube}
                 onCheckedChange={(checked) => saveSettingsKey('disable_innertube', checked)}
-                disabled={useCustomCommands || !usePotoken}
+                disabled={useCustomCommands || !usePotoken || isFlatpak}
                 />
             </div>
         </div>
@@ -1364,7 +1366,7 @@ function AppPoTokenSettings() {
                         <FormField
                             control={potServerPortForm.control}
                             name="port"
-                            disabled={!usePotoken || useCustomCommands || isChangingPotServerPort || isStartingPotServer}
+                            disabled={!usePotoken || isChangingPotServerPort || isStartingPotServer || isFlatpak}
                             render={({ field }) => (
                                 <FormItem className="w-full">
                                     <FormControl>
@@ -1383,7 +1385,7 @@ function AppPoTokenSettings() {
                         />
                         <Button
                             type="submit"
-                            disabled={!watchedPotServerPort || Number(watchedPotServerPort) === potServerPort || Object.keys(potServerPortFormErrors).length > 0 || !usePotoken || useCustomCommands || isChangingPotServerPort || isStartingPotServer}
+                            disabled={!watchedPotServerPort || Number(watchedPotServerPort) === potServerPort || Object.keys(potServerPortFormErrors).length > 0 || !usePotoken || useCustomCommands || isChangingPotServerPort || isStartingPotServer || isFlatpak}
                         >
                             {isChangingPotServerPort ? (
                                 <>
@@ -1818,7 +1820,7 @@ function AppInfoSettings() {
                     <TriangleAlert className="size-4 stroke-primary" />
                     <AlertTitle className="text-sm">Flatpak Sandbox Detected!</AlertTitle>
                     <AlertDescription className="text-xs">
-                        It looks like you are running NeoDLP in a Flatpak sandbox. Some features like browser integration, desktop notifications, cookies, changing download folder, revealing completed downloads in explorer, automatic yt-dlp updates and auto-launch on startup are not available in Flatpak due to sandbox restrictions. To use these features, please install the native linux build (DEB, RPM or AUR) of NeoDLP.
+                        It looks like you are running NeoDLP in a Flatpak sandbox. Some features like browser integration, desktop notifications, cookies, po tokens, changing download folder, revealing completed downloads in explorer, automatic yt-dlp updates and auto-launch on startup are not available in Flatpak due to sandbox restrictions. To use these features, please install the native linux build (DEB, RPM or AUR) of NeoDLP.
                     </AlertDescription>
                 </Alert>
             ) : isAppimage ? (
