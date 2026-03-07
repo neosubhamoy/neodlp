@@ -13,6 +13,7 @@ Cross-platform Video/Audio Downloader Desktop App based on YT-DLP with Modern UI
 > **🥰 Liked this project? Please consider giving it a Star (🌟) on github to show us your appreciation and help the algorythm recommend this project to even more awesome people like you!**
 
 [![winget version](https://img.shields.io/winget/v/neosubhamoy.neodlp?color=lime-green&style=flat-square)](https://github.com/microsoft/winget-pkgs/tree/master/manifests/n/neosubhamoy/neodlp)
+[![flathub version](https://img.shields.io/flathub/v/com.neosubhamoy.neodlp?color=lime-green&style=flat-square)](https://flathub.org/en/apps/com.neosubhamoy.neodlp)
 [![aur version](https://img.shields.io/aur/version/neodlp?color=lime-green&style=flat-square)](https://aur.archlinux.org/packages/neodlp)
 
 
@@ -85,6 +86,7 @@ After installing the extension you can do the following directly from the browse
 | Windows x86_64 / ARM64 | WinGet | `winget install neosubhamoy.neodlp` |
 | MacOS x86_64 / ARM64 | Homebrew | `brew install neosubhamoy/tap/neodlp` |
 | MacOS x86_64 / ARM64 | Curl-Bash Installer | `curl -sSL https://neodlp.neosubhamoy.com/macos_installer.sh \| bash` |
+| Linux x86_64 / ARM64 | Flathub | `flatpak install flathub com.neosubhamoy.neodlp` |
 | Linux x86_64 / ARM64 | Curl-Bash Installer | `curl -sSL https://neodlp.neosubhamoy.com/linux_installer.sh \| bash` |
 | Arch Linux x86_64 / ARM64 | AUR | `yay -S neodlp` or `paru -S neodlp` |
 
