@@ -52,8 +52,8 @@ After installing the extension you can do the following directly from the browse
 ## 💻 Supported Platforms
 
 - Windows (10 / 11)
-- Linux (Debian / Fedora / RHEL / SUSE / Arch Linux base)
-- MacOS (>11)
+- Linux (Mostly all modern distros)
+- MacOS (>=11)
 
 ## 🤝 External Dependencies
 
@@ -86,9 +86,9 @@ After installing the extension you can do the following directly from the browse
 | Windows x86_64 / ARM64 | WinGet | `winget install neosubhamoy.neodlp` |
 | MacOS x86_64 / ARM64 | Homebrew | `brew install neosubhamoy/tap/neodlp` |
 | MacOS x86_64 / ARM64 | Curl-Bash Installer | `curl -sSL https://neodlp.neosubhamoy.com/macos_installer.sh \| bash` |
-| Linux x86_64 / ARM64 | Flathub | `flatpak install flathub com.neosubhamoy.neodlp` |
-| Linux x86_64 / ARM64 | Curl-Bash Installer | `curl -sSL https://neodlp.neosubhamoy.com/linux_installer.sh \| bash` |
-| Arch Linux x86_64 / ARM64 | AUR | `yay -S neodlp` or `paru -S neodlp` |
+| Linux x86_64 / ARM64 (Flatpak) | Flathub | `flatpak install flathub com.neosubhamoy.neodlp` |
+| Linux x86_64 / ARM64 (Native) | Curl-Bash Installer | `curl -sSL https://neodlp.neosubhamoy.com/linux_installer.sh \| bash` |
+| Arch Linux x86_64 / ARM64 (Native) | AUR | `yay -S neodlp` or `paru -S neodlp` |
 
 ## 🧪 Package Testing Status
 
