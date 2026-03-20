@@ -72,6 +72,8 @@ export default function useDownloader() {
         use_potoken: USE_POTOKEN,
         disable_innertube: DISABLE_INNERTUBE,
         pot_server_port: POT_SERVER_PORT,
+        windows_filenames: WINDOWS_FILENAMES,
+        restrict_filenames: RESTRICT_FILENAMES
     } = useSettingsPageStatesStore(state => state.settings);
     const isRunningPotServer = useSettingsPageStatesStore(state => state.isRunningPotServer);
 
@@ -332,8 +334,6 @@ export default function useDownloader() {
             `temp:${tempDownloadDirPath}`,
             '--paths',
             `home:${downloadDirPath}`,
-            '--windows-filenames',
-            '--restrict-filenames',
             '--exec',
             'after_move:echo Finalpath: {}',
             '--no-mtime',
@@ -349,6 +349,14 @@ export default function useDownloader() {
             args.push('--output', `%(playlist_title|Unknown)s[${downloadId}]/[%(playlist_index|0)d]_${FILENAME_TEMPLATE}.%(ext)s`);
         } else {
             args.push('--output', `${FILENAME_TEMPLATE}[${downloadId}].%(ext)s`);
+        }
+
+        if (WINDOWS_FILENAMES) {
+            args.push('--windows-filenames');
+        }
+
+        if (RESTRICT_FILENAMES) {
+            args.push('--restrict-filenames');
         }
 
         if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && USE_DELAY) {

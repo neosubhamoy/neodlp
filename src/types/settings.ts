@@ -64,6 +64,8 @@ export interface Settings {
     use_potoken: boolean;
     disable_innertube: boolean;
     pot_server_port: number;
+    windows_filenames: boolean;
+    restrict_filenames: boolean;
     // extension settings
     websocket_port: number;
 }

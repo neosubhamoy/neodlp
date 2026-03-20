@@ -282,7 +282,7 @@ function AppAppearanceSettings() {
     );
 }
 
-function AppFolderSettings() {
+function AppFilesystemSettings() {
     const { saveSettingsKey } = useSettings();
 
     const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
@@ -295,6 +295,8 @@ function AppFolderSettings() {
     const setPath = useBasePathsStore((state) => state.setPath);
 
     const filenameTemplate = useSettingsPageStatesStore(state => state.settings.filename_template);
+    const windowsFilenames = useSettingsPageStatesStore(state => state.settings.windows_filenames);
+    const restrictFilenames = useSettingsPageStatesStore(state => state.settings.restrict_filenames);
 
     const downloadStates = useDownloadStatesStore(state => state.downloadStates);
     const ongoingDownloads = downloadStates.filter(state =>
@@ -447,6 +449,26 @@ function AppFolderSettings() {
                     </Button>
                 </form>
             </Form>
+        </div>
+        <div className="sanitize-filenames">
+            <h3 className="font-semibold">Sanitize Filenames</h3>
+            <p className="text-xs text-muted-foreground mb-3">Make filenames windows-compatible, allow only ASCII characters and replace spaces with underscore (recommended, disabling it may cause issue with some downloads, also it may cause paused downloads to re-start from begining)</p>
+            <div className="flex items-center space-x-2 mb-3">
+                <Switch
+                id="windows-filenames"
+                checked={windowsFilenames}
+                onCheckedChange={(checked) => saveSettingsKey('windows_filenames', checked)}
+                />
+                <Label htmlFor="windows-filenames">Windows Compatibility</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+                <Switch
+                id="restrict-filenames"
+                checked={restrictFilenames}
+                onCheckedChange={(checked) => saveSettingsKey('restrict_filenames', checked)}
+                />
+                <Label htmlFor="restrict-filenames">Force ASCII Only</Label>
+            </div>
         </div>
         </>
     );
@@ -1933,7 +1955,7 @@ export function ApplicationSettings() {
     const tabsList = [
         { key: 'general', label: 'General', icon: Wrench, component: <AppGeneralSettings /> },
         { key: 'appearance', label: 'Appearance', icon: WandSparkles, component: <AppAppearanceSettings /> },
-        { key: 'folders', label: 'Folders', icon: Folder, component: <AppFolderSettings /> },
+        { key: 'filesystem', label: 'Filesystem', icon: Folder, component: <AppFilesystemSettings /> },
         { key: 'formats', label: 'Formats', icon: FileVideo, component: <AppFormatSettings /> },
         { key: 'embedding', label: 'Embedding', icon: FilePen, component: <AppEmbeddingSettings /> },
         { key: 'network', label: 'Network', icon: Wifi, component: <AppNetworkSettings /> },

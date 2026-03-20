@@ -221,6 +221,8 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         use_potoken: false,
         disable_innertube: false,
         pot_server_port: 4416,
+        windows_filenames: true,
+        restrict_filenames: true,
         // extension settings
         websocket_port: 53511
     },
@@ -306,6 +308,8 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             use_potoken: false,
             disable_innertube: false,
             pot_server_port: 4416,
+            windows_filenames: true,
+            restrict_filenames: true,
             // extension settings
             websocket_port: 53511
         },
