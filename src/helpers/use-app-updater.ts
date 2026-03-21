@@ -4,6 +4,7 @@ import { relaunch as relaunchApp } from "@tauri-apps/plugin-process";
 import { useSettingsPageStatesStore } from "@/services/store";
 import { useLogger } from "@/helpers/use-logger";
 import { sendNotification } from '@tauri-apps/plugin-notification';
+import usePotServer from "@/helpers/use-pot-server";
 
 export default function useAppUpdater() {
     const setIsCheckingAppUpdate = useSettingsPageStatesStore(state => state.setIsCheckingAppUpdate);
@@ -12,6 +13,9 @@ export default function useAppUpdater() {
     const setDownloadProgress = useSettingsPageStatesStore(state => state.setAppUpdateDownloadProgress);
     const enableNotifications = useSettingsPageStatesStore(state => state.settings.enable_notifications);
     const updateNotification = useSettingsPageStatesStore(state => state.settings.update_notification);
+    const isRunningPotServer = useSettingsPageStatesStore(state => state.isRunningPotServer);
+
+    const { stopPotServer } = usePotServer();
     const LOG = useLogger();
 
     const checkForAppUpdate = async () => {
@@ -38,6 +42,10 @@ export default function useAppUpdater() {
 
     const downloadAndInstallAppUpdate = async (update: Update) => {
         setIsUpdating(true);
+        if (isRunningPotServer) {
+            LOG.info('NEODLP', 'Stopping POT Server before starting app update');
+            await stopPotServer();
+        }
         LOG.info('NEODLP', `Downloading and installing app update v${update.version}`);
         let downloaded = 0;
         let contentLength: number | undefined = 0;
