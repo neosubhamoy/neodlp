@@ -20,7 +20,7 @@ const versions = {
     'ffmpeg-ffprobe': 'latest',
     'deno': '2.7.7',
     'aria2c': '1.37.0',
-    'neodlp-pot': '0.7.2'
+    'neodlp-pot': '0.8.1'
 };
 
 const binaries = {
