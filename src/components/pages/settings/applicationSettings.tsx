@@ -1276,7 +1276,7 @@ function AppDelaySettings() {
 }
 
 function AppPoTokenSettings() {
-    const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
+    // const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
 
     const formResetTrigger = useSettingsPageStatesStore(state => state.formResetTrigger);
     const acknowledgeFormReset = useSettingsPageStatesStore(state => state.acknowledgeFormReset);
@@ -1349,7 +1349,7 @@ function AppPoTokenSettings() {
                         await stopPotServer();
                     }
                 }}
-                disabled={useCustomCommands || isStartingPotServer || isChangingPotServerPort || isFlatpak}
+                disabled={useCustomCommands || isStartingPotServer || isChangingPotServerPort /*|| isFlatpak*/}
                 />
                 <Label htmlFor="use-potoken">Use PO Token</Label>
             </div>
@@ -1375,7 +1375,7 @@ function AppPoTokenSettings() {
                 id="disable-innertube"
                 checked={disableInnertube}
                 onCheckedChange={(checked) => saveSettingsKey('disable_innertube', checked)}
-                disabled={useCustomCommands || !usePotoken || isFlatpak}
+                disabled={useCustomCommands || !usePotoken /*|| isFlatpak*/}
                 />
             </div>
         </div>
@@ -1388,7 +1388,7 @@ function AppPoTokenSettings() {
                         <FormField
                             control={potServerPortForm.control}
                             name="port"
-                            disabled={!usePotoken || isChangingPotServerPort || isStartingPotServer || isFlatpak}
+                            disabled={!usePotoken || isChangingPotServerPort || isStartingPotServer /*|| isFlatpak*/}
                             render={({ field }) => (
                                 <FormItem className="w-full">
                                     <FormControl>
@@ -1407,7 +1407,7 @@ function AppPoTokenSettings() {
                         />
                         <Button
                             type="submit"
-                            disabled={!watchedPotServerPort || Number(watchedPotServerPort) === potServerPort || Object.keys(potServerPortFormErrors).length > 0 || !usePotoken || useCustomCommands || isChangingPotServerPort || isStartingPotServer || isFlatpak}
+                            disabled={!watchedPotServerPort || Number(watchedPotServerPort) === potServerPort || Object.keys(potServerPortFormErrors).length > 0 || !usePotoken || useCustomCommands || isChangingPotServerPort || isStartingPotServer /*|| isFlatpak*/}
                         >
                             {isChangingPotServerPort ? (
                                 <>

@@ -2,7 +2,7 @@ import { join, resourceDir, homeDir } from "@tauri-apps/api/path";
 import * as fs from "@tauri-apps/plugin-fs";
 import { useKvPairs } from "@/helpers/use-kvpairs";
 import { useSettingsPageStatesStore } from "@/services/store";
-// import { Command } from "@tauri-apps/plugin-shell";
+import { Command } from "@tauri-apps/plugin-shell";
 import { invoke } from "@tauri-apps/api/core";
 
 interface FileMap {
@@ -42,47 +42,47 @@ export function useLinuxRegisterer() {
                 { source: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_http.py', destination: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_http.py', dir: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/' },
             ];
 
-            // const filesToCopyFlatpak: FileMap[] = [
+            const filesToCopyFlatpak: FileMap[] = [
                 // { source: 'chrome.json', destination: '.config/google-chrome/NativeMessagingHosts/com.neosubhamoy.neodlp.json', dir: '.config/google-chrome/NativeMessagingHosts/', content: JSON.stringify(flatpakChromeManifestContent) },
                 // { source: 'chrome.json', destination: '.config/chromium/NativeMessagingHosts/com.neosubhamoy.neodlp.json', dir: '.config/chromium/NativeMessagingHosts/', content: JSON.stringify(flatpakChromeManifestContent) },
                 // { source: 'firefox.json', destination: '.mozilla/native-messaging-hosts/com.neosubhamoy.neodlp.json', dir: '.mozilla/native-messaging-hosts/', content: JSON.stringify(flatpakFirefoxManifestContent) },
                 // { source: 'neodlp-msghost', destination: '.local/bin/neodlp-msghost', dir: '.local/bin/' },
 
-                // { source: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil.py', destination: '.var/app/com.neosubhamoy.neodlp/config/yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil.py', dir: '.var/app/com.neosubhamoy.neodlp/config/yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/' },
-                // { source: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_cli.py', destination: '.var/app/com.neosubhamoy.neodlp/config/yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_cli.py', dir: '.var/app/com.neosubhamoy.neodlp/config/yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/' },
-                // { source: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_http.py', destination: '.var/app/com.neosubhamoy.neodlp/config/yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_http.py', dir: '.var/app/com.neosubhamoy.neodlp/config/yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/' },
-            // ];
+                { source: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil.py', destination: '.var/app/com.neosubhamoy.neodlp/config/yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil.py', dir: '.var/app/com.neosubhamoy.neodlp/config/yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/' },
+                { source: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_cli.py', destination: '.var/app/com.neosubhamoy.neodlp/config/yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_cli.py', dir: '.var/app/com.neosubhamoy.neodlp/config/yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/' },
+                { source: 'yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_http.py', destination: '.var/app/com.neosubhamoy.neodlp/config/yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/getpot_bgutil_http.py', dir: '.var/app/com.neosubhamoy.neodlp/config/yt-dlp-plugins/bgutil-ytdlp-pot-provider/yt_dlp_plugins/extractor/' },
+            ];
 
             if (isFlatpak) {
                 // Skip linux registration for Flatpak
-                console.log('Flatpak sandbox detected! Skipping Linux registration...');
+                // console.log('Flatpak sandbox detected! Skipping Linux registration...');
 
-                // for (const file of filesToCopyFlatpak) {
-                //     const sourcePath = await join(resourceDirPath, file.source);
-                //     const destinationDir = await join(homeDirPath, file.dir);
-                //     const destinationPath = await join(homeDirPath, file.destination);
-                //     const escapedContent = file.content?.replace(/'/g, `'\\''`) || '';
-                //     const copyCommand = Command.create('sh', ['-c', `mkdir -p "${destinationDir}" && cp "${sourcePath}" "${destinationPath}"`]);
-                //     const writeCommand = Command.create('sh', ['-c', `printf '%s' '${escapedContent}' > "${destinationPath}"`]);
+                for (const file of filesToCopyFlatpak) {
+                    const sourcePath = await join(resourceDirPath, file.source);
+                    const destinationDir = await join(homeDirPath, file.dir);
+                    const destinationPath = await join(homeDirPath, file.destination);
+                    const escapedContent = file.content?.replace(/'/g, `'\\''`) || '';
+                    const copyCommand = Command.create('sh', ['-c', `mkdir -p "${destinationDir}" && cp "${sourcePath}" "${destinationPath}"`]);
+                    const writeCommand = Command.create('sh', ['-c', `printf '%s' '${escapedContent}' > "${destinationPath}"`]);
 
-                //     if (file.content) {
-                //         const writeOutput = await writeCommand.execute();
-                //         if (writeOutput.code === 0) {
-                //             console.log(`File ${file.destination} created successfully at ${destinationPath}`);
-                //         } else {
-                //             console.error(`Failed to create file ${file.destination} at ${destinationPath}:`, writeOutput.stderr);
-                //             return { success: false, message: 'Failed to register' };
-                //         }
-                //     } else {
-                //         const copyOutput = await copyCommand.execute();
-                //         if (copyOutput.code === 0) {
-                //             console.log(`File ${file.source} copied successfully to ${destinationPath}`);
-                //         } else {
-                //             console.error(`Failed to copy file ${file.source} to ${destinationPath}:`, copyOutput.stderr);
-                //             return { success: false, message: 'Failed to register' };
-                //         }
-                //     }
-                // }
+                    if (file.content) {
+                        const writeOutput = await writeCommand.execute();
+                        if (writeOutput.code === 0) {
+                            console.log(`File ${file.destination} created successfully at ${destinationPath}`);
+                        } else {
+                            console.error(`Failed to create file ${file.destination} at ${destinationPath}:`, writeOutput.stderr);
+                            return { success: false, message: 'Failed to register' };
+                        }
+                    } else {
+                        const copyOutput = await copyCommand.execute();
+                        if (copyOutput.code === 0) {
+                            console.log(`File ${file.source} copied successfully to ${destinationPath}`);
+                        } else {
+                            console.error(`Failed to copy file ${file.source} to ${destinationPath}:`, copyOutput.stderr);
+                            return { success: false, message: 'Failed to register' };
+                        }
+                    }
+                }
             } else {
                 for (const file of filesToCopy) {
                     const sourcePath = await join(resourceDirPath, file.source);
