@@ -1842,7 +1842,7 @@ function AppInfoSettings() {
                     <TriangleAlert className="size-4 stroke-primary" />
                     <AlertTitle className="text-sm">Flatpak Sandbox Detected!</AlertTitle>
                     <AlertDescription className="text-xs">
-                        It looks like you are running NeoDLP in a Flatpak sandbox. Some features like browser integration, desktop notifications, cookies, po tokens, changing download folder, revealing completed downloads in explorer, automatic yt-dlp updates and auto-launch on startup are not available in Flatpak due to sandbox restrictions. To use these features, please install the native linux build (DEB, RPM or AUR) of NeoDLP.
+                        It looks like you are running NeoDLP in a Flatpak sandbox. Some features like browser integration, desktop notifications, cookies, changing download folder, revealing completed downloads in explorer, and auto-launch on startup are not available in Flatpak due to sandbox restrictions. To use these features, please install the native linux build (DEB, RPM or AUR) of NeoDLP.
                     </AlertDescription>
                 </Alert>
             ) : isAppimage ? (
@@ -1933,7 +1933,7 @@ function AppInfoSettings() {
 }
 
 export function ApplicationSettings() {
-    const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
+    // const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
 
     const activeSubAppTab = useSettingsPageStatesStore(state => state.activeSubAppTab);
     const setActiveSubAppTab = useSettingsPageStatesStore(state => state.setActiveSubAppTab);
@@ -1992,14 +1992,14 @@ export function ApplicationSettings() {
                         <Switch
                         id="ytdlp-auto-update"
                         checked={ytDlpAutoUpdate}
-                        disabled={isFlatpak}
+                        // disabled={isFlatpak}
                         onCheckedChange={(checked) => saveSettingsKey('ytdlp_auto_update', checked)}
                         />
                         <Label htmlFor="ytdlp-auto-update">Auto Update</Label>
                     </div>
                     <Select
                     value={ytDlpUpdateChannel}
-                    disabled={isFlatpak}
+                    // disabled={isFlatpak}
                     onValueChange={(value) => saveSettingsKey('ytdlp_update_channel', value)}
                     >
                         <SelectTrigger className="w-37.5 ring-0 focus:ring-0">
@@ -2014,7 +2014,7 @@ export function ApplicationSettings() {
                         </SelectContent>
                     </Select>
                     <Button
-                    disabled={ytDlpAutoUpdate || isUpdatingYtDlp || ongoingDownloads.length > 0 || isFlatpak}
+                    disabled={ytDlpAutoUpdate || isUpdatingYtDlp || ongoingDownloads.length > 0 /*|| isFlatpak*/}
                     onClick={async () => await updateYtDlp()}
                     >
                         {isUpdatingYtDlp ? (

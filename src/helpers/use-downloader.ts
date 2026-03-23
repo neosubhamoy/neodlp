@@ -15,6 +15,7 @@ import { sendNotification } from '@tauri-apps/plugin-notification';
 import { FetchVideoMetadataParams, StartDownloadParams } from "@/providers/appContextProvider";
 import { useDebouncedCallback } from '@tanstack/react-pacer/debouncer';
 import { fetchDownloadStateById } from "@/services/database";
+import { dataDir } from "@tauri-apps/api/path";
 
 export default function useDownloader() {
     const globalDownloadStates = useDownloadStatesStore((state) => state.downloadStates);
@@ -199,8 +200,9 @@ export default function useDownloader() {
             }
 
             const isFlatpak = await invoke<boolean>('is_flatpak');
+            const xdgDataDir = await dataDir();
             const command = isFlatpak
-            ? Command.create('sh', ['-c', `yt-dlp ${args.map(arg => `'${arg.replace(/'/g, "'\\''")}'`).join(' ')}`])
+            ? Command.create('sh', ['-c', `${xdgDataDir}/pip/bin/yt-dlp ${args.map(arg => `'${arg.replace(/'/g, "'\\''")}'`).join(' ')}`])
             : Command.sidecar('binaries/yt-dlp', args);
 
             let jsonOutput = '';
@@ -569,8 +571,9 @@ export default function useDownloader() {
 
         console.log('Starting download with args:', args);
         const isFlatpak = await invoke<boolean>('is_flatpak');
+        const xdgDataDir = await dataDir();
         const command = isFlatpak
-        ? Command.create('sh', ['-c', `yt-dlp ${args.map(arg => `'${arg.replace(/'/g, "'\\''")}'`).join(' ')}`])
+        ? Command.create('sh', ['-c', `${xdgDataDir}/pip/bin/yt-dlp ${args.map(arg => `'${arg.replace(/'/g, "'\\''")}'`).join(' ')}`])
         : Command.sidecar('binaries/yt-dlp', args);
 
         command.on('close', async (data) => {

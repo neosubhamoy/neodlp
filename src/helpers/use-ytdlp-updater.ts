@@ -2,7 +2,7 @@ import { useSettingsPageStatesStore } from "@/services/store";
 import { useKvPairs } from "@/helpers/use-kvpairs";
 import { Command } from "@tauri-apps/plugin-shell";
 import { invoke } from "@tauri-apps/api/core";
-import { join } from "@tauri-apps/api/path";
+import { join, dataDir } from "@tauri-apps/api/path";
 import { platform } from "@tauri-apps/plugin-os";
 import { useLogger } from "@/helpers/use-logger";
 import { toast } from "sonner";
@@ -18,13 +18,14 @@ export function useYtDlpUpdater() {
     const updateYtDlp = async () => {
         const CURRENT_TIMESTAMP = Date.now();
         const isFlatpak = await invoke<boolean>('is_flatpak');
+        const xdgDataDir = await dataDir();
         setIsUpdatingYtDlp(true);
         LOG.info('NEODLP', 'Updating yt-dlp to latest version');
         try {
             const command = currentPlatform === 'linux' && isFlatpak
             ? ytDlpUpdateChannel === 'nightly'
-              ? Command.create('sh', ['-c', 'pip3 install -U --pre "yt-dlp[default,curl-cffi]"'])
-              : Command.create('sh', ['-c', 'pip3 install -U "yt-dlp[default,curl-cffi]"'])
+              ? Command.create('sh', ['-c', `PYTHONUSERBASE=${xdgDataDir}/pip pip3 install --user --upgrade --pre "yt-dlp[default,curl-cffi]"`])
+              : Command.create('sh', ['-c', `PYTHONUSERBASE=${xdgDataDir}/pip pip3 install --user --upgrade "yt-dlp[default,curl-cffi]"`])
             : currentPlatform === 'linux'
               ? Command.create('pkexec', ['yt-dlp', '--update-to', ytDlpUpdateChannel])
               : Command.sidecar('binaries/yt-dlp', ['--update-to', ytDlpUpdateChannel]);

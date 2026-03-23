@@ -3,7 +3,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppContext } from "@/providers/appContextProvider";
 import { useEffect, useRef, useState } from "react";
 import { arch, exeExtension } from "@tauri-apps/plugin-os";
-import { downloadDir, join, resourceDir, tempDir } from "@tauri-apps/api/path";
+import { downloadDir, join, resourceDir, tempDir, dataDir } from "@tauri-apps/api/path";
 import { useBasePathsStore, useCurrentVideoMetadataStore, useDownloaderPageStatesStore, useDownloadStatesStore, useEnvironmentStore, useKvPairsStatesStore, useSettingsPageStatesStore } from "@/services/store";
 import { isObjEmpty} from "@/utils";
 import { Command } from "@tauri-apps/plugin-shell";
@@ -258,8 +258,9 @@ export default function App({ children }: { children: React.ReactNode }) {
             setIsFetchingYtDlpVersion(true);
             try {
                 const isFlatpak = await invoke<boolean>('is_flatpak');
+                const xdgDataDir = await dataDir();
                 const command = isFlatpak
-                ? Command.create('sh', ['-c', `yt-dlp --version`])
+                ? Command.create('sh', ['-c', `${xdgDataDir}/pip/bin/yt-dlp --version`])
                 : Command.sidecar('binaries/yt-dlp', ['--version']);
                 const output = await command.execute();
                 if (output.code === 0) {
@@ -309,11 +310,11 @@ export default function App({ children }: { children: React.ReactNode }) {
                 console.log("Auto-update check already performed in this session, skipping");
                 return;
             }
-            const isFlatpak = await invoke<boolean>('is_flatpak');
-            if (isFlatpak) {
-                console.log("Flatpak detected! Skipping yt-dlp auto-update");
-                return;
-            }
+            // const isFlatpak = await invoke<boolean>('is_flatpak');
+            // if (isFlatpak) {
+            //     console.log("Flatpak detected! Skipping yt-dlp auto-update");
+            //     return;
+            // }
             hasRunYtDlpAutoUpdateRef.current = true;
             console.log("Checking yt-dlp auto-update with loaded config values:", {
                 autoUpdate: YTDLP_AUTO_UPDATE,
