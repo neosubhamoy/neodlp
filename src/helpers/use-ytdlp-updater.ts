@@ -23,9 +23,10 @@ export function useYtDlpUpdater() {
         LOG.info('NEODLP', 'Updating yt-dlp to latest version');
         try {
             const command = currentPlatform === 'linux' && isFlatpak
-            ? ytDlpUpdateChannel === 'nightly'
-              ? Command.create('sh', ['-c', `PYTHONUSERBASE=${xdgDataDir}/pip python3 -m pip install --user --upgrade --pre "yt-dlp[default,curl-cffi]"`])
-              : Command.create('sh', ['-c', `PYTHONUSERBASE=${xdgDataDir}/pip python3 -m pip install --user --upgrade "yt-dlp[default,curl-cffi]"`])
+            // ? ytDlpUpdateChannel === 'nightly'
+            //   ? Command.create('sh', ['-c', `PYTHONUSERBASE=${xdgDataDir}/pip python3 -m pip install --user --upgrade --pre "yt-dlp[default,curl-cffi]"`])
+            //   : Command.create('sh', ['-c', `PYTHONUSERBASE=${xdgDataDir}/pip python3 -m pip install --user --upgrade "yt-dlp[default,curl-cffi]"`])
+            ? Command.create('sh', ['-c', `${xdgDataDir}/yt-dlp/yt-dlp --update-to ${ytDlpUpdateChannel}`])
             : currentPlatform === 'linux'
               ? Command.create('pkexec', ['yt-dlp', '--update-to', ytDlpUpdateChannel])
               : Command.sidecar('binaries/yt-dlp', ['--update-to', ytDlpUpdateChannel]);

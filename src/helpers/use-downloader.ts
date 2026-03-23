@@ -202,7 +202,7 @@ export default function useDownloader() {
             const isFlatpak = await invoke<boolean>('is_flatpak');
             const xdgDataDir = await dataDir();
             const command = isFlatpak
-            ? Command.create('sh', ['-c', `${xdgDataDir}/pip/bin/yt-dlp ${args.map(arg => `'${arg.replace(/'/g, "'\\''")}'`).join(' ')}`])
+            ? Command.create('sh', ['-c', `${xdgDataDir}/yt-dlp/yt-dlp ${args.map(arg => `'${arg.replace(/'/g, "'\\''")}'`).join(' ')}`])
             : Command.sidecar('binaries/yt-dlp', args);
 
             let jsonOutput = '';
@@ -573,7 +573,7 @@ export default function useDownloader() {
         const isFlatpak = await invoke<boolean>('is_flatpak');
         const xdgDataDir = await dataDir();
         const command = isFlatpak
-        ? Command.create('sh', ['-c', `${xdgDataDir}/pip/bin/yt-dlp ${args.map(arg => `'${arg.replace(/'/g, "'\\''")}'`).join(' ')}`])
+        ? Command.create('sh', ['-c', `${xdgDataDir}/yt-dlp/yt-dlp ${args.map(arg => `'${arg.replace(/'/g, "'\\''")}'`).join(' ')}`])
         : Command.sidecar('binaries/yt-dlp', args);
 
         command.on('close', async (data) => {

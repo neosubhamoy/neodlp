@@ -260,7 +260,7 @@ export default function App({ children }: { children: React.ReactNode }) {
                 const isFlatpak = await invoke<boolean>('is_flatpak');
                 const xdgDataDir = await dataDir();
                 const command = isFlatpak
-                ? Command.create('sh', ['-c', `${xdgDataDir}/pip/bin/yt-dlp --version`])
+                ? Command.create('sh', ['-c', `${xdgDataDir}/yt-dlp/yt-dlp --version`])
                 : Command.sidecar('binaries/yt-dlp', ['--version']);
                 const output = await command.execute();
                 if (output.code === 0) {

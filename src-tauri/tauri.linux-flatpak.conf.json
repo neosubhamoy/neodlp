@@ -37,6 +37,7 @@
             "icons/icon.ico"
         ],
         "externalBin": [
+            "binaries/yt-dlp",
             "binaries/deno",
             "binaries/neodlp-pot"
         ],
