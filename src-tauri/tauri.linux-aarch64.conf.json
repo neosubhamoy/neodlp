@@ -39,7 +39,6 @@
         ],
         "externalBin": [
             "binaries/yt-dlp",
-            "binaries/aria2c",
             "binaries/deno",
             "binaries/neodlp-pot"
         ],
@@ -48,7 +47,9 @@
         },
         "linux": {
             "deb": {
-                "depends": ["ffmpeg"],
+                "depends": ["ffmpeg", "aria2"],
+                "provides": ["yt-dlp", "deno"],
+                "conflicts": ["yt-dlp", "deno"],
                 "files": {
                     "/etc/opt/chrome/native-messaging-hosts/com.neosubhamoy.neodlp.json": "./resources/msghost-manifest/linux/chrome.json",
                     "/etc/chromium/native-messaging-hosts/com.neosubhamoy.neodlp.json": "./resources/msghost-manifest/linux/chrome.json",
@@ -60,7 +61,9 @@
             "rpm": {
                 "epoch": 0,
                 "release": "1",
-                "depends": ["ffmpeg"],
+                "depends": ["ffmpeg", "aria2"],
+                "provides": ["yt-dlp", "deno"],
+                "conflicts": ["yt-dlp", "deno"],
                 "files": {
                     "/etc/opt/chrome/native-messaging-hosts/com.neosubhamoy.neodlp.json": "./resources/msghost-manifest/linux/chrome.json",
                     "/etc/chromium/native-messaging-hosts/com.neosubhamoy.neodlp.json": "./resources/msghost-manifest/linux/chrome.json",

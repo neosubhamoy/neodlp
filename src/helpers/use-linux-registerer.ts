@@ -17,7 +17,6 @@ export function useLinuxRegisterer() {
     const { saveKvPair } = useKvPairs();
     const { updateYtDlp } = useYtDlpUpdater();
     const appVersion = useSettingsPageStatesStore(state => state.appVersion);
-    const setYtDlpVersion = useSettingsPageStatesStore((state) => state.setYtDlpVersion);
 
     const registerToLinux = async () => {
         try {
@@ -109,7 +108,6 @@ export function useLinuxRegisterer() {
 
             if (isFlatpak) {
                 await updateYtDlp();
-                setYtDlpVersion(null);
             }
 
             return { success: true, message: 'Registered successfully' }
