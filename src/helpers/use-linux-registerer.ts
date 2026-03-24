@@ -4,6 +4,7 @@ import { useKvPairs } from "@/helpers/use-kvpairs";
 import { useSettingsPageStatesStore } from "@/services/store";
 import { Command } from "@tauri-apps/plugin-shell";
 import { invoke } from "@tauri-apps/api/core";
+import { useYtDlpUpdater } from "@/helpers/use-ytdlp-updater";
 
 interface FileMap {
     source: string;
@@ -14,7 +15,9 @@ interface FileMap {
 
 export function useLinuxRegisterer() {
     const { saveKvPair } = useKvPairs();
+    const { updateYtDlp } = useYtDlpUpdater();
     const appVersion = useSettingsPageStatesStore(state => state.appVersion);
+    const setYtDlpVersion = useSettingsPageStatesStore((state) => state.setYtDlpVersion);
 
     const registerToLinux = async () => {
         try {
@@ -103,6 +106,12 @@ export function useLinuxRegisterer() {
                 }
             }
             saveKvPair('linux_registered_version', appVersion);
+
+            if (isFlatpak) {
+                await updateYtDlp();
+                setYtDlpVersion(null);
+            }
+
             return { success: true, message: 'Registered successfully' }
         } catch (error) {
             console.error('Error copying files:', error);

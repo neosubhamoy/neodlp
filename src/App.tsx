@@ -310,7 +310,11 @@ export default function App({ children }: { children: React.ReactNode }) {
                 console.log("Auto-update check already performed in this session, skipping");
                 return;
             }
-            // const isFlatpak = await invoke<boolean>('is_flatpak');
+            const isFlatpak = await invoke<boolean>('is_flatpak');
+            if (isFlatpak && (!linuxRegisteredVersion || linuxRegisteredVersion !== appVersion)) {
+                console.log("Flatpak registration not completed yet! Skipping yt-dlp auto-update...");
+                return;
+            }
             // if (isFlatpak) {
             //     console.log("Flatpak detected! Skipping yt-dlp auto-update");
             //     return;
