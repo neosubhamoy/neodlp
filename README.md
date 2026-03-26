@@ -10,7 +10,7 @@ Cross-platform Video/Audio Downloader Desktop App based on YT-DLP with Modern UI
 [![github license](https://img.shields.io/github/license/neosubhamoy/neodlp?color=blue&style=for-the-badge)](https://github.com/neosubhamoy/neodlp/blob/main/LICENSE)
 
 > [!TIP]
-> **🥰 Liked this project? Please consider giving it a Star (🌟) on github to show us your appreciation and help the algorythm recommend this project to even more awesome people like you!**
+> **🥰 Liked this project? Please consider giving it a star (🌟) on github to show us your appreciation and help the algorythm recommend this project to even more awesome people like you!**
 
 [![winget version](https://img.shields.io/winget/v/neosubhamoy.neodlp?color=lime-green&style=flat-square)](https://github.com/microsoft/winget-pkgs/tree/master/manifests/n/neosubhamoy/neodlp)
 [![flathub version](https://img.shields.io/flathub/v/com.neosubhamoy.neodlp?color=lime-green&style=flat-square)](https://flathub.org/en/apps/com.neosubhamoy.neodlp)
@@ -115,18 +115,6 @@ Though NeoDLP is supported on most platforms but not all packages are tested on 
 
 </details>
 
-## 💝 Support the Development
-
-NeoDLP is and will be always FREE to Use and Open-Sourced for Everyone. On the other hand the developent process of NeoDLP takes lots of time, effort and even sometimes money! So, if you appriciate my work and have the ability to donate, then please consider supporting the development by donating (even a very small donation matters and helps NeoDLP to be a better product!) Your support is the key to my motivation...🤗
-
-<a href="https://buymeacoffee.com/neosubhamoy" target="_blank" title="buymeacoffee">
-    <img src="https://iili.io/JoQ0zN9.md.png"  alt="buymeacoffee-orange-badge" style="width: 150px;">
-</a>
-<br></br>
-
-> [!NOTE]
-> You can also donate via UPI by sending donations to this UPI ID directly: **subhamoybiswas636-2@oksbi**
-
 ## 🪜 Roadmap
 
 - [x] Add support for yt-dlp
@@ -191,6 +179,7 @@ Noticed any Bug? or Want to give us some suggetions? Always feel free to let us 
   - [SourceForge (Releases Only)](https://sourceforge.net/projects/neodlp)
 - Official Distribution Channels
   - [WinGet (for Windows)](https://github.com/microsoft/winget-pkgs/tree/master/manifests/n/neosubhamoy/neodlp)
+  - [Flathub (for Linux)](https://flathub.org/en/apps/com.neosubhamoy.neodlp)
   - [AUR (for Arch Linux)](https://aur.archlinux.org/packages/neodlp)
 - Related Projects
   - [NeoDLP Extension](https://github.com/neosubhamoy/neodlp-extension)

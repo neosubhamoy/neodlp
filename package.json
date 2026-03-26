@@ -1,7 +1,7 @@
 {
   "name": "neodlp",
   "private": true,
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Cross-platform Video/Audio Downloader Desktop App based on YT-DLP with Modern UI and Browser Integration",
   "type": "module",
   "scripts": {

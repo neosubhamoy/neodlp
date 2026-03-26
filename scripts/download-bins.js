@@ -16,9 +16,9 @@ const targetPlatform = process.argv[2];
 const targetBin = process.argv[3];
 
 const versions = {
-    'yt-dlp': '2026.03.17.232108',
+    'yt-dlp': '2026.03.21.233500',
     'ffmpeg-ffprobe': 'latest',
-    'deno': '2.7.7',
+    'deno': '2.7.8',
     'aria2c': '1.37.0',
     'neodlp-pot': '0.8.1'
 };
