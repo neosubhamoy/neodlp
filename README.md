@@ -10,7 +10,7 @@ Cross-platform Video/Audio Downloader Desktop App based on YT-DLP with Modern UI
 [![github license](https://img.shields.io/github/license/neosubhamoy/neodlp?color=blue&style=for-the-badge)](https://github.com/neosubhamoy/neodlp/blob/main/LICENSE)
 
 > [!TIP]
-> **🥰 Liked this project? Please consider giving it a star (🌟) on github to show us your appreciation and help the algorythm recommend this project to even more awesome people like you!**
+> **🥰 Liked this project? Please consider giving it a star (🌟) on github to show us your appreciation and help the algorithm recommend this project to even more awesome people like you!**
 
 [![winget version](https://img.shields.io/winget/v/neosubhamoy.neodlp?color=lime-green&style=flat-square)](https://github.com/microsoft/winget-pkgs/tree/master/manifests/n/neosubhamoy/neodlp)
 [![flathub version](https://img.shields.io/flathub/v/com.neosubhamoy.neodlp?color=lime-green&style=flat-square)](https://flathub.org/en/apps/com.neosubhamoy.neodlp)
