@@ -12,8 +12,23 @@ const downloadDir = path.join(projectRoot, 'src-tauri', 'resources', 'downloads'
 const binDir = path.join(projectRoot, 'src-tauri', 'binaries');
 
 const platform = os.platform();
+const arch = os.arch();
 const targetPlatform = process.argv[2];
-const targetBin = process.argv[3];
+const targetArch = process.argv[3];
+const targetBin = process.argv[4];
+
+function getArchesForBin(bin) {
+    const paths = [
+        ...(bin.dest || []),
+        ...((bin.archive && bin.archive.binDest) || [])
+    ];
+    const arches = new Set();
+    for (const p of paths) {
+        if (p.includes('-x86_64-') || p.includes('-x64-')) arches.add('x64');
+        if (p.includes('-aarch64-') || p.includes('-arm64-')) arches.add('arm64');
+    }
+    return arches;
+}
 
 const versions = {
     'yt-dlp': '2026.03.21.233500',
@@ -603,15 +618,21 @@ if (targetPlatform && !['win32', 'linux', 'darwin', 'all'].includes(targetPlatfo
     process.exit(1);
 }
 
+if (targetArch && !['x64', 'arm64', 'all'].includes(targetArch)) {
+    console.error(`ERROR: Invalid arch specified: '${targetArch}'. Use one of: x64, arm64, or all`);
+    process.exit(1);
+}
+
 if (targetBin && !binaries.hasOwnProperty(targetBin) && targetBin !== 'all') {
     console.error(`ERROR: Invalid binary specified: '${targetBin}'. Use one of: ${Object.keys(binaries).join(', ')}, or all`);
     process.exit(1);
 }
 
 const effectivePlatform = targetPlatform || platform;
+const effectiveArch = targetArch || arch;
 const effectiveBin = targetBin || 'all';
 
-console.log(`RUNNING: 📦 Binary Downloader (platform: ${effectivePlatform} | binary: ${effectiveBin})`);
+console.log(`RUNNING: 📦 Binary Downloader (platform: ${effectivePlatform} | arch: ${effectiveArch} | binary: ${effectiveBin})`);
 
 Object.keys(binaries).forEach((binKey) => {
     if (effectiveBin !== 'all' && binKey !== effectiveBin) {
@@ -621,6 +642,13 @@ Object.keys(binaries).forEach((binKey) => {
     binaries[binKey].forEach((bin) => {
         if (effectivePlatform !== 'all' && bin.platform !== effectivePlatform) {
             return;
+        }
+
+        if (effectiveArch !== 'all') {
+            const binArches = getArchesForBin(bin);
+            if (!binArches.has(effectiveArch)) {
+                return;
+            }
         }
 
         downloadAndProcess(bin);
