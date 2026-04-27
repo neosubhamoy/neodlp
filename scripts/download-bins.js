@@ -39,6 +39,19 @@ const binaries = {
             ]
         },
         {
+            name: 'yt-dlp-aarch64-pc-windows-msvc',
+            platform: 'win32',
+            url: `https://github.com/yt-dlp/yt-dlp-nightly-builds/releases${versions['yt-dlp'] === 'latest' ? '/latest' : ''}/download${versions['yt-dlp'] !== 'latest' ? '/'+versions['yt-dlp'] : ''}/yt-dlp_arm64.exe`,
+            src: path.join(downloadDir, 'yt-dlp-aarch64-pc-windows-msvc.exe'),
+            dest: [
+                path.join(binDir, 'yt-dlp-aarch64-pc-windows-msvc.exe')
+            ],
+            archive: null,
+            cleanup: [
+                path.join(downloadDir, 'yt-dlp-aarch64-pc-windows-msvc.exe')
+            ]
+        },
+        {
             name: 'yt-dlp-x86_64-unknown-linux-gnu',
             platform: 'linux',
             url: `https://github.com/yt-dlp/yt-dlp-nightly-builds/releases${versions['yt-dlp'] === 'latest' ? '/latest' : ''}/download${versions['yt-dlp'] !== 'latest' ? '/'+versions['yt-dlp'] : ''}/yt-dlp_linux`,
@@ -100,6 +113,28 @@ const binaries = {
             cleanup: [
                 path.join(downloadDir, 'ffmpeg-master-latest-win64-gpl.zip'),
                 path.join(downloadDir, 'ffmpeg-master-latest-win64-gpl')
+            ]
+        },
+        {
+            name: 'ffmpeg-ffprobe-aarch64-pc-windows-msvc',
+            platform: 'win32',
+            url: `https://github.com/yt-dlp/FFmpeg-Builds/releases${versions['ffmpeg-ffprobe'] === 'latest' ? '/latest' : ''}/download${versions['ffmpeg-ffprobe'] !== 'latest' ? '/'+versions['ffmpeg-ffprobe'] : ''}/ffmpeg-master-latest-winarm64-gpl.zip`,
+            src: path.join(downloadDir, 'ffmpeg-master-latest-winarm64-gpl.zip'),
+            dest: null,
+            archive: {
+                type: 'zip',
+                binSrc: [
+                    path.join(downloadDir, 'ffmpeg-master-latest-winarm64-gpl', 'bin', 'ffmpeg.exe'),
+                    path.join(downloadDir, 'ffmpeg-master-latest-winarm64-gpl', 'bin', 'ffprobe.exe')
+                ],
+                binDest: [
+                    path.join(binDir, 'ffmpeg-aarch64-pc-windows-msvc.exe'),
+                    path.join(binDir, 'ffprobe-aarch64-pc-windows-msvc.exe')
+                ]
+            },
+            cleanup: [
+                path.join(downloadDir, 'ffmpeg-master-latest-winarm64-gpl.zip'),
+                path.join(downloadDir, 'ffmpeg-master-latest-winarm64-gpl')
             ]
         },
         {
@@ -257,6 +292,26 @@ const binaries = {
             ]
         },
         {
+            name: 'deno-aarch64-pc-windows-msvc',
+            platform: 'win32',
+            url: `https://github.com/denoland/deno/releases${versions['deno'] === 'latest' ? '/latest' : ''}/download${versions['deno'] !== 'latest' ? '/v'+versions['deno'] : ''}/deno-aarch64-pc-windows-msvc.zip`,
+            src: path.join(downloadDir, 'deno-aarch64-pc-windows-msvc.zip'),
+            dest: null,
+            archive: {
+                type: 'zip',
+                binSrc: [
+                    path.join(downloadDir, 'deno.exe')
+                ],
+                binDest: [
+                    path.join(binDir, 'deno-aarch64-pc-windows-msvc.exe')
+                ]
+            },
+            cleanup: [
+                path.join(downloadDir, 'deno-aarch64-pc-windows-msvc.zip'),
+                path.join(downloadDir, 'deno.exe')
+            ]
+        },
+        {
             name: 'deno-x86_64-unknown-linux-gnu',
             platform: 'linux',
             url: `https://github.com/denoland/deno/releases${versions['deno'] === 'latest' ? '/latest' : ''}/download${versions['deno'] !== 'latest' ? '/v'+versions['deno'] : ''}/deno-x86_64-unknown-linux-gnu.zip`,
@@ -359,6 +414,26 @@ const binaries = {
             ]
         },
         {
+            name: 'aria2c-aarch64-pc-windows-msvc',
+            platform: 'win32',
+            url: `https://github.com/minnyres/aria2-windows-arm64/releases/download/v${versions['aria2c']}/aria2_${versions['aria2c']}_arm64.zip`,
+            src: path.join(downloadDir, `aria2_${versions['aria2c']}_arm64.zip`),
+            dest: null,
+            archive: {
+                type: 'zip',
+                binSrc: [
+                    path.join(downloadDir, 'aria2c.exe')
+                ],
+                binDest: [
+                    path.join(binDir, 'aria2c-aarch64-pc-windows-msvc.exe')
+                ]
+            },
+            cleanup: [
+                path.join(downloadDir, `aria2_${versions['aria2c']}_arm64.zip`),
+                path.join(downloadDir, 'aria2c.exe')
+            ]
+        },
+        {
             name: 'aria2c-x86_64-unknown-linux-gnu',
             platform: 'linux',
             url: `https://github.com/asdo92/aria2-static-builds/releases/download/v${versions['aria2c']}/aria2-${versions['aria2c']}-linux-gnu-64bit-build1.tar.bz2`,
@@ -406,7 +481,8 @@ const binaries = {
             url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions['neodlp-pot'] === 'latest' ? '/latest' : ''}/download${versions['neodlp-pot'] !== 'latest' ? '/v'+versions['neodlp-pot'] : ''}/bgutil-pot-windows-x86_64.exe`,
             src: path.join(downloadDir, 'bgutil-pot-windows-x86_64.exe'),
             dest: [
-                path.join(binDir, 'neodlp-pot-x86_64-pc-windows-msvc.exe')
+                path.join(binDir, 'neodlp-pot-x86_64-pc-windows-msvc.exe'),
+                path.join(binDir, 'neodlp-pot-aarch64-pc-windows-msvc.exe')
             ],
             archive: null,
             cleanup: [

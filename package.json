@@ -17,6 +17,10 @@
     "tauri:build:macos-x64": "npm run tauri build -- --config ./src-tauri/tauri.macos-x86_64.conf.json",
     "tauri:dev:macos-arm64": "npm run tauri dev -- --config ./src-tauri/tauri.macos-aarch64.conf.json",
     "tauri:build:macos-arm64": "npm run tauri build -- --config ./src-tauri/tauri.macos-aarch64.conf.json",
+    "tauri:dev:windows-x64": "npm run tauri dev -- --target x86_64-pc-windows-msvc",
+    "tauri:build:windows-x64": "npm run tauri build -- --target x86_64-pc-windows-msvc",
+    "tauri:dev:windows-arm64": "npm run tauri dev -- --target aarch64-pc-windows-msvc",
+    "tauri:build:windows-arm64": "npm run tauri build -- --target aarch64-pc-windows-msvc",
     "download": "node ./scripts/download-bins.js"
   },
   "dependencies": {

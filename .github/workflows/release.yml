@@ -22,6 +22,8 @@ jobs:
             args: '--target aarch64-unknown-linux-gnu --config ./src-tauri/tauri.linux-aarch64.conf.json'
           - platform: 'windows-latest'
             args: ''
+          - platform: 'windows-11-arm'
+            args: '--target aarch64-pc-windows-msvc'
     runs-on: ${{ matrix.platform }}
     steps:
       - name: 🚚 Checkout repository
@@ -56,7 +58,7 @@ jobs:
         run: npm run download
 
       - name: 📄 Read and Process CHANGELOG (Unix)
-        if: matrix.platform != 'windows-latest'
+        if: matrix.platform != 'windows-latest' && matrix.platform != 'windows-11-arm'
         id: changelog_unix
         shell: bash
         run: |
@@ -77,7 +79,7 @@ jobs:
             fi
 
       - name: 📄 Read and Process CHANGELOG (Windows)
-        if: matrix.platform == 'windows-latest'
+        if: matrix.platform == 'windows-latest' || matrix.platform == 'windows-11-arm'
         id: changelog_windows
         shell: pwsh
         run: |
@@ -106,7 +108,7 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: ${{ github.event.repository.name }}-${{ github.ref_name }}
-          releaseBody: ${{ matrix.platform == 'windows-latest' && steps.changelog_windows.outputs.content || steps.changelog_unix.outputs.content }}
+          releaseBody: ${{ (matrix.platform == 'windows-latest' || matrix.platform == 'windows-11-arm') && steps.changelog_windows.outputs.content || steps.changelog_unix.outputs.content }}
           releaseDraft: true
           prerelease: false
           includeUpdaterJson: true
