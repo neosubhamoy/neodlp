@@ -19,16 +19,28 @@ jobs:
       matrix:
         include:
           - platform: 'macos-latest'
+            target_platform: 'darwin'
+            target_arch: 'arm64'
             args: '--target aarch64-apple-darwin --config ./src-tauri/tauri.macos-aarch64.conf.json'
           - platform: 'macos-latest'
+            target_platform: 'darwin'
+            target_arch: 'x64'
             args: '--target x86_64-apple-darwin --config ./src-tauri/tauri.macos-x86_64.conf.json'
           - platform: 'ubuntu-22.04'
+            target_platform: 'linux'
+            target_arch: 'x64'
             args: '--target x86_64-unknown-linux-gnu --config ./src-tauri/tauri.linux-x86_64.conf.json'
           - platform: 'ubuntu-22.04-arm'
+            target_platform: 'linux'
+            target_arch: 'arm64'
             args: '--target aarch64-unknown-linux-gnu --config ./src-tauri/tauri.linux-aarch64.conf.json'
           - platform: 'windows-latest'
+            target_platform: 'win32'
+            target_arch: 'x64'
             args: ''
           - platform: 'windows-11-arm'
+            target_platform: 'win32'
+            target_arch: 'arm64'
             args: '--target aarch64-pc-windows-msvc'
     runs-on: ${{ matrix.platform }}
     steps:
@@ -61,7 +73,7 @@ jobs:
         run: npm install
 
       - name: 📥 Download binaries
-        run: npm run download
+        run: npm run download -- ${{ matrix.target_platform }} ${{ matrix.target_arch }}
 
       - name: 📄 Read and Process CHANGELOG (Unix)
         if: matrix.platform != 'windows-latest' && matrix.platform != 'windows-11-arm'
