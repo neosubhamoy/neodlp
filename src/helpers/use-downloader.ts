@@ -13,7 +13,7 @@ import { useLogger } from "@/helpers/use-logger";
 import { ulid } from "ulid";
 import { sendNotification } from '@tauri-apps/plugin-notification';
 import { FetchVideoMetadataParams, StartDownloadParams } from "@/providers/appContextProvider";
-import { useDebouncedCallback } from '@tanstack/react-pacer/debouncer';
+import { useThrottledCallback } from '@tanstack/react-pacer/throttler';
 import { fetchDownloadStateById } from "@/services/database";
 import { dataDir } from "@tauri-apps/api/path";
 
@@ -102,7 +102,7 @@ export default function useDownloader() {
     const isProcessingQueueRef = useRef(false);
     const lastProcessedDownloadIdRef = useRef<string | null>(null);
 
-    const updateDownloadProgress =  useDebouncedCallback((state: DownloadState) => {
+    const updateDownloadProgress = useThrottledCallback((state: DownloadState) => {
         downloadStateSaver.mutate(state, {
             onSuccess: (_data) => {
                 // console.log("Download State saved successfully:", data);
@@ -572,9 +572,10 @@ export default function useDownloader() {
         console.log('Starting download with args:', args);
         const isFlatpak = await invoke<boolean>('is_flatpak');
         const xdgDataDir = await dataDir();
+        const spawnOpts = { env: { PYTHONUNBUFFERED: '1' } };
         const command = isFlatpak
-        ? Command.create('sh', ['-c', `${xdgDataDir}/yt-dlp/yt-dlp ${args.map(arg => `'${arg.replace(/'/g, "'\\''")}'`).join(' ')}`])
-        : Command.sidecar('binaries/yt-dlp', args);
+        ? Command.create('sh', ['-c', `${xdgDataDir}/yt-dlp/yt-dlp ${args.map(arg => `'${arg.replace(/'/g, "'\\''")}'`).join(' ')}`], spawnOpts)
+        : Command.sidecar('binaries/yt-dlp', args, spawnOpts);
 
         command.on('close', async (data) => {
             if (data.code !== 0) {
