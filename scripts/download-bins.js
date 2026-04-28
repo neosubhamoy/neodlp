@@ -23,9 +23,9 @@ function getArchesForBin(bin) {
         ...((bin.archive && bin.archive.binDest) || [])
     ];
     const arches = new Set();
-    for (const p of paths) {
-        if (p.includes('-x86_64-') || p.includes('-x64-')) arches.add('x64');
-        if (p.includes('-aarch64-') || p.includes('-arm64-')) arches.add('arm64');
+    for (const path of paths) {
+        if (path.includes('-x86_64-') || path.includes('-x64-')) arches.add('x64');
+        if (path.includes('-aarch64-') || path.includes('-arm64-')) arches.add('arm64');
     }
     return arches;
 }
