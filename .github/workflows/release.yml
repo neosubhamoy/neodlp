@@ -2,6 +2,12 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Draft release tag (e.g. v0.4.5-test)'
+        required: true
+        default: 'v0.0.0-test'
 
 name: 🚀 Release on GitHub
 jobs:
@@ -13,15 +19,29 @@ jobs:
       matrix:
         include:
           - platform: 'macos-latest'
+            target_platform: 'darwin'
+            target_arch: 'arm64'
             args: '--target aarch64-apple-darwin --config ./src-tauri/tauri.macos-aarch64.conf.json'
           - platform: 'macos-latest'
+            target_platform: 'darwin'
+            target_arch: 'x64'
             args: '--target x86_64-apple-darwin --config ./src-tauri/tauri.macos-x86_64.conf.json'
           - platform: 'ubuntu-22.04'
+            target_platform: 'linux'
+            target_arch: 'x64'
             args: '--target x86_64-unknown-linux-gnu --config ./src-tauri/tauri.linux-x86_64.conf.json'
           - platform: 'ubuntu-22.04-arm'
+            target_platform: 'linux'
+            target_arch: 'arm64'
             args: '--target aarch64-unknown-linux-gnu --config ./src-tauri/tauri.linux-aarch64.conf.json'
           - platform: 'windows-latest'
+            target_platform: 'win32'
+            target_arch: 'x64'
             args: ''
+          - platform: 'windows-11-arm'
+            target_platform: 'win32'
+            target_arch: 'arm64'
+            args: '--target aarch64-pc-windows-msvc'
     runs-on: ${{ matrix.platform }}
     steps:
       - name: 🚚 Checkout repository
@@ -53,20 +73,20 @@ jobs:
         run: npm install
 
       - name: 📥 Download binaries
-        run: npm run download
+        run: npm run download -- ${{ matrix.target_platform }} ${{ matrix.target_arch }}
 
       - name: 📄 Read and Process CHANGELOG (Unix)
-        if: matrix.platform != 'windows-latest'
+        if: matrix.platform != 'windows-latest' && matrix.platform != 'windows-11-arm'
         id: changelog_unix
         shell: bash
         run: |
             if [ -f CHANGELOG.md ]; then
                 # Extract version number from tag
-                VERSION_NUM=$(echo "${{ github.ref_name }}" | sed -E 's/^v([0-9]+\.[0-9]+\.[0-9]+)(-.*)?$/\1/')
+                VERSION_NUM=$(echo "${{ inputs.tag_name || github.ref_name }}" | sed -E 's/^v([0-9]+\.[0-9]+\.[0-9]+)(-.*)?$/\1/')
 
                 # Read and replace placeholders
                 CONTENT=$(cat CHANGELOG.md)
-                CONTENT=${CONTENT//<release_tag>/${{ github.ref_name }}}
+                CONTENT=${CONTENT//<release_tag>/${{ inputs.tag_name || github.ref_name }}}
                 CONTENT=${CONTENT//<version>/$VERSION_NUM}
 
                 echo "content<<EOF" >> $GITHUB_OUTPUT
@@ -77,17 +97,17 @@ jobs:
             fi
 
       - name: 📄 Read and Process CHANGELOG (Windows)
-        if: matrix.platform == 'windows-latest'
+        if: matrix.platform == 'windows-latest' || matrix.platform == 'windows-11-arm'
         id: changelog_windows
         shell: pwsh
         run: |
             if (Test-Path "CHANGELOG.md") {
                 # Extract version number from tag
-                $version_num = "${{ github.ref_name }}" -replace '^v([0-9]+\.[0-9]+\.[0-9]+)(-.*)?$','$1'
+                $version_num = "${{ inputs.tag_name || github.ref_name }}" -replace '^v([0-9]+\.[0-9]+\.[0-9]+)(-.*)?$','$1'
 
                 # Read and replace placeholders
                 $content = Get-Content -Path CHANGELOG.md -Raw
-                $content = $content -replace '<release_tag>', "${{ github.ref_name }}"
+                $content = $content -replace '<release_tag>', "${{ inputs.tag_name || github.ref_name }}"
                 $content = $content -replace '<version>', "$version_num"
 
                 "content<<EOF" >> $env:GITHUB_OUTPUT
@@ -104,9 +124,9 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: ${{ github.event.repository.name }}-${{ github.ref_name }}
-          releaseBody: ${{ matrix.platform == 'windows-latest' && steps.changelog_windows.outputs.content || steps.changelog_unix.outputs.content }}
+          tagName: ${{ inputs.tag_name || github.ref_name }}
+          releaseName: ${{ github.event.repository.name }}-${{ inputs.tag_name || github.ref_name }}
+          releaseBody: ${{ (matrix.platform == 'windows-latest' || matrix.platform == 'windows-11-arm') && steps.changelog_windows.outputs.content || steps.changelog_unix.outputs.content }}
           releaseDraft: true
           prerelease: false
           includeUpdaterJson: true
