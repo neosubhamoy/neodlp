@@ -37,11 +37,11 @@ jobs:
           - platform: 'windows-latest'
             target_platform: 'win32'
             target_arch: 'x64'
-            args: ''
+            args: '--target x86_64-pc-windows-msvc --config ./src-tauri/tauri.windows-x86_64.conf.json'
           - platform: 'windows-11-arm'
             target_platform: 'win32'
             target_arch: 'arm64'
-            args: '--target aarch64-pc-windows-msvc'
+            args: '--target aarch64-pc-windows-msvc --config ./src-tauri/tauri.windows-aarch64.conf.json'
     runs-on: ${{ matrix.platform }}
     steps:
       - name: 🚚 Checkout repository

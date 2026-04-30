@@ -150,7 +150,8 @@ Want to build/compile NeoDLP from the source code? Follow these simple steps to 
 5. Run build process (run the command based on your platform and architecture)
 ```shell
 # command for windows users
-npm run tauri build                 # for both x64/ARM64 devices
+npm run tauri:build:windows-x64     # for x64 devices
+npm run tauri:build:windows-arm64   # for ARM64 devices
 
 # commands for linux users
 npm run tauri:build:linux-x64       # for x64 devices

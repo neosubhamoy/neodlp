@@ -201,9 +201,10 @@ export default function useDownloader() {
 
             const isFlatpak = await invoke<boolean>('is_flatpak');
             const xdgDataDir = await dataDir();
+            const spawnOpts = { env: { PYTHONUNBUFFERED: '1' } };
             const command = isFlatpak
-            ? Command.create('sh', ['-c', `${xdgDataDir}/yt-dlp/yt-dlp ${args.map(arg => `'${arg.replace(/'/g, "'\\''")}'`).join(' ')}`])
-            : Command.sidecar('binaries/yt-dlp', args);
+            ? Command.create('sh', ['-c', `${xdgDataDir}/yt-dlp/yt-dlp ${args.map(arg => `'${arg.replace(/'/g, "'\\''")}'`).join(' ')}`], spawnOpts)
+            : Command.sidecar('binaries/yt-dlp', args, spawnOpts);
 
             let jsonOutput = '';
 
