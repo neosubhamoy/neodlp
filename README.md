@@ -17,7 +17,7 @@ Cross-platform Video/Audio Downloader Desktop App based on YT-DLP with Modern UI
 [![aur version](https://img.shields.io/aur/version/neodlp?color=lime-green&style=flat-square)](https://aur.archlinux.org/packages/neodlp)
 
 
-## ✨ Highlighted Features
+## Highlighted Features
 
 - Download Video/Audio from thousands of popular sites (YT, FB, IG, X and other 2.5k+ [supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md))
 - Fully Configured YT-DLP Environment Out-of-the-Box (with JS Runtime, PO Token Server, Real-Time Logs etc.)
@@ -31,7 +31,7 @@ Cross-platform Video/Audio Downloader Desktop App based on YT-DLP with Modern UI
 - Network controls (proxy, rate limit etc.)
 - Highly customizable and many more...😉
 
-## 🧩 Browser Integration
+## Browser Integration
 
 You can integrate NeoDLP with your favourite browser (any Chromium/Firefox based browser) Just, install [NeoDLP Extension](https://github.com/neosubhamoy/neodlp-extension) to get started!
 
@@ -41,7 +41,7 @@ After installing the extension you can do the following directly from the browse
 
 - Right Click Context Menu Action (Search with Neo Downloader Plus - Link, Selection, Media Source)
 
-## 👀 Sneak Peek
+## User Interface Overview
 
 ![NeoDLP-Mockup](./.github/images/mockup.svg)
 
@@ -49,13 +49,13 @@ After installing the extension you can do the following directly from the browse
 | :---- | :---- | :---- | :---- |
 | ![Downloader](./.github/images/downloader.png) | ![Completed-Downloads](./.github/images/completed-downloads.png) | ![Ongoing-Downloads](./.github/images/ongoing-downloads.png) | ![Settings](./.github/images/settings.png) |
 
-## 💻 Supported Platforms
+## Supported Platforms
 
-- Windows (10 / 11)
-- Linux (Mostly all modern distros)
-- MacOS (>=11)
+- 🪟 Windows (10 / 11)
+- 🐧 Linux (Mostly all modern distros)
+- 🍎 MacOS (>=11)
 
-## 🤝 External Dependencies
+## External Dependencies
 
 - [YT-DLP](https://github.com/yt-dlp/yt-dlp) [Unlicense] - The core CLI tool used to download video/audio from the web (Hero of the show 😎)
 - [FFmpeg & FFprobe](https://www.ffmpeg.org) [LGPLv2.1+] - Used for video/audio post-processing
@@ -63,13 +63,13 @@ After installing the extension you can do the following directly from the browse
 - [Deno](https://deno.com) [MIT] - Provides sandboxed javascript runtime environment for yt-dlp (Required for YT downloads, as per the new yt-dlp [announcement](https://github.com/yt-dlp/yt-dlp/issues/14404))
 - [BgUtils POT Provider (Rust)](https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs) [GPLv3+] - Provides PO (Proof-of-Origin) Token for YT downloads
 
-## ℹ️ System Pre-Requirements
+## Platform Pre-Requirements
 
 - **Windows:** [Microsoft Visual C++ Redistributable 2015+](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) `winget install Microsoft.VCRedist.2015+.x64` (Will be auto-installed if you install NeoDLP via winget)
 - **MacOS:** XCode Command Line Tools `xcode-select --install` (Mostly, comes pre-installed on modern macos, still if you encounter any issue then try installing it manually)
 - **Linux:** Most linux packages comes with pre-defined system dependencies which will be auto installed by your package manager (if you are on `fedora` make sure to [enable rpmfusion free+nonfree repos](https://docs.fedoraproject.org/en-US/quick-docs/rpmfusion-setup/#_enabling_the_rpm_fusion_repositories_using_command_line_utilities) before installing the rpm package. also, if you prefer to install dependencies manually [follow this](https://v2.tauri.app/start/prerequisites/#linux))
 
-## ⬇️ Download and Installation
+## Download and Installation
 
 1. Download the latest NeoDLP release based on your OS and CPU Architecture, then install it! -OR- Install it directly from an available distribution channel (listed below)
 
@@ -90,7 +90,7 @@ After installing the extension you can do the following directly from the browse
 | Linux x86_64 / ARM64 (Native) | Curl-Bash Installer | `curl -sSL https://neodlp.neosubhamoy.com/linux_installer.sh \| bash` |
 | Arch Linux x86_64 / ARM64 (Native) | AUR | `yay -S neodlp` or `paru -S neodlp` |
 
-## 🧪 Package Testing Status
+## Package Testing Status
 
 Though NeoDLP is supported on most platforms but not all packages are tested on all platforms, to save some time (and brain cells) and ship the software as fast as possible! Current test coverage is given below. So, untested packages may have issues, test it yourself and always feel free to report any issue on github.
 
@@ -115,7 +115,7 @@ Though NeoDLP is supported on most platforms but not all packages are tested on 
 
 </details>
 
-## 🪜 Roadmap
+## Roadmap
 
 - [x] Add support for yt-dlp
 - [x] Add basic settings and customization
@@ -129,7 +129,7 @@ Though NeoDLP is supported on most platforms but not all packages are tested on 
 - [ ] Implement plugin system
 - [ ] Add more cool stuffs 😉
 
-## ⚡ Technologies Used
+## Technologies Used
 
 [![Tauri](https://img.shields.io/badge/tauri-%2324C8DB.svg?style=for-the-badge&logo=tauri&logoColor=%23FFFFFF)](https://tauri.app)
 [![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)](https://rust-lang.org)
@@ -137,7 +137,7 @@ Though NeoDLP is supported on most platforms but not all packages are tested on 
 [![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![ShadCnUi](https://img.shields.io/badge/shadcn%2Fui-000000?style=for-the-badge&logo=shadcnui&logoColor=white)](https://ui.shadcn.com)
 
-## 🛠️ Building from Source
+## Building from Source
 
 Want to build/compile NeoDLP from the source code? Follow these simple steps to create a production build:
 
@@ -149,7 +149,7 @@ Want to build/compile NeoDLP from the source code? Follow these simple steps to 
 4. Download required external binaries (for your platform): `npm run download`
 5. Run build process (run the command based on your platform and architecture)
 ```shell
-# command for windows users
+# commands for windows users
 npm run tauri:build:windows-x64     # for x64 devices
 npm run tauri:build:windows-arm64   # for ARM64 devices
 
@@ -161,17 +161,11 @@ npm run tauri:build:linux-arm64     # for ARM64 devices
 npm run tauri:build:macos-arm64     # for apple silicon macs
 npm run tauri:build:macos-x64       # for intel x86 macs
 ```
-6. Give it the time to compile (~5-10min) (if you get an error, something like this at the end: `Error A public key has been found, but no private key. Make sure to set 'TAURI_SIGNING_PRIVATE_KEY' environment variable.` simply ignore it! Your build is successfull!). You can find the compiled packages under: `src-tauri/target/release/bundle` directory.
+6. Give it the time to compile (~10-15min). After completion, You can find the compiled packages under: `src-tauri/target/release/bundle` directory.
 
-## 🐞 Bug Report and Discussions
+Also, want to contribute to this project? Read the [contributing guidelines](https://github.com/neosubhamoy/neodlp?tab=contributing-ov-file).
 
-Noticed any Bug? or Want to give us some suggetions? Always feel free to let us know! We would love to hear from you...!! You can reach us out via the following methods:
-
-- GitHub Issues (Recommended):  [Report a Bug](https://github.com/neosubhamoy/neodlp/issues/new?template=bug_report.md) -OR- [Request a Feature](https://github.com/neosubhamoy/neodlp/issues/new?template=feature_request.md)
-- Mailing List: If you prefer the good old mailing list way, You can just simply write us on [support@neodlp.neosubhamoy.com](mailto:support@neodlp.neosubhamoy.com) (Kindly follow the Bug Report/Feature Request Template on that case)
-- Reddit Community: If you have any other general pourpose query/discussion related to NeoDLP, post it on our subreddit community [r/NeoDLP](https://www.reddit.com/r/NeoDLP)
-
-## 📦 Sources
+## Sources
 
 - [Official Website](https://neodlp.neosubhamoy.com)
 - Official Repositories
@@ -186,14 +180,14 @@ Noticed any Bug? or Want to give us some suggetions? Always feel free to let us 
   - [NeoDLP Extension](https://github.com/neosubhamoy/neodlp-extension)
   - [NeoDLP Website](https://github.com/neosubhamoy/neodlp-website)
 
-## 💫 Credits
+## Credits
 
 - NeoDLP is made possible by the joint efforts of [yt-dlp](https://github.com/yt-dlp/yt-dlp) and [FFmpeg](https://www.ffmpeg.org). Lots of NeoDLP features are actually powered by these tools under the hood! So huge thanks to all the developers/contributers for making these great tools! 🙏
 - NeoDLP's 'Format Selection' options are inspired from the [Seal](https://github.com/JunkFood02/Seal) app by [@JunkFood02](https://github.com/JunkFood02)
-- Aria2 Linux x86_64 static binaries are built by [@asdo92](https://github.com/asdo92/aria2-static-builds)
+- Aria2 Linux x86_64 static binaries are built by [@asdo92](https://github.com/asdo92/aria2-static-builds) and Windows arm64 static binaries are built by [@minnyres](https://github.com/minnyres/aria2-windows-arm64)
 - NeoDLP's 'POT Server' is based on [@jim60105's Rust Implementation](https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs) of [Brainicism/bgutil-ytdlp-pot-provider](https://github.com/Brainicism/bgutil-ytdlp-pot-provider)
 
-## ⚖️ License and Usage
+## License and Usage
 
 NeoDLP is a Fully Open-Source Software Licensed under the [MIT license](https://github.com/neosubhamoy/neodlp/blob/main/LICENSE). Anyone can view, modify, use (personal and commercial) or distribute it's sources without any extra permission (Just include the LICENSE file :)
 
@@ -201,4 +195,4 @@ NeoDLP is a Fully Open-Source Software Licensed under the [MIT license](https://
 > NeoDLP facilitates downloading from various Online Platforms with different Policies and Terms of Use which Users must follow. We strictly do not promote any unauthorized downloading of copyrighted content. NeoDLP is only made for downloading content that the user holds the copyright to or has the authority for. Users must use the downloaded content wisely and solely at their own legal responsibility. The developer is not responsible for any action taken by the user, and takes zero direct or indirect liability for that matter.
 
 ****
-An Open Sourced Project - Developed with ❤️ by **Subhamoy**
+A FOSS Initiative - Proudly Made with ❤️ in **INDIA**
