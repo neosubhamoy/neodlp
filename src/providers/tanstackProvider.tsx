@@ -26,12 +26,12 @@ const TanstackProvider = ({children}: {children: React.ReactNode}) => {
                 plugins={[
                     {
                         name: 'TanStack Query',
-                        render: <ReactQueryDevtoolsPanel />,
+                        render: <ReactQueryDevtoolsPanel theme='dark' />,
                         defaultOpen: true
                     },
                     {
                         name: 'TanStack Pacer',
-                        render: <PacerDevtoolsPanel />,
+                        render: <PacerDevtoolsPanel theme='dark' devtoolsOpen={false} />,
                         defaultOpen: false
                     },
                 ]}

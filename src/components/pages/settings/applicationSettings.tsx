@@ -7,7 +7,9 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { BadgeCheck, BellRing, BrushCleaning, Bug, CircleCheck, Cookie, ExternalLink, FilePen, FileVideo, Folder, FolderOpen, Github, Globe, Heart, Info, KeyRound, Loader2, LucideIcon, Mail, Monitor, Moon, Package, Scale, ShieldMinus, SquareTerminal, Sun, Terminal, Timer, Trash, TriangleAlert, WandSparkles, Wifi, Wrench } from "lucide-react";
+import { BadgeCheck, BellRing, BrushCleaning, Bug, CircleCheck, Cookie, ExternalLink, FilePen, FileVideo, Folder, FolderOpen, Globe, Heart, Info, KeyRound, Loader2, LucideIcon, Mail, Monitor, Moon, Package, Scale, ShieldMinus, SquareTerminal, Sun, Terminal, Timer, Trash, TriangleAlert, WandSparkles, Wifi, Wrench } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { GithubIcon } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
@@ -1793,7 +1795,7 @@ function AppInfoSettings() {
                         <Globe className="size-3.5" />
                     </a>
                     <a href={'https://github.com/' + config.appRepo} target="_blank" className="text-sm text-foreground" title="GitHub">
-                        <Github className="size-3.5" />
+                        <HugeiconsIcon icon={GithubIcon} className="size-3.5" />
                     </a>
                     <p className="text-muted-foreground">•</p>
                     <a href={config.appHomepage + '/privacy-policy'} target="_blank" className="text-xs hover:underline">Privacy Policy</a>
@@ -1805,7 +1807,7 @@ function AppInfoSettings() {
         </div>
         <div className="about-developer">
             <h3 className="font-semibold">Developer</h3>
-            <p className="text-xs text-muted-foreground mb-3">Meet the Creator & Lead-Developer of NeoDLP</p>
+            <p className="text-xs text-muted-foreground mb-3">Meet the Creator of NeoDLP</p>
             <Card className="p-4 space-y-4 flex items-center gap-4">
                 <div className="relative w-fit m-0">
                     <Avatar className="size-11">

@@ -2,7 +2,9 @@ import { useLocation } from "react-router-dom";
 import { isActive } from "@/utils";
 import { config } from "@/config";
 import { useSettingsPageStatesStore } from "@/services/store";
-import { Github, Globe, Heart } from "lucide-react";
+import { Globe, Heart } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { GithubIcon } from "@hugeicons/core-free-icons";
 import { IndianFlagLogo } from "@/components/icons/india";
 
 export default function Footer() {
@@ -20,10 +22,10 @@ export default function Footer() {
                 </div>
                 <div className="flex items-center gap-2">
                     <a href={config.appHomepage} target="_blank" className="text-sm text-muted-foreground hover:text-foreground" title="Homepage">
-                        <Globe className="w-4 h-4" />
+                        <Globe className="size-4" />
                     </a>
                     <a href={'https://github.com/' + config.appRepo} target="_blank" className="text-sm text-muted-foreground hover:text-foreground" title="GitHub">
-                        <Github className="w-4 h-4" />
+                        <HugeiconsIcon icon={GithubIcon} className="size-4" />
                     </a>
                 </div>
             </div>

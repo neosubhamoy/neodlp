@@ -6,5 +6,5 @@ export const config = {
     appSupportEmail: "support@neodlp.neosubhamoy.com",
     appAuthor: "Subhamoy Biswas",
     appAuthorUrl: "https://neosubhamoy.com",
-    appAuthorSponsorUrl: "https://buymeacoffee.com/neosubhamoy",
+    appAuthorSponsorUrl: "https://github.com/sponsors/neosubhamoy",
 }
