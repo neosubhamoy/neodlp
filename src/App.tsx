@@ -307,20 +307,32 @@ export default function App({ children }: { children: React.ReactNode }) {
 
     // Check for app update
     useEffect(() => {
-        // Only run once when both settings and KV pairs are loaded
-        if (!isSettingsStatePropagated || !isKvPairsStatePropagated) {
-            console.log("Skipping app update check, waiting for configs to load...");
-            return;
+        const handleAppUpdateCheck = async () => {
+            // Only run once when both settings and KV pairs are loaded
+            if (!isSettingsStatePropagated || !isKvPairsStatePropagated) {
+                console.log("Skipping app update check, waiting for configs to load...");
+                return;
+            }
+            // Skip if we've already run the update check once
+            if (hasRunAppUpdateCheckRef.current) {
+                console.log("App update check already performed in this session, skipping");
+                return;
+            }
+            const isFlatpak = await invoke<boolean>('is_flatpak');
+            // Skip self-update check on Flatpak, as updates should be handled by Flatpak cli itself
+            if (isFlatpak) {
+                console.log("Flatpak detected! Skipping app update check");
+                return;
+            }
+
+            hasRunAppUpdateCheckRef.current = true;
+            try {
+                await checkForAppUpdate();
+            } catch (e) {
+                console.error("Error checking for app update:", e);
+            }
         }
-        // Skip if we've already run the update check once
-        if (hasRunAppUpdateCheckRef.current) {
-            console.log("App update check already performed in this session, skipping");
-            return;
-        }
-        hasRunAppUpdateCheckRef.current = true;
-        checkForAppUpdate().catch((error) => {
-            console.error("Error checking for app update:", error);
-        });
+        handleAppUpdateCheck();
     }, [isSettingsStatePropagated, isKvPairsStatePropagated]);
 
     // Check for yt-dlp auto-update
