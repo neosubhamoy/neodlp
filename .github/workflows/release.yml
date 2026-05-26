@@ -33,7 +33,7 @@ jobs:
           - platform: 'ubuntu-22.04-arm'
             target_platform: 'linux'
             target_arch: 'arm64'
-            args: '--target aarch64-unknown-linux-gnu --config ./src-tauri/tauri.linux-aarch64.conf.json'
+            args: '--target aarch64-unknown-linux-gnu --config ./src-tauri/tauri.linux-aarch64.conf.json --verbose'
           - platform: 'windows-latest'
             target_platform: 'win32'
             target_arch: 'x64'
