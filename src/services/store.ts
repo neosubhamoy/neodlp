@@ -223,6 +223,7 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         pot_server_port: 4416,
         windows_filenames: true,
         restrict_filenames: true,
+        quit_on_close: false,
         // extension settings
         websocket_port: 53511
     },
@@ -310,6 +311,7 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             pot_server_port: 4416,
             windows_filenames: true,
             restrict_filenames: true,
+            quit_on_close: false,
             // extension settings
             websocket_port: 53511
         },

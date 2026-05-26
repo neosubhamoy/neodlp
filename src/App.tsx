@@ -4,7 +4,7 @@ import { AppContext } from "@/providers/appContextProvider";
 import { useEffect, useRef, useState } from "react";
 import { arch, exeExtension } from "@tauri-apps/plugin-os";
 import { downloadDir, join, resourceDir, tempDir, dataDir } from "@tauri-apps/api/path";
-import { useBasePathsStore, useCurrentVideoMetadataStore, useDownloaderPageStatesStore, useDownloadStatesStore, useEnvironmentStore, useKvPairsStatesStore, useSettingsPageStatesStore } from "@/services/store";
+import { useBasePathsStore, useCurrentVideoMetadataStore, useDownloadActionStatesStore, useDownloaderPageStatesStore, useDownloadStatesStore, useEnvironmentStore, useKvPairsStatesStore, useSettingsPageStatesStore } from "@/services/store";
 import { isObjEmpty} from "@/utils";
 import { Command } from "@tauri-apps/plugin-shell";
 import { useUpdateDownloadStatus } from "@/services/mutations";
@@ -60,6 +60,7 @@ export default function App({ children }: { children: React.ReactNode }) {
         theme: APP_THEME,
         color_scheme: APP_COLOR_SCHEME,
         use_potoken: USE_POTOKEN,
+        quit_on_close: QUIT_ON_CLOSE
     } = useSettingsPageStatesStore(state => state.settings);
 
     const erroredDownloadIds = useDownloaderPageStatesStore((state) => state.erroredDownloadIds);
@@ -96,6 +97,24 @@ export default function App({ children }: { children: React.ReactNode }) {
 
     const { fetchVideoMetadata, startDownload, pauseDownload, resumeDownload, cancelDownload, processQueuedDownloads } = useDownloader();
 
+    const ongoingDownloadsCloseable = globalDownloadStates.filter(state => ['starting', 'downloading', 'queued'].includes(state.download_status));
+    const setIsPausingDownload = useDownloadActionStatesStore(state => state.setIsPausingDownload);
+
+    const stopOngoingDownloads = async () => {
+        if (ongoingDownloadsCloseable.length > 0) {
+            for (const state of ongoingDownloadsCloseable) {
+                setIsPausingDownload(state.download_id, true);
+                try {
+                    await pauseDownload(state);
+                } catch (e) {
+                    console.error(e);
+                } finally {
+                    setIsPausingDownload(state.download_id, false);
+                }
+            }
+        }
+    }
+
     // Prevent right click context menu in production
     if (!import.meta.env.DEV) {
         document.oncontextmenu = (event) => {
@@ -105,9 +124,16 @@ export default function App({ children }: { children: React.ReactNode }) {
 
     // Prevent app from closing
     useEffect(() => {
-        const handleCloseRequested = (event: any) => {
+        const handleCloseRequested = async (event: any) => {
             event.preventDefault();
-            appWindow.hide();
+            if (QUIT_ON_CLOSE) {
+                if (ongoingDownloads.length > 0) {
+                    await stopOngoingDownloads()
+                }
+                await appWindow.destroy();
+            } else {
+                await appWindow.hide();
+            }
         };
 
         appWindow.onCloseRequested(handleCloseRequested);

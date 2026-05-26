@@ -130,6 +130,7 @@ function AppGeneralSettings() {
     const maxRetries = useSettingsPageStatesStore(state => state.settings.max_retries);
     const preferVideoOverPlaylist = useSettingsPageStatesStore(state => state.settings.prefer_video_over_playlist);
     const strictDownloadabilityCheck = useSettingsPageStatesStore(state => state.settings.strict_downloadablity_check);
+    const quitOnClose = useSettingsPageStatesStore(state => state.settings.quit_on_close);
     const useAria2 = useSettingsPageStatesStore(state => state.settings.use_aria2);
     const useCustomCommands = useSettingsPageStatesStore(state => state.settings.use_custom_commands);
 
@@ -178,6 +179,15 @@ function AppGeneralSettings() {
             onValueChange={(value) => saveSettingsKey('max_retries', value[0])}
             />
             <Label htmlFor="max-retries" className="text-xs text-muted-foreground">(Current: {maxRetries}) (Default: 5, Maximum: 100)</Label>
+        </div>
+        <div className="quit-on-close">
+            <h3 className="font-semibold">Quit on Close</h3>
+            <p className="text-xs text-muted-foreground mb-3">Wheather to quit the app when the main window is closed, if disabled the app will keep running in the background and you can open the main window again from the system tray</p>
+            <Switch
+            id="quit-on-close"
+            checked={quitOnClose}
+            onCheckedChange={(checked) => saveSettingsKey('quit_on_close', checked)}
+            />
         </div>
         <div className="aria2">
             <h3 className="font-semibold">Aria2</h3>
