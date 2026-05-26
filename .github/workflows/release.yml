@@ -45,7 +45,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: 🚚 Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: 🛠️ Install dependencies
         if: matrix.platform == 'ubuntu-22.04' || matrix.platform == 'ubuntu-22.04-arm'
