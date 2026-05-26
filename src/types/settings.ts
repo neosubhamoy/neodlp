@@ -66,6 +66,7 @@ export interface Settings {
     pot_server_port: number;
     windows_filenames: boolean;
     restrict_filenames: boolean;
+    unique_filenames: boolean;
     quit_on_close: boolean;
     // extension settings
     websocket_port: number;

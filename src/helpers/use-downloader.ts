@@ -74,7 +74,8 @@ export default function useDownloader() {
         disable_innertube: DISABLE_INNERTUBE,
         pot_server_port: POT_SERVER_PORT,
         windows_filenames: WINDOWS_FILENAMES,
-        restrict_filenames: RESTRICT_FILENAMES
+        restrict_filenames: RESTRICT_FILENAMES,
+        unique_filenames: UNIQUE_FILENAMES,
     } = useSettingsPageStatesStore(state => state.settings);
     const isRunningPotServer = useSettingsPageStatesStore(state => state.isRunningPotServer);
 
@@ -349,9 +350,17 @@ export default function useDownloader() {
         }
 
         if (isMultiplePlaylistItems) {
-            args.push('--output', `%(playlist_title|Unknown)s[${downloadId}]/[%(playlist_index|0)d]_${FILENAME_TEMPLATE}.%(ext)s`);
+            if (UNIQUE_FILENAMES) {
+                args.push('--output', `%(playlist_title|Untitled)s[${downloadId}]/[%(playlist_index|0)d]_${FILENAME_TEMPLATE}.%(ext)s`);
+            } else {
+                args.push('--output', `%(playlist_title|Untitled)s/${FILENAME_TEMPLATE}.%(ext)s`);
+            }
         } else {
-            args.push('--output', `${FILENAME_TEMPLATE}[${downloadId}].%(ext)s`);
+            if (UNIQUE_FILENAMES) {
+                args.push('--output', `${FILENAME_TEMPLATE}[${downloadId}].%(ext)s`);
+            } else {
+                args.push('--output', `${FILENAME_TEMPLATE}.%(ext)s`);
+            }
         }
 
         if (WINDOWS_FILENAMES) {

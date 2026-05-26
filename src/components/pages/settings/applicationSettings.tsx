@@ -309,6 +309,7 @@ function AppFilesystemSettings() {
     const filenameTemplate = useSettingsPageStatesStore(state => state.settings.filename_template);
     const windowsFilenames = useSettingsPageStatesStore(state => state.settings.windows_filenames);
     const restrictFilenames = useSettingsPageStatesStore(state => state.settings.restrict_filenames);
+    const uniqueFilenames = useSettingsPageStatesStore(state => state.settings.unique_filenames);
 
     const downloadStates = useDownloadStatesStore(state => state.downloadStates);
     const ongoingDownloads = downloadStates.filter(state =>
@@ -461,6 +462,15 @@ function AppFilesystemSettings() {
                     </Button>
                 </form>
             </Form>
+        </div>
+        <div className="unique-filenames">
+            <h3 className="font-semibold">Unique Filenames</h3>
+            <p className="text-xs text-muted-foreground mb-3">Make filenames unique by appending download ID, playlist index at the end of the filename (recommended, disabling it may cause issue with some downloads, also it may cause paused downloads to re-start from begining)</p>
+            <Switch
+            id="unique-filenames"
+            checked={uniqueFilenames}
+            onCheckedChange={(checked) => saveSettingsKey('unique_filenames', checked)}
+            />
         </div>
         <div className="sanitize-filenames">
             <h3 className="font-semibold">Sanitize Filenames</h3>

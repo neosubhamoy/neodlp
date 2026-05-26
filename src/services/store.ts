@@ -204,7 +204,7 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         force_internet_protocol: 'ipv4',
         use_custom_commands: false,
         custom_commands: [],
-        filename_template: '%(title|Unknown)s_%(resolution|unknown)s',
+        filename_template: '%(title|Untitled)s_%(resolution|unknown)s',
         debug_mode: false,
         log_verbose: true,
         log_progress: false,
@@ -223,6 +223,7 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
         pot_server_port: 4416,
         windows_filenames: true,
         restrict_filenames: true,
+        unique_filenames: true,
         quit_on_close: false,
         // extension settings
         websocket_port: 53511
@@ -292,7 +293,7 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             force_internet_protocol: 'ipv4',
             use_custom_commands: false,
             custom_commands: [],
-            filename_template: '%(title|Unknown)s_%(resolution|unknown)s',
+            filename_template: '%(title|Untitled)s_%(resolution|unknown)s',
             debug_mode: false,
             log_verbose: true,
             log_progress: false,
@@ -311,6 +312,7 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>((set) 
             pot_server_port: 4416,
             windows_filenames: true,
             restrict_filenames: true,
+            unique_filenames: true,
             quit_on_close: false,
             // extension settings
             websocket_port: 53511
