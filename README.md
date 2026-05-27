@@ -75,20 +75,17 @@ After installing the extension you can do the following directly from the browse
 
 | Architecture | Windows | Linux | MacOS |
 | :----        | :----   | :---- | :---- |
-| x86_64 | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) |
-| ARM64 | ✅ Emulation | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) | ✅ [Download](https://github.com/neosubhamoy/neodlp/releases/latest) |
+| x86_64 | ✅ [Native](https://github.com/neosubhamoy/neodlp/releases/latest) | ✅ [Native](https://github.com/neosubhamoy/neodlp/releases/latest) | ✅ [Native](https://github.com/neosubhamoy/neodlp/releases/latest) |
+| ARM64 | ✅ [Native](https://github.com/neosubhamoy/neodlp/releases/latest) | ✅ [Native](https://github.com/neosubhamoy/neodlp/releases/latest) | ✅ [Native](https://github.com/neosubhamoy/neodlp/releases/latest) |
 
-> [!NOTE]
-> x86_64 Windows binary also works on ARM64 (Windows on ARM) devices with emulation (Not planning to release native Windows ARM64 build anytime soon as, x86_64 one works fine on ARM64 without noticeable performance impact)
-
-| Platform (OS) | Distribution Channel | Installation Command / Instruction |
+| Platform (Architecture) [Type] | Distribution Channel | Installation Command / Instruction |
 | :---- | :---- | :---- |
-| Windows x86_64 / ARM64 | WinGet | `winget install neosubhamoy.neodlp` |
-| MacOS x86_64 / ARM64 | Homebrew | `brew install neosubhamoy/tap/neodlp` |
-| MacOS x86_64 / ARM64 | Curl-Bash Installer | `curl -sSL https://neodlp.neosubhamoy.com/macos_installer.sh \| bash` |
-| Linux x86_64 / ARM64 (Flatpak) | Flathub | `flatpak install flathub com.neosubhamoy.neodlp` |
-| Linux x86_64 / ARM64 (Native) | Curl-Bash Installer | `curl -sSL https://neodlp.neosubhamoy.com/linux_installer.sh \| bash` |
-| Arch Linux x86_64 / ARM64 (Native) | AUR | `yay -S neodlp` or `paru -S neodlp` |
+| Windows (x86_64 / ARM64) | WinGet | `winget install neosubhamoy.neodlp --source winget` |
+| MacOS (x86_64 / ARM64) | Homebrew | `brew install neosubhamoy/tap/neodlp` |
+| MacOS (x86_64 / ARM64) | Curl-Bash Installer | `curl -sSL https://neodlp.neosubhamoy.com/macos_installer.sh \| bash` |
+| Linux (x86_64 / ARM64) [Flatpak] | Flathub | `flatpak install flathub com.neosubhamoy.neodlp` |
+| Linux (x86_64 / ARM64) [Native] | Curl-Bash Installer | `curl -sSL https://neodlp.neosubhamoy.com/linux_installer.sh \| bash` |
+| Arch Linux (x86_64 / ARM64) [Native] | AUR | `yay -S neodlp` or `paru -S neodlp` |
 
 ## Package Testing Status
 
