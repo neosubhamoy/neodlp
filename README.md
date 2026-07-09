@@ -2,7 +2,7 @@
 
 # NeoDLP - Neo Downloader Plus
 
-Cross-platform Video/Audio Downloader Desktop App based on YT-DLP with Modern UI and Browser Integration
+Modern Video/Audio Downloader based on YT-DLP with Browser Integration
 
 [![github release](https://img.shields.io/github/v/release/neosubhamoy/neodlp?color=lime-green&style=for-the-badge)](https://github.com/neosubhamoy/neodlp/releases/latest)
 [![github downloads](https://img.shields.io/github/downloads/neosubhamoy/neodlp/total?style=for-the-badge)](https://github.com/neosubhamoy/neodlp/releases)

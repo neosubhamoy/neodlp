@@ -1,7 +1,7 @@
 [package]
 name = "neodlp"
 version = "0.4.5"
-description = "Cross-platform Video/Audio Downloader Desktop App based on YT-DLP with Modern UI and Browser Integration"
+description = "Modern Video/Audio Downloader based on YT-DLP with Browser Integration"
 authors = ["neosubhamoy <hey@neosubhamoy.com>"]
 edition = "2021"
 license = "MIT"
@@ -15,9 +15,6 @@ license = "MIT"
 name = "neodlp_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
-[build-dependencies]
-tauri-build = { version = "2", features = [] }
-
 [dependencies]
 tauri = { version = "2", features = ["tray-icon"] }
 serde = { version = "1", features = ["derive"] }
@@ -25,7 +22,7 @@ serde_json = "1"
 reqwest = { version = "0.13", features = ["json"] }
 tokio = { version = "1", features = ["full"] }
 tokio-tungstenite = "*"
-sqlx = { version = "0.8", features = [ "sqlite", "runtime-tokio", "tls-native-tls" ] }
+sqlx = { version = "0.9", features = [ "sqlite", "runtime-tokio", "tls-native-tls" ] }
 base64 = "0.22"
 directories = "6.0"
 futures-util = "0.3"
@@ -45,6 +42,9 @@ tauri-plugin-log = "2"
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-single-instance = "2"
 tauri-plugin-updater = "2"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
 
 [workspace]
 members = [
