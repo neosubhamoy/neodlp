@@ -78,7 +78,7 @@ export default function LibraryPage() {
                                 Stop
                             </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent>
+                        <AlertDialogContent size="sm">
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Stop all ongoing downloads?</AlertDialogTitle>
                                 <AlertDialogDescription>
@@ -88,6 +88,7 @@ export default function LibraryPage() {
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
+                                variant="destructive"
                                 onClick={() => stopOngoingDownloads()}
                                 >Stop</AlertDialogAction>
                             </AlertDialogFooter>

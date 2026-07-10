@@ -20,7 +20,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import * as fs from "@tauri-apps/plugin-fs";
 import { join } from "@tauri-apps/api/path";
@@ -418,14 +418,18 @@ function AppFilesystemSettings() {
                             <BrushCleaning className="size-4" /> Clean
                         </Button>
                     </AlertDialogTrigger>
-                    <AlertDialogContent>
+                    <AlertDialogContent size="sm">
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Clean up all temporary downloads?</AlertDialogTitle>
+                            <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
+                                <BrushCleaning />
+                            </AlertDialogMedia>
+                            <AlertDialogTitle>Clean temporary downloads?</AlertDialogTitle>
                             <AlertDialogDescription>Are you sure you want to clean up all temporary downloads? This will remove all broken, cancelled and paused downloads from the temporary folder. Paused downloads will re-start from the begining. This action cannot be undone!</AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
+                            variant="destructive"
                             onClick={() => cleanTemporaryDownloads()}
                             >Clean</AlertDialogAction>
                         </AlertDialogFooter>
@@ -1376,7 +1380,7 @@ function AppPoTokenSettings() {
                 <Label htmlFor="use-potoken">Use PO Token</Label>
             </div>
             <Label className="text-xs text-muted-foreground flex items-center">
-                <span className="mr-1">NeoDLP POT Server is</span>
+                <span className="">NeoDLP POT Server is</span>
                 {isStartingPotServer ? (
                     <span className="text-amber-600 dark:text-amber-500 underline">Starting</span>
                 ) : isRunningPotServer ? (
@@ -1385,7 +1389,7 @@ function AppPoTokenSettings() {
                     <span className="text-red-600 dark:text-red-500 underline">Not Running</span>
                 )}
                 {isRunningPotServer && potServerPort ? (
-                    <span className="ml-1">on Port {potServerPort}</span>
+                    <span className="">on Port {potServerPort}</span>
                 ) : null}
             </Label>
         </div>
@@ -1803,13 +1807,13 @@ function AppInfoSettings() {
     return (
         <>
         <div className="app-info">
-            <Card className="p-4 space-y-4 flex items-center gap-4">
+            <Card className="p-4 space-y-4 flex flex-row items-center gap-4">
                 <div className="flex aspect-square size-18 items-center justify-center rounded-lg m-0">
                     <NeoDlpLogo className="size-full rounded-lg border border-border [--logo-stop-color-1:#4444FF] [--logo-stop-color-2:#FF43D0] customscheme:[--logo-stop-color-1:var(--color-chart-5)] customscheme:[--logo-stop-color-2:var(--color-chart-1)]" />
                 </div>
                 <div className="flex flex-col justify-center gap-1">
                   <span className="truncate font-semibold">{config.appName} <Badge className="ml-1 border-primary px-1.5" variant="outline"><span className="mb-0.5">v{appVersion}</span></Badge></span>
-                  <span className="truncate text-xs text-muted-foreground">The Next-Gen Truly Cross-Platform Video/Audio Downloader</span>
+                  <span className="truncate text-xs text-muted-foreground">Modern Video/Audio Downloader based on YT-DLP</span>
                   <span className="flex items-center gap-2">
                     <a href={config.appHomepage} target="_blank" className="text-sm text-foreground" title="Homepage">
                         <Globe className="size-3.5" />
@@ -1828,7 +1832,7 @@ function AppInfoSettings() {
         <div className="about-developer">
             <h3 className="font-semibold">Developer</h3>
             <p className="text-xs text-muted-foreground mb-3">Meet the Creator of NeoDLP</p>
-            <Card className="p-4 space-y-4 flex items-center gap-4">
+            <Card className="p-4 space-y-4 flex flex-row items-center gap-4">
                 <div className="relative w-fit m-0">
                     <Avatar className="size-11">
                         <AvatarImage src={neosubhamoyImage} />
@@ -1926,7 +1930,7 @@ function AppInfoSettings() {
                                 <DialogTitle>Dependencies</DialogTitle>
                                 <DialogDescription>Major dependencies of NeoDLP</DialogDescription>
                             </DialogHeader>
-                            <div className="flex flex-col gap-4 max-h-[45vh] overflow-y-auto">
+                            <div className="flex flex-col gap-4 max-h-[45vh] overflow-y-auto no-scrollbar">
                                 <h4 className="text-sm font-semibold">External Binaries</h4>
                                 {binDepsList.map(({key, ...dep}) => (
                                     <DependencyItem key={key} {...dep} />

@@ -13,7 +13,7 @@ import { dirname } from "@tauri-apps/api/path";
 import { DownloadState } from "@/types/download";
 import { useQueryClient } from "@tanstack/react-query";
 import { useDeleteDownloadState } from "@/services/mutations";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
@@ -295,24 +295,27 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                                 Remove
                             </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent>
+                        <AlertDialogContent size="sm">
                             <AlertDialogHeader>
+                                <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
+                                    <Trash2 />
+                                </AlertDialogMedia>
                                 <AlertDialogTitle>Remove from library?</AlertDialogTitle>
                                 <AlertDialogDescription>
                                     Are you sure you want to remove this download from the library? You can also delete the downloaded file by cheking the box below. This action cannot be undone.
                                 </AlertDialogDescription>
-                                <div className="flex items-center space-x-2">
+                                <div className="flex items-center space-x-2 mt-1">
                                     <Checkbox id="delete-file" checked={itemActionStates.isDeleteFileChecked} onCheckedChange={() => {setIsDeleteFileChecked(state.download_id, !itemActionStates.isDeleteFileChecked)}} />
-                                    <Label htmlFor="delete-file">Delete the downloaded file</Label>
+                                    <Label htmlFor="delete-file">Delete downloaded file</Label>
                                 </div>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={
+                                <AlertDialogAction variant="destructive" onClick={
                                     () => removeFromDownloads(state, itemActionStates.isDeleteFileChecked).then(() => {
                                         setIsDeleteFileChecked(state.download_id, false);
                                     })
-                                }>Remove</AlertDialogAction>
+                                }>{itemActionStates.isDeleteFileChecked ? "Delete" : "Remove"}</AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>

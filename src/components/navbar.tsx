@@ -56,7 +56,7 @@ export default function Navbar() {
                                 <DialogTitle>Log Viewer</DialogTitle>
                                 <DialogDescription>Monitor real-time app session logs (latest on top)</DialogDescription>
                             </DialogHeader>
-                            <div className="flex flex-col gap-2 p-2 max-h-75 overflow-y-scroll overflow-x-hidden bg-muted">
+                            <div className="flex flex-col gap-2 p-2 max-h-75 overflow-y-scroll overflow-x-hidden bg-background">
                                 {logs.length === 0 ? (
                                     <p className="text-sm text-muted-foreground">NO LOGS TO SHOW!</p>
                                 ) : (

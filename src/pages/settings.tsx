@@ -53,7 +53,7 @@ export default function SettingsPage() {
                                 Reset
                             </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent>
+                        <AlertDialogContent size="sm">
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Reset settings to default?</AlertDialogTitle>
                                 <AlertDialogDescription>
@@ -62,7 +62,7 @@ export default function SettingsPage() {
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={
+                                <AlertDialogAction variant="destructive" onClick={
                                     async () => {
                                         resetSettings();
                                         if (isRunningPotServer) {

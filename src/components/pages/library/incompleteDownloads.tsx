@@ -99,7 +99,7 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                                 <span className="text-sm text-nowrap">({state.item})</span>
                             ) : null}
                             <span className="text-sm text-nowrap">{state.progress}%</span>
-                            <Progress value={state.progress} />
+                            <Progress value={state.progress} className="mt-[0.2rem]" />
                             <span className="text-sm text-nowrap">{
                                 state.downloaded && state.total
                                 ? `(${formatFileSize(state.downloaded)} / ${formatFileSize(state.total)})`
