@@ -5,6 +5,11 @@ import { RawVideoInfo, VideoFormat, VideoSubtitle } from "@/types/video";
 import * as fs from "@tauri-apps/plugin-fs";
 import { fetchDownloadStateById } from "@/services/database";
 
+export function arraysEqual<T>(arr1: T[], arr2: T[]): boolean {
+  if (arr1.length !== arr2.length) return false;
+  return arr1.every((value, index) => value === arr2[index]);
+}
+
 export function isActive(path: string, location: string, starts_with: boolean = false): boolean {
   if (starts_with) {
     return location.startsWith(path) ? true : false;
@@ -190,6 +195,13 @@ export const formatDurationString = (duration: string) => {
     return `${parts[0]}:${parts[1]}`;
   }
   return `00:${duration}`;
+}
+
+export const formatDuration = (duration: number) => {
+  const hours = Math.floor(duration / 3600);
+  const minutes = Math.floor((duration % 3600) / 60);
+  const seconds = duration % 60;
+  return `${hours > 0 ? hours + ':' : ''}${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
 }
 
 export const formatReleaseDate = (date: string) => {

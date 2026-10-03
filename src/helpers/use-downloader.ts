@@ -2,7 +2,7 @@ import { DownloadState } from "@/types/download";
 import { invoke } from "@tauri-apps/api/core";
 import { useCallback, useRef } from "react";
 import { useBasePathsStore, useCurrentVideoMetadataStore, useDownloaderPageStatesStore, useDownloadStatesStore, useSettingsPageStatesStore } from "@/services/store";
-import { determineFileType, extractPlaylistItemProgress, generateVideoId, parseProgressLine } from "@/utils";
+import { arraysEqual, determineFileType, extractPlaylistItemProgress, generateVideoId, parseProgressLine } from "@/utils";
 import { Command } from "@tauri-apps/plugin-shell";
 import { RawVideoInfo } from "@/types/video";
 import { useDeleteDownloadState, useSaveDownloadState, useSavePlaylistInfo, useSaveVideoInfo, useUpdateDownloadFilePath, useUpdateDownloadPlaylistItem, useUpdateDownloadStatus } from "@/services/mutations";
@@ -535,6 +535,18 @@ export default function useDownloader() {
             }
         }
 
+        let trimStamps = null;
+        if((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && ((downloadConfig.trim_stamps && videoMetadata.duration) || resumeState?.trim_stamps)) {
+            console.log('Trim stamps:', { downloadConfig, resumeState });
+            if (resumeState?.trim_stamps) {
+                trimStamps = resumeState.trim_stamps;
+                args.push('--download-sections', `*${resumeState.trim_stamps.split(',')[0]}-${resumeState.trim_stamps.split(',')[1]}`);
+            } else if (downloadConfig.trim_stamps && !arraysEqual(downloadConfig.trim_stamps, [0, videoMetadata.duration])) {
+                trimStamps = `${downloadConfig.trim_stamps[0]},${downloadConfig.trim_stamps[1]}`;
+                args.push('--download-sections', `*${downloadConfig.trim_stamps[0]}-${downloadConfig.trim_stamps[1]}`);
+            }
+        }
+
         let sponsorblockRemove = null;
         let sponsorblockMark = null;
         if ((!USE_CUSTOM_COMMANDS && !resumeState?.custom_command) && ((downloadConfig.sponsorblock && downloadConfig.sponsorblock !== 'auto') || resumeState?.sponsorblock_remove || resumeState?.sponsorblock_mark || USE_SPONSORBLOCK)) {
@@ -656,7 +668,8 @@ export default function useDownloader() {
                     sponsorblock_mark: sponsorblockMark,
                     use_aria2: useAria2,
                     custom_command: customCommandArgs,
-                    queue_config: null
+                    queue_config: null,
+                    trim_stamps: trimStamps,
                 };
                 updateDownloadProgress(state);
             } else {
@@ -850,7 +863,8 @@ export default function useDownloader() {
                         sponsorblock_mark: resumeState?.sponsorblock_mark || null,
                         use_aria2: resumeState?.use_aria2 || 0,
                         custom_command: resumeState?.custom_command || null,
-                        queue_config: resumeState?.queue_config || ((!ongoingDownloads || ongoingDownloads && ongoingDownloads?.length < MAX_PARALLEL_DOWNLOADS) ? null : JSON.stringify(downloadConfig))
+                        queue_config: resumeState?.queue_config || ((!ongoingDownloads || ongoingDownloads && ongoingDownloads?.length < MAX_PARALLEL_DOWNLOADS) ? null : JSON.stringify(downloadConfig)),
+                        trim_stamps: resumeState?.trim_stamps || null,
                     }
                     downloadStateSaver.mutate(state, {
                         onSuccess: (data) => {

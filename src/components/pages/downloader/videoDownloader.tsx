@@ -101,7 +101,7 @@ function SelectiveVideoDownload({ videoMetadata, audioOnlyFormats, videoOnlyForm
     const resetDownloadConfiguration = useDownloaderPageStatesStore((state) => state.resetDownloadConfiguration);
 
     return (
-        <div className="flex flex-col overflow-y-scroll max-h-[50vh] xl:max-h-[60vh] no-scrollbar">
+        <div className="flex flex-col overflow-y-scroll max-h-[50vh] xl:max-h-[60vh] no-scrollbar scroll-fade-t">
             {subtitleLanguages && subtitleLanguages.length > 0 && (
                 <ToggleGroup
                 type="multiple"
@@ -224,7 +224,7 @@ function CombinedVideoDownload({ audioOnlyFormats, videoOnlyFormats, subtitleLan
     const resetDownloadConfiguration = useDownloaderPageStatesStore((state) => state.resetDownloadConfiguration);
 
     return (
-        <div className="flex flex-col overflow-y-scroll max-h-[50vh] xl:max-h-[60vh] no-scrollbar">
+        <div className="flex flex-col overflow-y-scroll max-h-[50vh] xl:max-h-[60vh] no-scrollbar scroll-fade-t">
             {audioOnlyFormats && audioOnlyFormats.length > 0 && videoOnlyFormats && videoOnlyFormats.length > 0 && subtitleLanguages && subtitleLanguages.length > 0 && (
                 <ToggleGroup
                 type="multiple"

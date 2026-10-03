@@ -47,6 +47,7 @@ export interface DownloadState {
     use_aria2: number;
     custom_command: string | null;
     queue_config: string | null;
+    trim_stamps: string | null;
     created_at?: string;
     updated_at?: string;
 }
@@ -87,6 +88,7 @@ export interface Download {
     use_aria2: number;
     custom_command: string | null;
     queue_config: string | null;
+    trim_stamps: string | null;
     created_at: string;
     updated_at: string;
 }

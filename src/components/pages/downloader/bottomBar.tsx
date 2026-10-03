@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAppContext } from "@/providers/appContextProvider";
 import { useDownloaderPageStatesStore, useSettingsPageStatesStore } from "@/services/store";
-import { formatBitrate, formatFileSize } from "@/utils";
-import { Loader2, Music, Video, File, AlertCircleIcon, Settings2 } from "lucide-react";
+import { formatBitrate, formatDuration, formatFileSize } from "@/utils";
+import { Loader2, Music, Video, File, AlertCircleIcon, Scissors, Settings2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { RawVideoInfo, VideoFormat } from "@/types/video";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,6 +14,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Player } from "@/components/player";
+import { Slider } from "@/components/ui/slider";
+import { NumberInput } from "@/components/custom/numberInput";
+
+interface TrimmerDialogProps {
+    videoMetadata: RawVideoInfo;
+}
 
 interface DownloadConfigDialogProps {
     selectedFormatFileType: "video+audio" | "video" | "audio" | "unknown";
@@ -26,6 +33,106 @@ interface BottomBarProps {
     selectedVideoFormat: VideoFormat | undefined;
     selectedAudioFormats: VideoFormat[] | undefined;
     containerRef: React.RefObject<HTMLDivElement | null>;
+}
+
+
+function TrimmerDialog({ videoMetadata }: TrimmerDialogProps) {
+    const activeDownloadModeTab = useDownloaderPageStatesStore((state) => state.activeDownloadModeTab);
+    const selectedDownloadFormat = useDownloaderPageStatesStore((state) => state.selectedDownloadFormat);
+    const selectedCombinableVideoFormat = useDownloaderPageStatesStore((state) => state.selectedCombinableVideoFormat);
+    const selectedCombinableAudioFormats = useDownloaderPageStatesStore((state) => state.selectedCombinableAudioFormats);
+    const downloadConfiguration = useDownloaderPageStatesStore((state) => state.downloadConfiguration);
+
+    const setDownloadConfigurationKey = useDownloaderPageStatesStore((state) => state.setDownloadConfigurationKey);
+
+    const isCombineableAudioSelected = selectedCombinableAudioFormats && selectedCombinableAudioFormats.length > 0;
+
+    const trimStamps = downloadConfiguration.trim_stamps ?? [0, videoMetadata.duration];
+    const trimStart = trimStamps[0];
+    const trimEnd = trimStamps[1];
+
+    const updateTrimStamps = (values: number[]) => {
+        setDownloadConfigurationKey("trim_stamps", values);
+    };
+
+    const updateTrimStart = (value: number) => {
+        setDownloadConfigurationKey("trim_stamps", [value, trimEnd]);
+    };
+
+    const updateTrimEnd = (value: number) => {
+        setDownloadConfigurationKey("trim_stamps", [trimStart, value]);
+    };
+
+    return (
+        <Dialog>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <DialogTrigger asChild>
+                        <Button
+                        variant="outline"
+                        size="icon"
+                        disabled={!selectedDownloadFormat || (activeDownloadModeTab === 'combine' && (!selectedCombinableVideoFormat || !isCombineableAudioSelected))}
+                        >
+                            <Scissors className="size-4" />
+                        </Button>
+                    </DialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                <p>Trimmer</p>
+                </TooltipContent>
+            </Tooltip>
+            <DialogContent className="sm:max-w-112.5">
+                <DialogHeader>
+                    <DialogTitle>Trimmer</DialogTitle>
+                    <DialogDescription>Download only the trimmed down part of media</DialogDescription>
+                </DialogHeader>
+                <div className="flex flex-col gap-2 items-center">
+                    <Player src={`https://www.youtube.com/watch?v=${videoMetadata.id}`} />
+                    <div className="flex items-center w-full mt-2">
+                        <div className="flex gap-4 w-full items-center">
+                            <div className="w-full">
+                                <NumberInput
+                                    className="w-full"
+                                    placeholder="Trim Start"
+                                    min={0}
+                                    max={Math.max(0, trimEnd - 1)}
+                                    value={trimStart}
+                                    onChange={updateTrimStart}
+                                />
+                            </div>
+                            <span className="text-muted-foreground">—</span>
+                            <div className="w-full">
+                                <NumberInput
+                                    className="w-full"
+                                    placeholder="Trim End"
+                                    min={trimStart + 1}
+                                    max={videoMetadata.duration}
+                                    value={trimEnd}
+                                    onChange={updateTrimEnd}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex w-full justify-between items-center mt-1">
+                        <p className="text-xs font-medium">00:00</p>
+                        <p className="text-xs font-medium text-muted-foreground">
+                            {trimStart > 0 || trimEnd < videoMetadata.duration ? `Trimmed • ${formatDuration(trimStart)} - ${formatDuration(trimEnd)}` : 'Untrimmed • Full Duration'}
+                        </p>
+                        <p className="text-xs font-medium">{formatDuration(videoMetadata.duration)}</p>
+                    </div>
+                    <Slider
+                        id="trim-stamps"
+                        className="w-full my-2"
+                        value={[trimStart, trimEnd]}
+                        min={0}
+                        max={videoMetadata.duration}
+                        minStepsBetweenThumbs={1}
+                        onValueChange={updateTrimStamps}
+                    />
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
 }
 
 function DownloadConfigDialog({ selectedFormatFileType }: DownloadConfigDialogProps) {
@@ -441,6 +548,7 @@ export function BottomBar({ videoMetadata, selectedFormat, selectedFormatFileTyp
                 </div>
             </div>
             <div className="flex items-center gap-2">
+                <TrimmerDialog videoMetadata={videoMetadata} />
                 <DownloadConfigDialog selectedFormatFileType={selectedFormatFileType} />
                 <Button
                 onClick={async () => {

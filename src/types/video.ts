@@ -8,6 +8,7 @@ export interface RawVideoInfo {
     channel: string;
     uploader: string;
     creator: string;
+    duration: number;
     duration_string: string;
     release_date: string;
     upload_date: string;
@@ -28,6 +29,8 @@ export interface RawVideoInfo {
     _type: string;
     extractor: string;
     filesize_approx: number;
+    is_live: boolean;
+    playable_in_embed: boolean;
     subtitles: {
         [subtitle_id: string]: VideoSubtitle[];
     };
@@ -36,6 +39,7 @@ export interface RawVideoInfo {
     };
     formats: VideoFormat[];
     requested_downloads: VideoFormat[];
+    requested_formats: VideoFormat[];
     requested_subtitles: {
         [subtitle_id: string]: VideoSubtitle;
     };
@@ -69,6 +73,7 @@ export interface VideoFormat {
     format: string;
     format_note: string;
     ext: string;
+    url: string;
     resolution: string | null;
     filesize_approx: number | null;
     dynamic_range?: string | null;

@@ -107,8 +107,9 @@ export const saveDownloadState = async (downloadState: DownloadState) => {
             sponsorblock_mark,
             use_aria2,
             custom_command,
-            queue_config
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35)
+            queue_config,
+            trim_stamps
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36)
         ON CONFLICT(download_id) DO UPDATE SET
             download_status = $2,
             video_id = $3,
@@ -143,7 +144,8 @@ export const saveDownloadState = async (downloadState: DownloadState) => {
             sponsorblock_mark = $32,
             use_aria2 = $33,
             custom_command = $34,
-            queue_config = $35`,
+            queue_config = $35,
+            trim_stamps = $36`,
         [
             downloadState.download_id,
             downloadState.download_status,
@@ -179,7 +181,8 @@ export const saveDownloadState = async (downloadState: DownloadState) => {
             downloadState.sponsorblock_mark,
             downloadState.use_aria2,
             downloadState.custom_command,
-            downloadState.queue_config
+            downloadState.queue_config,
+            downloadState.trim_stamps
         ]
     )
 }

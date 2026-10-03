@@ -79,4 +79,5 @@ export interface DownloadConfiguration {
     square_crop_thumbnail: boolean | null;
     sponsorblock: string | null;
     custom_command: string | null;
+    trim_stamps: number[] | null;
 }

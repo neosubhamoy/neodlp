@@ -650,6 +650,9 @@
     ::-webkit-scrollbar-thumb:hover {
         @apply bg-foreground;
     }
+    html {
+        @apply font-sans;
+    }
 }
 
 @utility no-scrollbar {

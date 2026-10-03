@@ -60,7 +60,8 @@ export const useDownloaderPageStatesStore = create<DownloaderPageStatesStore>((s
         embed_thumbnail: null,
         square_crop_thumbnail: null,
         sponsorblock: null,
-        custom_command: null
+        custom_command: null,
+        trim_stamps: null
     },
     erroredDownloadIds: new Set(),
     expectedErrorDownloadIds: new Set(),
@@ -88,7 +89,8 @@ export const useDownloaderPageStatesStore = create<DownloaderPageStatesStore>((s
             embed_thumbnail: null,
             square_crop_thumbnail: null,
             sponsorblock: null,
-            custom_command: null
+            custom_command: null,
+            trim_stamps: null
         }
     })),
     addErroredDownload: (downloadId) => set((state) => ({
