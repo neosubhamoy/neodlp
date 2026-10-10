@@ -1,156 +1,150 @@
 {
-  "$schema": "../gen/schemas/desktop-schema.json",
-  "identifier": "shell-scope",
-  "description": "allowed shell scopes",
-  "windows": [
-    "main"
-  ],
-  "permissions": [
-    "shell:allow-kill",
-    {
-      "identifier": "shell:allow-execute",
-      "allow": [
-        {
-          "name": "binaries/yt-dlp",
-          "args": true,
-          "sidecar": true
-        },
-        {
-          "name": "binaries/ffmpeg",
-          "args": true,
-          "sidecar": true
-        },
-        {
-          "name": "binaries/ffprobe",
-          "args": true,
-          "sidecar": true
-        },
-        {
-          "name": "binaries/aria2c",
-          "args": true,
-          "sidecar": true
-        },
-        {
-          "name": "binaries/deno",
-          "args": true,
-          "sidecar": true
-        },
-        {
-          "name": "binaries/neodlp-pot",
-          "args": true,
-          "sidecar": true
-        },
-        {
-          "name": "yt-dlp",
-          "cmd": "yt-dlp",
-          "args": true
-        },
-        {
-          "name": "ffmpeg",
-          "cmd": "ffmpeg",
-          "args": true
-        },
-        {
-          "name": "aria2c",
-          "cmd": "aria2c",
-          "args": true
-        },
-        {
-          "name": "deno",
-          "cmd": "deno",
-          "args": true
-        },
-        {
-          "name": "pkexec",
-          "cmd": "pkexec",
-          "args": true
-        },
-        {
-          "name": "powershell",
-          "cmd": "powershell",
-          "args": true
-        },
-        {
-          "name": "sh",
-          "cmd": "sh",
-          "args": true
-        }
-      ]
-    },
-    {
-      "identifier": "shell:allow-spawn",
-      "allow": [
-        {
-          "name": "binaries/yt-dlp",
-          "args": true,
-          "sidecar": true
-        },
-        {
-          "name": "binaries/ffmpeg",
-          "args": true,
-          "sidecar": true
-        },
-        {
-          "name": "binaries/ffprobe",
-          "args": true,
-          "sidecar": true
-        },
-        {
-          "name": "binaries/aria2c",
-          "args": true,
-          "sidecar": true
-        },
-        {
-          "name": "binaries/deno",
-          "args": true,
-          "sidecar": true
-        },
-        {
-          "name": "binaries/neodlp-pot",
-          "args": true,
-          "sidecar": true
-        },
-        {
-          "name": "yt-dlp",
-          "cmd": "yt-dlp",
-          "args": true
-        },
-        {
-          "name": "ffmpeg",
-          "cmd": "ffmpeg",
-          "args": true
-        },
-        {
-          "name": "aria2c",
-          "cmd": "aria2c",
-          "args": true
-        },
-        {
-          "name": "deno",
-          "cmd": "deno",
-          "args": true
-        },
-        {
-          "name": "pkexec",
-          "cmd": "pkexec",
-          "args": true
-        },
-        {
-          "name": "powershell",
-          "cmd": "powershell",
-          "args": true
-        },
-        {
-          "name": "sh",
-          "cmd": "sh",
-          "args": true
-        }
-      ]
-    }
-  ],
-  "platforms": [
-    "windows",
-    "macOS",
-    "linux"
-  ]
+	"$schema": "../gen/schemas/desktop-schema.json",
+	"identifier": "shell-scope",
+	"description": "allowed shell scopes",
+	"windows": ["main"],
+	"permissions": [
+		"shell:allow-kill",
+		{
+			"identifier": "shell:allow-execute",
+			"allow": [
+				{
+					"name": "binaries/yt-dlp",
+					"args": true,
+					"sidecar": true
+				},
+				{
+					"name": "binaries/ffmpeg",
+					"args": true,
+					"sidecar": true
+				},
+				{
+					"name": "binaries/ffprobe",
+					"args": true,
+					"sidecar": true
+				},
+				{
+					"name": "binaries/aria2c",
+					"args": true,
+					"sidecar": true
+				},
+				{
+					"name": "binaries/deno",
+					"args": true,
+					"sidecar": true
+				},
+				{
+					"name": "binaries/neodlp-pot",
+					"args": true,
+					"sidecar": true
+				},
+				{
+					"name": "yt-dlp",
+					"cmd": "yt-dlp",
+					"args": true
+				},
+				{
+					"name": "ffmpeg",
+					"cmd": "ffmpeg",
+					"args": true
+				},
+				{
+					"name": "aria2c",
+					"cmd": "aria2c",
+					"args": true
+				},
+				{
+					"name": "deno",
+					"cmd": "deno",
+					"args": true
+				},
+				{
+					"name": "pkexec",
+					"cmd": "pkexec",
+					"args": true
+				},
+				{
+					"name": "powershell",
+					"cmd": "powershell",
+					"args": true
+				},
+				{
+					"name": "sh",
+					"cmd": "sh",
+					"args": true
+				}
+			]
+		},
+		{
+			"identifier": "shell:allow-spawn",
+			"allow": [
+				{
+					"name": "binaries/yt-dlp",
+					"args": true,
+					"sidecar": true
+				},
+				{
+					"name": "binaries/ffmpeg",
+					"args": true,
+					"sidecar": true
+				},
+				{
+					"name": "binaries/ffprobe",
+					"args": true,
+					"sidecar": true
+				},
+				{
+					"name": "binaries/aria2c",
+					"args": true,
+					"sidecar": true
+				},
+				{
+					"name": "binaries/deno",
+					"args": true,
+					"sidecar": true
+				},
+				{
+					"name": "binaries/neodlp-pot",
+					"args": true,
+					"sidecar": true
+				},
+				{
+					"name": "yt-dlp",
+					"cmd": "yt-dlp",
+					"args": true
+				},
+				{
+					"name": "ffmpeg",
+					"cmd": "ffmpeg",
+					"args": true
+				},
+				{
+					"name": "aria2c",
+					"cmd": "aria2c",
+					"args": true
+				},
+				{
+					"name": "deno",
+					"cmd": "deno",
+					"args": true
+				},
+				{
+					"name": "pkexec",
+					"cmd": "pkexec",
+					"args": true
+				},
+				{
+					"name": "powershell",
+					"cmd": "powershell",
+					"args": true
+				},
+				{
+					"name": "sh",
+					"cmd": "sh",
+					"args": true
+				}
+			]
+		}
+	],
+	"platforms": ["windows", "macOS", "linux"]
 }

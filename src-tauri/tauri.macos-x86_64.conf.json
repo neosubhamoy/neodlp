@@ -1,56 +1,53 @@
 {
-    "identifier": "com.neosubhamoy.neodlp",
-    "build": {
-        "beforeDevCommand": "cargo build --target=x86_64-apple-darwin --manifest-path=./src-tauri/msghost/Cargo.toml && npm run dev",
-        "beforeBuildCommand": "cargo build --release --target=x86_64-apple-darwin --manifest-path=./src-tauri/msghost/Cargo.toml && npm run build",
-        "devUrl": "http://localhost:1420",
-        "frontendDist": "../dist"
-    },
-    "app": {
-        "windows": [
-            {
-                "title": "NeoDLP",
-                "width": 1067,
-                "height": 605,
-                "visible": false
-            }
-        ],
-        "security": {
-            "csp": null,
-            "capabilities": [
-                "default",
-                "shell-scope"
-            ]
-        }
-    },
-    "bundle": {
-        "active": true,
-        "targets": ["app", "dmg"],
-        "createUpdaterArtifacts": true,
-        "licenseFile": "../LICENSE",
-        "icon": [
-            "icons/32x32.png",
-            "icons/128x128.png",
-            "icons/128x128@2x.png",
-            "icons/icon.icns",
-            "icons/icon.ico"
-        ],
-        "externalBin": [
-            "binaries/yt-dlp",
-            "binaries/ffmpeg",
-            "binaries/ffprobe",
-            "binaries/deno",
-            "binaries/neodlp-pot"
-        ],
-        "resources": {
-            "target/x86_64-apple-darwin/release/neodlp-msghost": "neodlp-msghost",
-            "resources/msghost-manifest/macos/chrome.json": "neodlp-msghost.json",
-            "resources/msghost-manifest/macos/firefox.json": "neodlp-msghost-moz.json",
-            "resources/autostart/macos/autostart.plist": "neodlp-autostart.plist",
-            "resources/plugins/yt-dlp-plugins/": "yt-dlp-plugins/"
-        },
-        "macOS": {
-            "providerShortName": "neosubhamoy"
-        }
-    }
+	"identifier": "com.neosubhamoy.neodlp",
+	"build": {
+		"beforeDevCommand": "cargo build --target=x86_64-apple-darwin --manifest-path=./src-tauri/msghost/Cargo.toml && npm run dev",
+		"beforeBuildCommand": "cargo build --release --target=x86_64-apple-darwin --manifest-path=./src-tauri/msghost/Cargo.toml && npm run build",
+		"devUrl": "http://localhost:1420",
+		"frontendDist": "../dist"
+	},
+	"app": {
+		"windows": [
+			{
+				"title": "NeoDLP",
+				"width": 1067,
+				"height": 605,
+				"visible": false
+			}
+		],
+		"security": {
+			"csp": null,
+			"capabilities": ["default", "shell-scope"]
+		}
+	},
+	"bundle": {
+		"active": true,
+		"targets": ["app", "dmg"],
+		"createUpdaterArtifacts": true,
+		"licenseFile": "../LICENSE",
+		"icon": [
+			"icons/32x32.png",
+			"icons/128x128.png",
+			"icons/128x128@2x.png",
+			"icons/icon.icns",
+			"icons/icon.ico"
+		],
+		"externalBin": [
+			"binaries/yt-dlp",
+			"binaries/ffmpeg",
+			"binaries/ffprobe",
+			"binaries/deno",
+			"binaries/neodlp-pot"
+		],
+		"resources": {
+			"target/x86_64-apple-darwin/release/neodlp-msghost": "neodlp-msghost",
+			"resources/msghost-manifest/macos/chrome.json": "neodlp-msghost.json",
+			"resources/msghost-manifest/macos/firefox.json": "neodlp-msghost-moz.json",
+			"resources/autostart/macos/autostart.plist": "neodlp-autostart.plist",
+			"resources/plugins/yt-dlp-plugins/": "yt-dlp-plugins/"
+		},
+		"macOS": {
+			"providerShortName": "neosubhamoy"
+		}
+	}
 }

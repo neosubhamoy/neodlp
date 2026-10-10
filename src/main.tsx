@@ -1,28 +1,44 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import TanstackProvider from "@/providers/tanstackProvider";
-import App from "@/App";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import "@/index.css";
-import RootLayout from "@/pages/layout/root";
-import DownloaderPage from "@/pages/downloader";
-import LibraryPage from "@/pages/library";
-import SettingsPage from "@/pages/settings";
+import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { routeTree } from "@/routeTree.gen";
+import "@/styles/global.css";
+
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			networkMode: "always",
+		},
+		mutations: {
+			networkMode: "always",
+		},
+	},
+});
+
+const router = createRouter({
+	routeTree,
+	context: {
+		queryClient,
+	},
+	defaultPreload: "intent",
+	// Since we're using React Query, we don't want loader calls to ever be stale
+	// This will ensure that the loader is always called when the route is preloaded or visited
+	defaultPreloadStaleTime: 0,
+	scrollRestoration: true,
+});
+
+// Register things for typesafety
+declare module "@tanstack/react-router" {
+	interface Register {
+		router: typeof router;
+	}
+}
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <TanstackProvider>
-        <App>
-          <Routes>
-            <Route path="/" element={<RootLayout />}>
-              <Route index element={<DownloaderPage />} />
-              <Route path="/library" element={<LibraryPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-            </Route>
-          </Routes>
-        </App>
-      </TanstackProvider>
-    </BrowserRouter>
-  </React.StrictMode>,
+	<React.StrictMode>
+		<QueryClientProvider client={queryClient}>
+			<RouterProvider router={router} />
+		</QueryClientProvider>
+	</React.StrictMode>,
 );

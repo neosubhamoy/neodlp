@@ -1,15 +1,20 @@
-import os from 'os';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
+import { execSync } from "child_process";
+import fs from "fs";
+import os from "os";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const projectRoot = path.resolve(__dirname, '..');
+const projectRoot = path.resolve(__dirname, "..");
 
-const downloadDir = path.join(projectRoot, 'src-tauri', 'resources', 'downloads');
-const binDir = path.join(projectRoot, 'src-tauri', 'binaries');
+const downloadDir = path.join(
+	projectRoot,
+	"src-tauri",
+	"resources",
+	"downloads",
+);
+const binDir = path.join(projectRoot, "src-tauri", "binaries");
 
 const platform = os.platform();
 const arch = os.arch();
@@ -18,641 +23,669 @@ const targetArch = process.argv[3];
 const targetBin = process.argv[4];
 
 function getArchesForBin(bin) {
-    const paths = [
-        ...(bin.dest || []),
-        ...((bin.archive && bin.archive.binDest) || [])
-    ];
-    const arches = new Set();
-    for (const path of paths) {
-        if (path.includes('-x86_64-') || path.includes('-x64-')) arches.add('x64');
-        if (path.includes('-aarch64-') || path.includes('-arm64-')) arches.add('arm64');
-    }
-    return arches;
+	const paths = [
+		...(bin.dest || []),
+		...((bin.archive && bin.archive.binDest) || []),
+	];
+	const arches = new Set();
+	for (const path of paths) {
+		if (path.includes("-x86_64-") || path.includes("-x64-")) arches.add("x64");
+		if (path.includes("-aarch64-") || path.includes("-arm64-"))
+			arches.add("arm64");
+	}
+	return arches;
 }
 
 const versions = {
-    'yt-dlp': '2026.09.16.232951',
-    'ffmpeg-ffprobe': 'latest',
-    'deno': '2.9.7',
-    'aria2c': '1.37.0',
-    'neodlp-pot': '0.8.1'
+	"yt-dlp": "2026.09.27.232945",
+	"ffmpeg-ffprobe": "latest",
+	deno: "2.9.7",
+	aria2c: "1.37.0",
+	"neodlp-pot": "0.8.1",
 };
 
 const binaries = {
-    'yt-dlp': [
-        {
-            name: 'yt-dlp-x86_64-pc-windows-msvc',
-            platform: 'win32',
-            url: `https://github.com/yt-dlp/yt-dlp-nightly-builds/releases${versions['yt-dlp'] === 'latest' ? '/latest' : ''}/download${versions['yt-dlp'] !== 'latest' ? '/'+versions['yt-dlp'] : ''}/yt-dlp.exe`,
-            src: path.join(downloadDir, 'yt-dlp-x86_64-pc-windows-msvc.exe'),
-            dest: [
-                path.join(binDir, 'yt-dlp-x86_64-pc-windows-msvc.exe')
-            ],
-            archive: null,
-            cleanup: [
-                path.join(downloadDir, 'yt-dlp-x86_64-pc-windows-msvc.exe')
-            ]
-        },
-        {
-            name: 'yt-dlp-aarch64-pc-windows-msvc',
-            platform: 'win32',
-            url: `https://github.com/yt-dlp/yt-dlp-nightly-builds/releases${versions['yt-dlp'] === 'latest' ? '/latest' : ''}/download${versions['yt-dlp'] !== 'latest' ? '/'+versions['yt-dlp'] : ''}/yt-dlp_arm64.exe`,
-            src: path.join(downloadDir, 'yt-dlp-aarch64-pc-windows-msvc.exe'),
-            dest: [
-                path.join(binDir, 'yt-dlp-aarch64-pc-windows-msvc.exe')
-            ],
-            archive: null,
-            cleanup: [
-                path.join(downloadDir, 'yt-dlp-aarch64-pc-windows-msvc.exe')
-            ]
-        },
-        {
-            name: 'yt-dlp-x86_64-unknown-linux-gnu',
-            platform: 'linux',
-            url: `https://github.com/yt-dlp/yt-dlp-nightly-builds/releases${versions['yt-dlp'] === 'latest' ? '/latest' : ''}/download${versions['yt-dlp'] !== 'latest' ? '/'+versions['yt-dlp'] : ''}/yt-dlp_linux`,
-            src: path.join(downloadDir, 'yt-dlp-x86_64-unknown-linux-gnu'),
-            dest: [
-                path.join(binDir, 'yt-dlp-x86_64-unknown-linux-gnu')
-            ],
-            archive: null,
-            cleanup: [
-                path.join(downloadDir, 'yt-dlp-x86_64-unknown-linux-gnu')
-            ]
-        },
-        {
-            name: 'yt-dlp-aarch64-unknown-linux-gnu',
-            platform: 'linux',
-            url: `https://github.com/yt-dlp/yt-dlp-nightly-builds/releases${versions['yt-dlp'] === 'latest' ? '/latest' : ''}/download${versions['yt-dlp'] !== 'latest' ? '/'+versions['yt-dlp'] : ''}/yt-dlp_linux_aarch64`,
-            src: path.join(downloadDir, 'yt-dlp-aarch64-unknown-linux-gnu'),
-            dest: [
-                path.join(binDir, 'yt-dlp-aarch64-unknown-linux-gnu')
-            ],
-            archive: null,
-            cleanup: [
-                path.join(downloadDir, 'yt-dlp-aarch64-unknown-linux-gnu')
-            ]
-        },
-        {
-            name: 'yt-dlp-universal-apple-darwin',
-            platform: 'darwin',
-            url: `https://github.com/yt-dlp/yt-dlp-nightly-builds/releases${versions['yt-dlp'] === 'latest' ? '/latest' : ''}/download${versions['yt-dlp'] !== 'latest' ? '/'+versions['yt-dlp'] : ''}/yt-dlp_macos`,
-            src: path.join(downloadDir, 'yt-dlp-universal-apple-darwin'),
-            dest: [
-                path.join(binDir, 'yt-dlp-x86_64-apple-darwin'),
-                path.join(binDir, 'yt-dlp-aarch64-apple-darwin')
-            ],
-            archive: null,
-            cleanup: [
-                path.join(downloadDir, 'yt-dlp-universal-apple-darwin')
-            ]
-        },
-    ],
-    'ffmpeg-ffprobe': [
-        {
-            name: 'ffmpeg-ffprobe-x86_64-pc-windows-msvc',
-            platform: 'win32',
-            url: `https://github.com/yt-dlp/FFmpeg-Builds/releases${versions['ffmpeg-ffprobe'] === 'latest' ? '/latest' : ''}/download${versions['ffmpeg-ffprobe'] !== 'latest' ? '/'+versions['ffmpeg-ffprobe'] : ''}/ffmpeg-master-latest-win64-gpl.zip`,
-            src: path.join(downloadDir, 'ffmpeg-master-latest-win64-gpl.zip'),
-            dest: null,
-            archive: {
-                type: 'zip',
-                binSrc: [
-                    path.join(downloadDir, 'ffmpeg-master-latest-win64-gpl', 'bin', 'ffmpeg.exe'),
-                    path.join(downloadDir, 'ffmpeg-master-latest-win64-gpl', 'bin', 'ffprobe.exe')
-                ],
-                binDest: [
-                    path.join(binDir, 'ffmpeg-x86_64-pc-windows-msvc.exe'),
-                    path.join(binDir, 'ffprobe-x86_64-pc-windows-msvc.exe')
-                ]
-            },
-            cleanup: [
-                path.join(downloadDir, 'ffmpeg-master-latest-win64-gpl.zip'),
-                path.join(downloadDir, 'ffmpeg-master-latest-win64-gpl')
-            ]
-        },
-        {
-            name: 'ffmpeg-ffprobe-aarch64-pc-windows-msvc',
-            platform: 'win32',
-            url: `https://github.com/yt-dlp/FFmpeg-Builds/releases${versions['ffmpeg-ffprobe'] === 'latest' ? '/latest' : ''}/download${versions['ffmpeg-ffprobe'] !== 'latest' ? '/'+versions['ffmpeg-ffprobe'] : ''}/ffmpeg-master-latest-winarm64-gpl.zip`,
-            src: path.join(downloadDir, 'ffmpeg-master-latest-winarm64-gpl.zip'),
-            dest: null,
-            archive: {
-                type: 'zip',
-                binSrc: [
-                    path.join(downloadDir, 'ffmpeg-master-latest-winarm64-gpl', 'bin', 'ffmpeg.exe'),
-                    path.join(downloadDir, 'ffmpeg-master-latest-winarm64-gpl', 'bin', 'ffprobe.exe')
-                ],
-                binDest: [
-                    path.join(binDir, 'ffmpeg-aarch64-pc-windows-msvc.exe'),
-                    path.join(binDir, 'ffprobe-aarch64-pc-windows-msvc.exe')
-                ]
-            },
-            cleanup: [
-                path.join(downloadDir, 'ffmpeg-master-latest-winarm64-gpl.zip'),
-                path.join(downloadDir, 'ffmpeg-master-latest-winarm64-gpl')
-            ]
-        },
-        {
-            name: 'ffmpeg-ffprobe-x86_64-unknown-linux-gnu',
-            platform: 'linux',
-            url: `https://github.com/yt-dlp/FFmpeg-Builds/releases${versions['ffmpeg-ffprobe'] === 'latest' ? '/latest' : ''}/download${versions['ffmpeg-ffprobe'] !== 'latest' ? '/'+versions['ffmpeg-ffprobe'] : ''}/ffmpeg-master-latest-linux64-gpl.tar.xz`,
-            src: path.join(downloadDir, 'ffmpeg-master-latest-linux64-gpl.tar.xz'),
-            dest: null,
-            archive: {
-                type: 'tar.xz',
-                binSrc: [
-                    path.join(downloadDir, 'ffmpeg-master-latest-linux64-gpl', 'bin', 'ffmpeg'),
-                    path.join(downloadDir, 'ffmpeg-master-latest-linux64-gpl', 'bin', 'ffprobe')
-                ],
-                binDest: [
-                    path.join(binDir, 'ffmpeg-x86_64-unknown-linux-gnu'),
-                    path.join(binDir, 'ffprobe-x86_64-unknown-linux-gnu')
-                ]
-            },
-            cleanup: [
-                path.join(downloadDir, 'ffmpeg-master-latest-linux64-gpl.tar.xz'),
-                path.join(downloadDir, 'ffmpeg-master-latest-linux64-gpl')
-            ]
-        },
-        {
-            name: 'ffmpeg-ffprobe-aarch64-unknown-linux-gnu',
-            platform: 'linux',
-            url: `https://github.com/yt-dlp/FFmpeg-Builds/releases${versions['ffmpeg-ffprobe'] === 'latest' ? '/latest' : ''}/download${versions['ffmpeg-ffprobe'] !== 'latest' ? '/'+versions['ffmpeg-ffprobe'] : ''}/ffmpeg-master-latest-linuxarm64-gpl.tar.xz`,
-            src: path.join(downloadDir, 'ffmpeg-master-latest-linuxarm64-gpl.tar.xz'),
-            dest: null,
-            archive: {
-                type: 'tar.xz',
-                binSrc: [
-                    path.join(downloadDir, 'ffmpeg-master-latest-linuxarm64-gpl', 'bin', 'ffmpeg'),
-                    path.join(downloadDir, 'ffmpeg-master-latest-linuxarm64-gpl', 'bin', 'ffprobe')
-                ],
-                binDest: [
-                    path.join(binDir, 'ffmpeg-aarch64-unknown-linux-gnu'),
-                    path.join(binDir, 'ffprobe-aarch64-unknown-linux-gnu')
-                ]
-            },
-            cleanup: [
-                path.join(downloadDir, 'ffmpeg-master-latest-linuxarm64-gpl.tar.xz'),
-                path.join(downloadDir, 'ffmpeg-master-latest-linuxarm64-gpl')
-            ]
-        },
-        // {
-        //     name: 'ffmpeg-universal-apple-darwin',
-        //     platform: 'darwin',
-        //     url: `https://evermeet.cx/ffmpeg/get/zip`,
-        //     src: path.join(downloadDir, 'ffmpeg-universal-apple-darwin.zip'),
-        //     dest: null,
-        //     archive: {
-        //         type: 'zip',
-        //         binSrc: [
-        //             path.join(downloadDir, 'ffmpeg'),
-        //             path.join(downloadDir, 'ffmpeg')
-        //         ],
-        //         binDest: [
-        //             path.join(binDir, 'ffmpeg-x86_64-apple-darwin'),
-        //             path.join(binDir, 'ffmpeg-aarch64-apple-darwin')
-        //         ]
-        //     },
-        //     cleanup: [
-        //         path.join(downloadDir, 'ffmpeg-universal-apple-darwin.zip'),
-        //         path.join(downloadDir, 'ffmpeg')
-        //     ]
-        // },
-        // {
-        //     name: 'ffprobe-universal-apple-darwin',
-        //     platform: 'darwin',
-        //     url: `https://evermeet.cx/ffmpeg/get/ffprobe/zip`,
-        //     src: path.join(downloadDir, 'ffprobe-universal-apple-darwin.zip'),
-        //     dest: null,
-        //     archive: {
-        //         type: 'zip',
-        //         binSrc: [
-        //             path.join(downloadDir, 'ffprobe'),
-        //             path.join(downloadDir, 'ffprobe')
-        //         ],
-        //         binDest: [
-        //             path.join(binDir, 'ffprobe-x86_64-apple-darwin'),
-        //             path.join(binDir, 'ffprobe-aarch64-apple-darwin')
-        //         ]
-        //     },
-        //     cleanup: [
-        //         path.join(downloadDir, 'ffprobe-universal-apple-darwin.zip'),
-        //         path.join(downloadDir, 'ffprobe')
-        //     ]
-        // },
-        {
-            name: 'ffmpeg-universal-apple-darwin',
-            platform: 'darwin',
-            url: `https://github.com/neosubhamoy/evermeet-static-ffmpeg/releases${versions['ffmpeg-ffprobe'] === 'latest' ? '/latest' : ''}/download${versions['ffmpeg-ffprobe'] !== 'latest' ? '/'+versions['ffmpeg-ffprobe'] : ''}/ffmpeg-universal-apple-darwin.zip`,
-            src: path.join(downloadDir, 'ffmpeg-universal-apple-darwin.zip'),
-            dest: null,
-            archive: {
-                type: 'zip',
-                binSrc: [
-                    path.join(downloadDir, 'ffmpeg'),
-                    path.join(downloadDir, 'ffmpeg')
-                ],
-                binDest: [
-                    path.join(binDir, 'ffmpeg-x86_64-apple-darwin'),
-                    path.join(binDir, 'ffmpeg-aarch64-apple-darwin')
-                ]
-            },
-            cleanup: [
-                path.join(downloadDir, 'ffmpeg-universal-apple-darwin.zip'),
-                path.join(downloadDir, 'ffmpeg')
-            ]
-        },
-        {
-            name: 'ffprobe-universal-apple-darwin',
-            platform: 'darwin',
-            url: `https://github.com/neosubhamoy/evermeet-static-ffmpeg/releases${versions['ffmpeg-ffprobe'] === 'latest' ? '/latest' : ''}/download${versions['ffmpeg-ffprobe'] !== 'latest' ? '/'+versions['ffmpeg-ffprobe'] : ''}/ffprobe-universal-apple-darwin.zip`,
-            src: path.join(downloadDir, 'ffprobe-universal-apple-darwin.zip'),
-            dest: null,
-            archive: {
-                type: 'zip',
-                binSrc: [
-                    path.join(downloadDir, 'ffprobe'),
-                    path.join(downloadDir, 'ffprobe')
-                ],
-                binDest: [
-                    path.join(binDir, 'ffprobe-x86_64-apple-darwin'),
-                    path.join(binDir, 'ffprobe-aarch64-apple-darwin')
-                ]
-            },
-            cleanup: [
-                path.join(downloadDir, 'ffprobe-universal-apple-darwin.zip'),
-                path.join(downloadDir, 'ffprobe')
-            ]
-        }
-    ],
-    'deno': [
-        {
-            name: 'deno-x86_64-pc-windows-msvc',
-            platform: 'win32',
-            url: `https://github.com/denoland/deno/releases${versions['deno'] === 'latest' ? '/latest' : ''}/download${versions['deno'] !== 'latest' ? '/v'+versions['deno'] : ''}/deno-x86_64-pc-windows-msvc.zip`,
-            src: path.join(downloadDir, 'deno-x86_64-pc-windows-msvc.zip'),
-            dest: null,
-            archive: {
-                type: 'zip',
-                binSrc: [
-                    path.join(downloadDir, 'deno.exe')
-                ],
-                binDest: [
-                    path.join(binDir, 'deno-x86_64-pc-windows-msvc.exe')
-                ]
-            },
-            cleanup: [
-                path.join(downloadDir, 'deno-x86_64-pc-windows-msvc.zip'),
-                path.join(downloadDir, 'deno.exe')
-            ]
-        },
-        {
-            name: 'deno-aarch64-pc-windows-msvc',
-            platform: 'win32',
-            url: `https://github.com/denoland/deno/releases${versions['deno'] === 'latest' ? '/latest' : ''}/download${versions['deno'] !== 'latest' ? '/v'+versions['deno'] : ''}/deno-aarch64-pc-windows-msvc.zip`,
-            src: path.join(downloadDir, 'deno-aarch64-pc-windows-msvc.zip'),
-            dest: null,
-            archive: {
-                type: 'zip',
-                binSrc: [
-                    path.join(downloadDir, 'deno.exe')
-                ],
-                binDest: [
-                    path.join(binDir, 'deno-aarch64-pc-windows-msvc.exe')
-                ]
-            },
-            cleanup: [
-                path.join(downloadDir, 'deno-aarch64-pc-windows-msvc.zip'),
-                path.join(downloadDir, 'deno.exe')
-            ]
-        },
-        {
-            name: 'deno-x86_64-unknown-linux-gnu',
-            platform: 'linux',
-            url: `https://github.com/denoland/deno/releases${versions['deno'] === 'latest' ? '/latest' : ''}/download${versions['deno'] !== 'latest' ? '/v'+versions['deno'] : ''}/deno-x86_64-unknown-linux-gnu.zip`,
-            src: path.join(downloadDir, 'deno-x86_64-unknown-linux-gnu.zip'),
-            dest: null,
-            archive: {
-                type: 'zip',
-                binSrc: [
-                    path.join(downloadDir, 'deno')
-                ],
-                binDest: [
-                    path.join(binDir, 'deno-x86_64-unknown-linux-gnu')
-                ]
-            },
-            cleanup: [
-                path.join(downloadDir, 'deno-x86_64-unknown-linux-gnu.zip'),
-                path.join(downloadDir, 'deno')
-            ]
-        },
-        {
-            name: 'deno-aarch64-unknown-linux-gnu',
-            platform: 'linux',
-            url: `https://github.com/denoland/deno/releases${versions['deno'] === 'latest' ? '/latest' : ''}/download${versions['deno'] !== 'latest' ? '/v'+versions['deno'] : ''}/deno-aarch64-unknown-linux-gnu.zip`,
-            src: path.join(downloadDir, 'deno-aarch64-unknown-linux-gnu.zip'),
-            dest: null,
-            archive: {
-                type: 'zip',
-                binSrc: [
-                    path.join(downloadDir, 'deno')
-                ],
-                binDest: [
-                    path.join(binDir, 'deno-aarch64-unknown-linux-gnu')
-                ]
-            },
-            cleanup: [
-                path.join(downloadDir, 'deno-aarch64-unknown-linux-gnu.zip'),
-                path.join(downloadDir, 'deno')
-            ]
-        },
-        {
-            name: 'deno-x86_64-apple-darwin',
-            platform: 'darwin',
-            url: `https://github.com/denoland/deno/releases${versions['deno'] === 'latest' ? '/latest' : ''}/download${versions['deno'] !== 'latest' ? '/v'+versions['deno'] : ''}/deno-x86_64-apple-darwin.zip`,
-            src: path.join(downloadDir, 'deno-x86_64-apple-darwin.zip'),
-            dest: null,
-            archive: {
-                type: 'zip',
-                binSrc: [
-                    path.join(downloadDir, 'deno')
-                ],
-                binDest: [
-                    path.join(binDir, 'deno-x86_64-apple-darwin')
-                ]
-            },
-            cleanup: [
-                path.join(downloadDir, 'deno-x86_64-apple-darwin.zip'),
-                path.join(downloadDir, 'deno')
-            ]
-        },
-        {
-            name: 'deno-aarch64-apple-darwin',
-            platform: 'darwin',
-            url: `https://github.com/denoland/deno/releases${versions['deno'] === 'latest' ? '/latest' : ''}/download${versions['deno'] !== 'latest' ? '/v'+versions['deno'] : ''}/deno-aarch64-apple-darwin.zip`,
-            src: path.join(downloadDir, 'deno-aarch64-apple-darwin.zip'),
-            dest: null,
-            archive: {
-                type: 'zip',
-                binSrc: [
-                    path.join(downloadDir, 'deno')
-                ],
-                binDest: [
-                    path.join(binDir, 'deno-aarch64-apple-darwin')
-                ]
-            },
-            cleanup: [
-                path.join(downloadDir, 'deno-aarch64-apple-darwin.zip'),
-                path.join(downloadDir, 'deno')
-            ]
-        }
-    ],
-    'aria2c': [
-        {
-            name: 'aria2c-x86_64-pc-windows-msvc',
-            platform: 'win32',
-            url: `https://github.com/aria2/aria2/releases/download/release-${versions['aria2c']}/aria2-${versions['aria2c']}-win-64bit-build1.zip`,
-            src: path.join(downloadDir, `aria2-${versions['aria2c']}-win-64bit-build1.zip`),
-            dest: null,
-            archive: {
-                type: 'zip',
-                binSrc: [
-                    path.join(downloadDir, `aria2-${versions['aria2c']}-win-64bit-build1`, 'aria2c.exe')
-                ],
-                binDest: [
-                    path.join(binDir, 'aria2c-x86_64-pc-windows-msvc.exe')
-                ]
-            },
-            cleanup: [
-                path.join(downloadDir, `aria2-${versions['aria2c']}-win-64bit-build1.zip`),
-                path.join(downloadDir, `aria2-${versions['aria2c']}-win-64bit-build1`)
-            ]
-        },
-        {
-            name: 'aria2c-aarch64-pc-windows-msvc',
-            platform: 'win32',
-            url: `https://github.com/minnyres/aria2-windows-arm64/releases/download/v${versions['aria2c']}/aria2_${versions['aria2c']}_arm64.zip`,
-            src: path.join(downloadDir, `aria2_${versions['aria2c']}_arm64.zip`),
-            dest: null,
-            archive: {
-                type: 'zip',
-                binSrc: [
-                    path.join(downloadDir, 'aria2c.exe')
-                ],
-                binDest: [
-                    path.join(binDir, 'aria2c-aarch64-pc-windows-msvc.exe')
-                ]
-            },
-            cleanup: [
-                path.join(downloadDir, `aria2_${versions['aria2c']}_arm64.zip`),
-                path.join(downloadDir, 'aria2c.exe')
-            ]
-        },
-        {
-            name: 'aria2c-x86_64-unknown-linux-gnu',
-            platform: 'linux',
-            url: `https://github.com/asdo92/aria2-static-builds/releases/download/v${versions['aria2c']}/aria2-${versions['aria2c']}-linux-gnu-64bit-build1.tar.bz2`,
-            src: path.join(downloadDir, `aria2-${versions['aria2c']}-linux-gnu-64bit-build1.tar.bz2`),
-            dest: null,
-            archive: {
-                type: 'tar.bz2',
-                binSrc: [
-                    path.join(downloadDir, `aria2-${versions['aria2c']}-linux-gnu-64bit-build1`, 'aria2c')
-                ],
-                binDest: [
-                    path.join(binDir, 'aria2c-x86_64-unknown-linux-gnu')
-                ]
-            },
-            cleanup: [
-                path.join(downloadDir, `aria2-${versions['aria2c']}-linux-gnu-64bit-build1.tar.bz2`),
-                path.join(downloadDir, `aria2-${versions['aria2c']}-linux-gnu-64bit-build1`)
-            ]
-        },
-        {
-            name: 'aria2c-aarch64-unknown-linux-gnu',
-            platform: 'linux',
-            url: `https://github.com/aria2/aria2/releases/download/release-${versions['aria2c']}/aria2-${versions['aria2c']}-aarch64-linux-android-build1.zip`,
-            src: path.join(downloadDir, `aria2-${versions['aria2c']}-aarch64-linux-android-build1.zip`),
-            dest: null,
-            archive: {
-                type: 'zip',
-                binSrc: [
-                    path.join(downloadDir, `aria2-${versions['aria2c']}-aarch64-linux-android-build1`, 'aria2c')
-                ],
-                binDest: [
-                    path.join(binDir, 'aria2c-aarch64-unknown-linux-gnu')
-                ]
-            },
-            cleanup: [
-                path.join(downloadDir, `aria2-${versions['aria2c']}-aarch64-linux-android-build1.zip`),
-                path.join(downloadDir, `aria2-${versions['aria2c']}-aarch64-linux-android-build1`)
-            ]
-        }
-    ],
-    'neodlp-pot': [
-        {
-            name: 'neodlp-pot-x86_64-pc-windows-msvc',
-            platform: 'win32',
-            url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions['neodlp-pot'] === 'latest' ? '/latest' : ''}/download${versions['neodlp-pot'] !== 'latest' ? '/v'+versions['neodlp-pot'] : ''}/bgutil-pot-windows-x86_64.exe`,
-            src: path.join(downloadDir, 'bgutil-pot-windows-x86_64.exe'),
-            dest: [
-                path.join(binDir, 'neodlp-pot-x86_64-pc-windows-msvc.exe'),
-                path.join(binDir, 'neodlp-pot-aarch64-pc-windows-msvc.exe')
-            ],
-            archive: null,
-            cleanup: [
-                path.join(downloadDir, 'bgutil-pot-windows-x86_64.exe')
-            ]
-        },
-        {
-            name: 'neodlp-pot-x86_64-unknown-linux-gnu',
-            platform: 'linux',
-            url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions['neodlp-pot'] === 'latest' ? '/latest' : ''}/download${versions['neodlp-pot'] !== 'latest' ? '/v'+versions['neodlp-pot'] : ''}/bgutil-pot-linux-x86_64`,
-            src: path.join(downloadDir, 'bgutil-pot-linux-x86_64'),
-            dest: [
-                path.join(binDir, 'neodlp-pot-x86_64-unknown-linux-gnu')
-            ],
-            archive: null,
-            cleanup: [
-                path.join(downloadDir, 'bgutil-pot-linux-x86_64')
-            ]
-        },
-        {
-            name: 'neodlp-pot-aarch64-unknown-linux-gnu',
-            platform: 'linux',
-            url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions['neodlp-pot'] === 'latest' ? '/latest' : ''}/download${versions['neodlp-pot'] !== 'latest' ? '/v'+versions['neodlp-pot'] : ''}/bgutil-pot-linux-aarch64`,
-            src: path.join(downloadDir, 'bgutil-pot-linux-aarch64'),
-            dest: [
-                path.join(binDir, 'neodlp-pot-aarch64-unknown-linux-gnu')
-            ],
-            archive: null,
-            cleanup: [
-                path.join(downloadDir, 'bgutil-pot-linux-aarch64')
-            ]
-        },
-        {
-            name: 'neodlp-pot-x86_64-apple-darwin',
-            platform: 'darwin',
-            url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions['neodlp-pot'] === 'latest' ? '/latest' : ''}/download${versions['neodlp-pot'] !== 'latest' ? '/v'+versions['neodlp-pot'] : ''}/bgutil-pot-macos-x86_64`,
-            src: path.join(downloadDir, 'bgutil-pot-macos-x86_64'),
-            dest: [
-                path.join(binDir, 'neodlp-pot-x86_64-apple-darwin')
-            ],
-            archive: null,
-            cleanup: [
-                path.join(downloadDir, 'bgutil-pot-macos-x86_64')
-            ]
-        },
-        {
-            name: 'neodlp-pot-aarch64-apple-darwin',
-            platform: 'darwin',
-            url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions['neodlp-pot'] === 'latest' ? '/latest' : ''}/download${versions['neodlp-pot'] !== 'latest' ? '/v'+versions['neodlp-pot'] : ''}/bgutil-pot-macos-aarch64`,
-            src: path.join(downloadDir, 'bgutil-pot-macos-aarch64'),
-            dest: [
-                path.join(binDir, 'neodlp-pot-aarch64-apple-darwin')
-            ],
-            archive: null,
-            cleanup: [
-                path.join(downloadDir, 'bgutil-pot-macos-aarch64')
-            ]
-        }
-    ]
-}
-
+	"yt-dlp": [
+		{
+			name: "yt-dlp-x86_64-pc-windows-msvc",
+			platform: "win32",
+			url: `https://github.com/yt-dlp/yt-dlp-nightly-builds/releases${versions["yt-dlp"] === "latest" ? "/latest" : ""}/download${versions["yt-dlp"] !== "latest" ? "/" + versions["yt-dlp"] : ""}/yt-dlp.exe`,
+			src: path.join(downloadDir, "yt-dlp-x86_64-pc-windows-msvc.exe"),
+			dest: [path.join(binDir, "yt-dlp-x86_64-pc-windows-msvc.exe")],
+			archive: null,
+			cleanup: [path.join(downloadDir, "yt-dlp-x86_64-pc-windows-msvc.exe")],
+		},
+		{
+			name: "yt-dlp-aarch64-pc-windows-msvc",
+			platform: "win32",
+			url: `https://github.com/yt-dlp/yt-dlp-nightly-builds/releases${versions["yt-dlp"] === "latest" ? "/latest" : ""}/download${versions["yt-dlp"] !== "latest" ? "/" + versions["yt-dlp"] : ""}/yt-dlp_arm64.exe`,
+			src: path.join(downloadDir, "yt-dlp-aarch64-pc-windows-msvc.exe"),
+			dest: [path.join(binDir, "yt-dlp-aarch64-pc-windows-msvc.exe")],
+			archive: null,
+			cleanup: [path.join(downloadDir, "yt-dlp-aarch64-pc-windows-msvc.exe")],
+		},
+		{
+			name: "yt-dlp-x86_64-unknown-linux-gnu",
+			platform: "linux",
+			url: `https://github.com/yt-dlp/yt-dlp-nightly-builds/releases${versions["yt-dlp"] === "latest" ? "/latest" : ""}/download${versions["yt-dlp"] !== "latest" ? "/" + versions["yt-dlp"] : ""}/yt-dlp_linux`,
+			src: path.join(downloadDir, "yt-dlp-x86_64-unknown-linux-gnu"),
+			dest: [path.join(binDir, "yt-dlp-x86_64-unknown-linux-gnu")],
+			archive: null,
+			cleanup: [path.join(downloadDir, "yt-dlp-x86_64-unknown-linux-gnu")],
+		},
+		{
+			name: "yt-dlp-aarch64-unknown-linux-gnu",
+			platform: "linux",
+			url: `https://github.com/yt-dlp/yt-dlp-nightly-builds/releases${versions["yt-dlp"] === "latest" ? "/latest" : ""}/download${versions["yt-dlp"] !== "latest" ? "/" + versions["yt-dlp"] : ""}/yt-dlp_linux_aarch64`,
+			src: path.join(downloadDir, "yt-dlp-aarch64-unknown-linux-gnu"),
+			dest: [path.join(binDir, "yt-dlp-aarch64-unknown-linux-gnu")],
+			archive: null,
+			cleanup: [path.join(downloadDir, "yt-dlp-aarch64-unknown-linux-gnu")],
+		},
+		{
+			name: "yt-dlp-universal-apple-darwin",
+			platform: "darwin",
+			url: `https://github.com/yt-dlp/yt-dlp-nightly-builds/releases${versions["yt-dlp"] === "latest" ? "/latest" : ""}/download${versions["yt-dlp"] !== "latest" ? "/" + versions["yt-dlp"] : ""}/yt-dlp_macos`,
+			src: path.join(downloadDir, "yt-dlp-universal-apple-darwin"),
+			dest: [
+				path.join(binDir, "yt-dlp-x86_64-apple-darwin"),
+				path.join(binDir, "yt-dlp-aarch64-apple-darwin"),
+			],
+			archive: null,
+			cleanup: [path.join(downloadDir, "yt-dlp-universal-apple-darwin")],
+		},
+	],
+	"ffmpeg-ffprobe": [
+		{
+			name: "ffmpeg-ffprobe-x86_64-pc-windows-msvc",
+			platform: "win32",
+			url: `https://github.com/yt-dlp/FFmpeg-Builds/releases${versions["ffmpeg-ffprobe"] === "latest" ? "/latest" : ""}/download${versions["ffmpeg-ffprobe"] !== "latest" ? "/" + versions["ffmpeg-ffprobe"] : ""}/ffmpeg-master-latest-win64-gpl.zip`,
+			src: path.join(downloadDir, "ffmpeg-master-latest-win64-gpl.zip"),
+			dest: null,
+			archive: {
+				type: "zip",
+				binSrc: [
+					path.join(
+						downloadDir,
+						"ffmpeg-master-latest-win64-gpl",
+						"bin",
+						"ffmpeg.exe",
+					),
+					path.join(
+						downloadDir,
+						"ffmpeg-master-latest-win64-gpl",
+						"bin",
+						"ffprobe.exe",
+					),
+				],
+				binDest: [
+					path.join(binDir, "ffmpeg-x86_64-pc-windows-msvc.exe"),
+					path.join(binDir, "ffprobe-x86_64-pc-windows-msvc.exe"),
+				],
+			},
+			cleanup: [
+				path.join(downloadDir, "ffmpeg-master-latest-win64-gpl.zip"),
+				path.join(downloadDir, "ffmpeg-master-latest-win64-gpl"),
+			],
+		},
+		{
+			name: "ffmpeg-ffprobe-aarch64-pc-windows-msvc",
+			platform: "win32",
+			url: `https://github.com/yt-dlp/FFmpeg-Builds/releases${versions["ffmpeg-ffprobe"] === "latest" ? "/latest" : ""}/download${versions["ffmpeg-ffprobe"] !== "latest" ? "/" + versions["ffmpeg-ffprobe"] : ""}/ffmpeg-master-latest-winarm64-gpl.zip`,
+			src: path.join(downloadDir, "ffmpeg-master-latest-winarm64-gpl.zip"),
+			dest: null,
+			archive: {
+				type: "zip",
+				binSrc: [
+					path.join(
+						downloadDir,
+						"ffmpeg-master-latest-winarm64-gpl",
+						"bin",
+						"ffmpeg.exe",
+					),
+					path.join(
+						downloadDir,
+						"ffmpeg-master-latest-winarm64-gpl",
+						"bin",
+						"ffprobe.exe",
+					),
+				],
+				binDest: [
+					path.join(binDir, "ffmpeg-aarch64-pc-windows-msvc.exe"),
+					path.join(binDir, "ffprobe-aarch64-pc-windows-msvc.exe"),
+				],
+			},
+			cleanup: [
+				path.join(downloadDir, "ffmpeg-master-latest-winarm64-gpl.zip"),
+				path.join(downloadDir, "ffmpeg-master-latest-winarm64-gpl"),
+			],
+		},
+		{
+			name: "ffmpeg-ffprobe-x86_64-unknown-linux-gnu",
+			platform: "linux",
+			url: `https://github.com/yt-dlp/FFmpeg-Builds/releases${versions["ffmpeg-ffprobe"] === "latest" ? "/latest" : ""}/download${versions["ffmpeg-ffprobe"] !== "latest" ? "/" + versions["ffmpeg-ffprobe"] : ""}/ffmpeg-master-latest-linux64-gpl.tar.xz`,
+			src: path.join(downloadDir, "ffmpeg-master-latest-linux64-gpl.tar.xz"),
+			dest: null,
+			archive: {
+				type: "tar.xz",
+				binSrc: [
+					path.join(
+						downloadDir,
+						"ffmpeg-master-latest-linux64-gpl",
+						"bin",
+						"ffmpeg",
+					),
+					path.join(
+						downloadDir,
+						"ffmpeg-master-latest-linux64-gpl",
+						"bin",
+						"ffprobe",
+					),
+				],
+				binDest: [
+					path.join(binDir, "ffmpeg-x86_64-unknown-linux-gnu"),
+					path.join(binDir, "ffprobe-x86_64-unknown-linux-gnu"),
+				],
+			},
+			cleanup: [
+				path.join(downloadDir, "ffmpeg-master-latest-linux64-gpl.tar.xz"),
+				path.join(downloadDir, "ffmpeg-master-latest-linux64-gpl"),
+			],
+		},
+		{
+			name: "ffmpeg-ffprobe-aarch64-unknown-linux-gnu",
+			platform: "linux",
+			url: `https://github.com/yt-dlp/FFmpeg-Builds/releases${versions["ffmpeg-ffprobe"] === "latest" ? "/latest" : ""}/download${versions["ffmpeg-ffprobe"] !== "latest" ? "/" + versions["ffmpeg-ffprobe"] : ""}/ffmpeg-master-latest-linuxarm64-gpl.tar.xz`,
+			src: path.join(downloadDir, "ffmpeg-master-latest-linuxarm64-gpl.tar.xz"),
+			dest: null,
+			archive: {
+				type: "tar.xz",
+				binSrc: [
+					path.join(
+						downloadDir,
+						"ffmpeg-master-latest-linuxarm64-gpl",
+						"bin",
+						"ffmpeg",
+					),
+					path.join(
+						downloadDir,
+						"ffmpeg-master-latest-linuxarm64-gpl",
+						"bin",
+						"ffprobe",
+					),
+				],
+				binDest: [
+					path.join(binDir, "ffmpeg-aarch64-unknown-linux-gnu"),
+					path.join(binDir, "ffprobe-aarch64-unknown-linux-gnu"),
+				],
+			},
+			cleanup: [
+				path.join(downloadDir, "ffmpeg-master-latest-linuxarm64-gpl.tar.xz"),
+				path.join(downloadDir, "ffmpeg-master-latest-linuxarm64-gpl"),
+			],
+		},
+		// {
+		//     name: 'ffmpeg-universal-apple-darwin',
+		//     platform: 'darwin',
+		//     url: `https://evermeet.cx/ffmpeg/get/zip`,
+		//     src: path.join(downloadDir, 'ffmpeg-universal-apple-darwin.zip'),
+		//     dest: null,
+		//     archive: {
+		//         type: 'zip',
+		//         binSrc: [
+		//             path.join(downloadDir, 'ffmpeg'),
+		//             path.join(downloadDir, 'ffmpeg')
+		//         ],
+		//         binDest: [
+		//             path.join(binDir, 'ffmpeg-x86_64-apple-darwin'),
+		//             path.join(binDir, 'ffmpeg-aarch64-apple-darwin')
+		//         ]
+		//     },
+		//     cleanup: [
+		//         path.join(downloadDir, 'ffmpeg-universal-apple-darwin.zip'),
+		//         path.join(downloadDir, 'ffmpeg')
+		//     ]
+		// },
+		// {
+		//     name: 'ffprobe-universal-apple-darwin',
+		//     platform: 'darwin',
+		//     url: `https://evermeet.cx/ffmpeg/get/ffprobe/zip`,
+		//     src: path.join(downloadDir, 'ffprobe-universal-apple-darwin.zip'),
+		//     dest: null,
+		//     archive: {
+		//         type: 'zip',
+		//         binSrc: [
+		//             path.join(downloadDir, 'ffprobe'),
+		//             path.join(downloadDir, 'ffprobe')
+		//         ],
+		//         binDest: [
+		//             path.join(binDir, 'ffprobe-x86_64-apple-darwin'),
+		//             path.join(binDir, 'ffprobe-aarch64-apple-darwin')
+		//         ]
+		//     },
+		//     cleanup: [
+		//         path.join(downloadDir, 'ffprobe-universal-apple-darwin.zip'),
+		//         path.join(downloadDir, 'ffprobe')
+		//     ]
+		// },
+		{
+			name: "ffmpeg-universal-apple-darwin",
+			platform: "darwin",
+			url: `https://github.com/neosubhamoy/evermeet-static-ffmpeg/releases${versions["ffmpeg-ffprobe"] === "latest" ? "/latest" : ""}/download${versions["ffmpeg-ffprobe"] !== "latest" ? "/" + versions["ffmpeg-ffprobe"] : ""}/ffmpeg-universal-apple-darwin.zip`,
+			src: path.join(downloadDir, "ffmpeg-universal-apple-darwin.zip"),
+			dest: null,
+			archive: {
+				type: "zip",
+				binSrc: [
+					path.join(downloadDir, "ffmpeg"),
+					path.join(downloadDir, "ffmpeg"),
+				],
+				binDest: [
+					path.join(binDir, "ffmpeg-x86_64-apple-darwin"),
+					path.join(binDir, "ffmpeg-aarch64-apple-darwin"),
+				],
+			},
+			cleanup: [
+				path.join(downloadDir, "ffmpeg-universal-apple-darwin.zip"),
+				path.join(downloadDir, "ffmpeg"),
+			],
+		},
+		{
+			name: "ffprobe-universal-apple-darwin",
+			platform: "darwin",
+			url: `https://github.com/neosubhamoy/evermeet-static-ffmpeg/releases${versions["ffmpeg-ffprobe"] === "latest" ? "/latest" : ""}/download${versions["ffmpeg-ffprobe"] !== "latest" ? "/" + versions["ffmpeg-ffprobe"] : ""}/ffprobe-universal-apple-darwin.zip`,
+			src: path.join(downloadDir, "ffprobe-universal-apple-darwin.zip"),
+			dest: null,
+			archive: {
+				type: "zip",
+				binSrc: [
+					path.join(downloadDir, "ffprobe"),
+					path.join(downloadDir, "ffprobe"),
+				],
+				binDest: [
+					path.join(binDir, "ffprobe-x86_64-apple-darwin"),
+					path.join(binDir, "ffprobe-aarch64-apple-darwin"),
+				],
+			},
+			cleanup: [
+				path.join(downloadDir, "ffprobe-universal-apple-darwin.zip"),
+				path.join(downloadDir, "ffprobe"),
+			],
+		},
+	],
+	deno: [
+		{
+			name: "deno-x86_64-pc-windows-msvc",
+			platform: "win32",
+			url: `https://github.com/denoland/deno/releases${versions["deno"] === "latest" ? "/latest" : ""}/download${versions["deno"] !== "latest" ? "/v" + versions["deno"] : ""}/deno-x86_64-pc-windows-msvc.zip`,
+			src: path.join(downloadDir, "deno-x86_64-pc-windows-msvc.zip"),
+			dest: null,
+			archive: {
+				type: "zip",
+				binSrc: [path.join(downloadDir, "deno.exe")],
+				binDest: [path.join(binDir, "deno-x86_64-pc-windows-msvc.exe")],
+			},
+			cleanup: [
+				path.join(downloadDir, "deno-x86_64-pc-windows-msvc.zip"),
+				path.join(downloadDir, "deno.exe"),
+			],
+		},
+		{
+			name: "deno-aarch64-pc-windows-msvc",
+			platform: "win32",
+			url: `https://github.com/denoland/deno/releases${versions["deno"] === "latest" ? "/latest" : ""}/download${versions["deno"] !== "latest" ? "/v" + versions["deno"] : ""}/deno-aarch64-pc-windows-msvc.zip`,
+			src: path.join(downloadDir, "deno-aarch64-pc-windows-msvc.zip"),
+			dest: null,
+			archive: {
+				type: "zip",
+				binSrc: [path.join(downloadDir, "deno.exe")],
+				binDest: [path.join(binDir, "deno-aarch64-pc-windows-msvc.exe")],
+			},
+			cleanup: [
+				path.join(downloadDir, "deno-aarch64-pc-windows-msvc.zip"),
+				path.join(downloadDir, "deno.exe"),
+			],
+		},
+		{
+			name: "deno-x86_64-unknown-linux-gnu",
+			platform: "linux",
+			url: `https://github.com/denoland/deno/releases${versions["deno"] === "latest" ? "/latest" : ""}/download${versions["deno"] !== "latest" ? "/v" + versions["deno"] : ""}/deno-x86_64-unknown-linux-gnu.zip`,
+			src: path.join(downloadDir, "deno-x86_64-unknown-linux-gnu.zip"),
+			dest: null,
+			archive: {
+				type: "zip",
+				binSrc: [path.join(downloadDir, "deno")],
+				binDest: [path.join(binDir, "deno-x86_64-unknown-linux-gnu")],
+			},
+			cleanup: [
+				path.join(downloadDir, "deno-x86_64-unknown-linux-gnu.zip"),
+				path.join(downloadDir, "deno"),
+			],
+		},
+		{
+			name: "deno-aarch64-unknown-linux-gnu",
+			platform: "linux",
+			url: `https://github.com/denoland/deno/releases${versions["deno"] === "latest" ? "/latest" : ""}/download${versions["deno"] !== "latest" ? "/v" + versions["deno"] : ""}/deno-aarch64-unknown-linux-gnu.zip`,
+			src: path.join(downloadDir, "deno-aarch64-unknown-linux-gnu.zip"),
+			dest: null,
+			archive: {
+				type: "zip",
+				binSrc: [path.join(downloadDir, "deno")],
+				binDest: [path.join(binDir, "deno-aarch64-unknown-linux-gnu")],
+			},
+			cleanup: [
+				path.join(downloadDir, "deno-aarch64-unknown-linux-gnu.zip"),
+				path.join(downloadDir, "deno"),
+			],
+		},
+		{
+			name: "deno-x86_64-apple-darwin",
+			platform: "darwin",
+			url: `https://github.com/denoland/deno/releases${versions["deno"] === "latest" ? "/latest" : ""}/download${versions["deno"] !== "latest" ? "/v" + versions["deno"] : ""}/deno-x86_64-apple-darwin.zip`,
+			src: path.join(downloadDir, "deno-x86_64-apple-darwin.zip"),
+			dest: null,
+			archive: {
+				type: "zip",
+				binSrc: [path.join(downloadDir, "deno")],
+				binDest: [path.join(binDir, "deno-x86_64-apple-darwin")],
+			},
+			cleanup: [
+				path.join(downloadDir, "deno-x86_64-apple-darwin.zip"),
+				path.join(downloadDir, "deno"),
+			],
+		},
+		{
+			name: "deno-aarch64-apple-darwin",
+			platform: "darwin",
+			url: `https://github.com/denoland/deno/releases${versions["deno"] === "latest" ? "/latest" : ""}/download${versions["deno"] !== "latest" ? "/v" + versions["deno"] : ""}/deno-aarch64-apple-darwin.zip`,
+			src: path.join(downloadDir, "deno-aarch64-apple-darwin.zip"),
+			dest: null,
+			archive: {
+				type: "zip",
+				binSrc: [path.join(downloadDir, "deno")],
+				binDest: [path.join(binDir, "deno-aarch64-apple-darwin")],
+			},
+			cleanup: [
+				path.join(downloadDir, "deno-aarch64-apple-darwin.zip"),
+				path.join(downloadDir, "deno"),
+			],
+		},
+	],
+	aria2c: [
+		{
+			name: "aria2c-x86_64-pc-windows-msvc",
+			platform: "win32",
+			url: `https://github.com/aria2/aria2/releases/download/release-${versions["aria2c"]}/aria2-${versions["aria2c"]}-win-64bit-build1.zip`,
+			src: path.join(
+				downloadDir,
+				`aria2-${versions["aria2c"]}-win-64bit-build1.zip`,
+			),
+			dest: null,
+			archive: {
+				type: "zip",
+				binSrc: [
+					path.join(
+						downloadDir,
+						`aria2-${versions["aria2c"]}-win-64bit-build1`,
+						"aria2c.exe",
+					),
+				],
+				binDest: [path.join(binDir, "aria2c-x86_64-pc-windows-msvc.exe")],
+			},
+			cleanup: [
+				path.join(
+					downloadDir,
+					`aria2-${versions["aria2c"]}-win-64bit-build1.zip`,
+				),
+				path.join(downloadDir, `aria2-${versions["aria2c"]}-win-64bit-build1`),
+			],
+		},
+		{
+			name: "aria2c-aarch64-pc-windows-msvc",
+			platform: "win32",
+			url: `https://github.com/minnyres/aria2-windows-arm64/releases/download/v${versions["aria2c"]}/aria2_${versions["aria2c"]}_arm64.zip`,
+			src: path.join(downloadDir, `aria2_${versions["aria2c"]}_arm64.zip`),
+			dest: null,
+			archive: {
+				type: "zip",
+				binSrc: [path.join(downloadDir, "aria2c.exe")],
+				binDest: [path.join(binDir, "aria2c-aarch64-pc-windows-msvc.exe")],
+			},
+			cleanup: [
+				path.join(downloadDir, `aria2_${versions["aria2c"]}_arm64.zip`),
+				path.join(downloadDir, "aria2c.exe"),
+			],
+		},
+		{
+			name: "aria2c-x86_64-unknown-linux-gnu",
+			platform: "linux",
+			url: `https://github.com/asdo92/aria2-static-builds/releases/download/v${versions["aria2c"]}/aria2-${versions["aria2c"]}-linux-gnu-64bit-build1.tar.bz2`,
+			src: path.join(
+				downloadDir,
+				`aria2-${versions["aria2c"]}-linux-gnu-64bit-build1.tar.bz2`,
+			),
+			dest: null,
+			archive: {
+				type: "tar.bz2",
+				binSrc: [
+					path.join(
+						downloadDir,
+						`aria2-${versions["aria2c"]}-linux-gnu-64bit-build1`,
+						"aria2c",
+					),
+				],
+				binDest: [path.join(binDir, "aria2c-x86_64-unknown-linux-gnu")],
+			},
+			cleanup: [
+				path.join(
+					downloadDir,
+					`aria2-${versions["aria2c"]}-linux-gnu-64bit-build1.tar.bz2`,
+				),
+				path.join(
+					downloadDir,
+					`aria2-${versions["aria2c"]}-linux-gnu-64bit-build1`,
+				),
+			],
+		},
+		{
+			name: "aria2c-aarch64-unknown-linux-gnu",
+			platform: "linux",
+			url: `https://github.com/aria2/aria2/releases/download/release-${versions["aria2c"]}/aria2-${versions["aria2c"]}-aarch64-linux-android-build1.zip`,
+			src: path.join(
+				downloadDir,
+				`aria2-${versions["aria2c"]}-aarch64-linux-android-build1.zip`,
+			),
+			dest: null,
+			archive: {
+				type: "zip",
+				binSrc: [
+					path.join(
+						downloadDir,
+						`aria2-${versions["aria2c"]}-aarch64-linux-android-build1`,
+						"aria2c",
+					),
+				],
+				binDest: [path.join(binDir, "aria2c-aarch64-unknown-linux-gnu")],
+			},
+			cleanup: [
+				path.join(
+					downloadDir,
+					`aria2-${versions["aria2c"]}-aarch64-linux-android-build1.zip`,
+				),
+				path.join(
+					downloadDir,
+					`aria2-${versions["aria2c"]}-aarch64-linux-android-build1`,
+				),
+			],
+		},
+	],
+	"neodlp-pot": [
+		{
+			name: "neodlp-pot-x86_64-pc-windows-msvc",
+			platform: "win32",
+			url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions["neodlp-pot"] === "latest" ? "/latest" : ""}/download${versions["neodlp-pot"] !== "latest" ? "/v" + versions["neodlp-pot"] : ""}/bgutil-pot-windows-x86_64.exe`,
+			src: path.join(downloadDir, "bgutil-pot-windows-x86_64.exe"),
+			dest: [
+				path.join(binDir, "neodlp-pot-x86_64-pc-windows-msvc.exe"),
+				path.join(binDir, "neodlp-pot-aarch64-pc-windows-msvc.exe"),
+			],
+			archive: null,
+			cleanup: [path.join(downloadDir, "bgutil-pot-windows-x86_64.exe")],
+		},
+		{
+			name: "neodlp-pot-x86_64-unknown-linux-gnu",
+			platform: "linux",
+			url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions["neodlp-pot"] === "latest" ? "/latest" : ""}/download${versions["neodlp-pot"] !== "latest" ? "/v" + versions["neodlp-pot"] : ""}/bgutil-pot-linux-x86_64`,
+			src: path.join(downloadDir, "bgutil-pot-linux-x86_64"),
+			dest: [path.join(binDir, "neodlp-pot-x86_64-unknown-linux-gnu")],
+			archive: null,
+			cleanup: [path.join(downloadDir, "bgutil-pot-linux-x86_64")],
+		},
+		{
+			name: "neodlp-pot-aarch64-unknown-linux-gnu",
+			platform: "linux",
+			url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions["neodlp-pot"] === "latest" ? "/latest" : ""}/download${versions["neodlp-pot"] !== "latest" ? "/v" + versions["neodlp-pot"] : ""}/bgutil-pot-linux-aarch64`,
+			src: path.join(downloadDir, "bgutil-pot-linux-aarch64"),
+			dest: [path.join(binDir, "neodlp-pot-aarch64-unknown-linux-gnu")],
+			archive: null,
+			cleanup: [path.join(downloadDir, "bgutil-pot-linux-aarch64")],
+		},
+		{
+			name: "neodlp-pot-x86_64-apple-darwin",
+			platform: "darwin",
+			url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions["neodlp-pot"] === "latest" ? "/latest" : ""}/download${versions["neodlp-pot"] !== "latest" ? "/v" + versions["neodlp-pot"] : ""}/bgutil-pot-macos-x86_64`,
+			src: path.join(downloadDir, "bgutil-pot-macos-x86_64"),
+			dest: [path.join(binDir, "neodlp-pot-x86_64-apple-darwin")],
+			archive: null,
+			cleanup: [path.join(downloadDir, "bgutil-pot-macos-x86_64")],
+		},
+		{
+			name: "neodlp-pot-aarch64-apple-darwin",
+			platform: "darwin",
+			url: `https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases${versions["neodlp-pot"] === "latest" ? "/latest" : ""}/download${versions["neodlp-pot"] !== "latest" ? "/v" + versions["neodlp-pot"] : ""}/bgutil-pot-macos-aarch64`,
+			src: path.join(downloadDir, "bgutil-pot-macos-aarch64"),
+			dest: [path.join(binDir, "neodlp-pot-aarch64-apple-darwin")],
+			archive: null,
+			cleanup: [path.join(downloadDir, "bgutil-pot-macos-aarch64")],
+		},
+	],
+};
 
 function downloadAndProcess(bin) {
-    console.log(`=> Processing: ${bin.name}`);
-    console.log(`Downloading: ${bin.url}`);
-    if (platform === 'win32') {
-        execSync(`powershell -Command "Invoke-WebRequest -Uri '${bin.url}' -OutFile '${bin.src}'"`, { stdio: 'inherit' });
-    } else {
-        execSync(`curl -L "${bin.url}" -o "${bin.src}"`, { stdio: 'inherit' });
-    }
+	console.log(`=> Processing: ${bin.name}`);
+	console.log(`Downloading: ${bin.url}`);
+	if (platform === "win32") {
+		execSync(
+			`powershell -Command "Invoke-WebRequest -Uri '${bin.url}' -OutFile '${bin.src}'"`,
+			{ stdio: "inherit" },
+		);
+	} else {
+		execSync(`curl -L "${bin.url}" -o "${bin.src}"`, { stdio: "inherit" });
+	}
 
-    if (bin.archive) {
-        console.log(`Extracting: ${bin.src}`);
-        if (platform === 'win32' && bin.archive.type === 'zip') {
-            execSync(`powershell -Command "Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::ExtractToDirectory('${bin.src}', '${downloadDir}')"`, { stdio: 'inherit' });
-        } else if (bin.archive.type === 'tar.bz2') {
-            execSync(`tar -xjf "${bin.src}" -C "${downloadDir}"`, { stdio: 'inherit' });
-        } else if (bin.archive.type === 'zip') {
-            execSync(`unzip -o "${bin.src}" -d "${downloadDir}"`, { stdio: 'inherit' });
-        } else {
-            execSync(`tar -xf "${bin.src}" -C "${downloadDir}"`, { stdio: 'inherit' });
-        }
+	if (bin.archive) {
+		console.log(`Extracting: ${bin.src}`);
+		if (platform === "win32" && bin.archive.type === "zip") {
+			execSync(
+				`powershell -Command "Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::ExtractToDirectory('${bin.src}', '${downloadDir}')"`,
+				{ stdio: "inherit" },
+			);
+		} else if (bin.archive.type === "tar.bz2") {
+			execSync(`tar -xjf "${bin.src}" -C "${downloadDir}"`, {
+				stdio: "inherit",
+			});
+		} else if (bin.archive.type === "zip") {
+			execSync(`unzip -o "${bin.src}" -d "${downloadDir}"`, {
+				stdio: "inherit",
+			});
+		} else {
+			execSync(`tar -xf "${bin.src}" -C "${downloadDir}"`, {
+				stdio: "inherit",
+			});
+		}
 
-        bin.archive.binSrc.forEach((src, index) => {
-            const dest = bin.archive.binDest[index];
-            console.log(`Moving: "${src}" to "${dest}"`);
-            fs.copyFileSync(src, dest);
-            if (platform !== 'win32') {
-                fs.chmodSync(dest, 0o755);
-            }
-        });
-    } else if (bin.dest) {
-        bin.dest.forEach((dest) => {
-            console.log(`Moving: "${bin.src}" to "${dest}"`);
-            fs.copyFileSync(bin.src, dest);
-            if (platform !== 'win32') {
-                fs.chmodSync(dest, 0o755);
-            }
-        });
-    }
+		bin.archive.binSrc.forEach((src, index) => {
+			const dest = bin.archive.binDest[index];
+			console.log(`Moving: "${src}" to "${dest}"`);
+			fs.copyFileSync(src, dest);
+			if (platform !== "win32") {
+				fs.chmodSync(dest, 0o755);
+			}
+		});
+	} else if (bin.dest) {
+		bin.dest.forEach((dest) => {
+			console.log(`Moving: "${bin.src}" to "${dest}"`);
+			fs.copyFileSync(bin.src, dest);
+			if (platform !== "win32") {
+				fs.chmodSync(dest, 0o755);
+			}
+		});
+	}
 
-    bin.cleanup.forEach((item) => {
-        if (fs.existsSync(item)) {
-            console.log(`Cleaning: "${item}"`);
-            const stats = fs.statSync(item);
-            if (stats.isDirectory()) {
-                fs.rmSync(item, { recursive: true, force: true });
-            } else {
-                fs.unlinkSync(item);
-            }
-        }
-    });
+	bin.cleanup.forEach((item) => {
+		if (fs.existsSync(item)) {
+			console.log(`Cleaning: "${item}"`);
+			const stats = fs.statSync(item);
+			if (stats.isDirectory()) {
+				fs.rmSync(item, { recursive: true, force: true });
+			} else {
+				fs.unlinkSync(item);
+			}
+		}
+	});
 }
 
-
-if (targetPlatform && !['win32', 'linux', 'darwin', 'all'].includes(targetPlatform)) {
-    console.error(`ERROR: Invalid platform specified: '${targetPlatform}'. Use one of: win32, linux, darwin, or all`);
-    process.exit(1);
+if (
+	targetPlatform &&
+	!["win32", "linux", "darwin", "all"].includes(targetPlatform)
+) {
+	console.error(
+		`ERROR: Invalid platform specified: '${targetPlatform}'. Use one of: win32, linux, darwin, or all`,
+	);
+	process.exit(1);
 }
 
-if (targetArch && !['x64', 'arm64', 'all'].includes(targetArch)) {
-    console.error(`ERROR: Invalid arch specified: '${targetArch}'. Use one of: x64, arm64, or all`);
-    process.exit(1);
+if (targetArch && !["x64", "arm64", "all"].includes(targetArch)) {
+	console.error(
+		`ERROR: Invalid arch specified: '${targetArch}'. Use one of: x64, arm64, or all`,
+	);
+	process.exit(1);
 }
 
-if (targetBin && !binaries.hasOwnProperty(targetBin) && targetBin !== 'all') {
-    console.error(`ERROR: Invalid binary specified: '${targetBin}'. Use one of: ${Object.keys(binaries).join(', ')}, or all`);
-    process.exit(1);
+if (targetBin && !Object.hasOwn(binaries, targetBin) && targetBin !== "all") {
+	console.error(
+		`ERROR: Invalid binary specified: '${targetBin}'. Use one of: ${Object.keys(binaries).join(", ")}, or all`,
+	);
+	process.exit(1);
 }
 
 const effectivePlatform = targetPlatform || platform;
 const effectiveArch = targetArch || arch;
-const effectiveBin = targetBin || 'all';
+const effectiveBin = targetBin || "all";
 
-console.log(`RUNNING: 📦 Binary Downloader (platform: ${effectivePlatform} | arch: ${effectiveArch} | binary: ${effectiveBin})`);
+console.log(
+	`RUNNING: 📦 Binary Downloader (platform: ${effectivePlatform} | arch: ${effectiveArch} | binary: ${effectiveBin})`,
+);
 
 Object.keys(binaries).forEach((binKey) => {
-    if (effectiveBin !== 'all' && binKey !== effectiveBin) {
-        return;
-    }
+	if (effectiveBin !== "all" && binKey !== effectiveBin) {
+		return;
+	}
 
-    binaries[binKey].forEach((bin) => {
-        if (effectivePlatform !== 'all' && bin.platform !== effectivePlatform) {
-            return;
-        }
+	binaries[binKey].forEach((bin) => {
+		if (effectivePlatform !== "all" && bin.platform !== effectivePlatform) {
+			return;
+		}
 
-        if (effectiveArch !== 'all') {
-            const binArches = getArchesForBin(bin);
-            if (!binArches.has(effectiveArch)) {
-                return;
-            }
-        }
+		if (effectiveArch !== "all") {
+			const binArches = getArchesForBin(bin);
+			if (!binArches.has(effectiveArch)) {
+				return;
+			}
+		}
 
-        downloadAndProcess(bin);
-    });
+		downloadAndProcess(bin);
+	});
 });
 
-console.log('✅ Downloads Completed');
+console.log("✅ Downloads Completed");

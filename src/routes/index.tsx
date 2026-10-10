@@ -1,0 +1,571 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { useAppContext } from "@/lib/app-context-provider";
+import {
+	useCurrentVideoMetadataStore,
+	useDownloaderPageStatesStore,
+	useSettingsPageStatesStore,
+} from "@/services/store";
+import {
+	determineFileType,
+	fileFormatFilter,
+	getCommonFormats,
+	getCommonSubtitles,
+	getCommonAutoSubtitles,
+	sortByBitrate,
+	getMergedBestFormat,
+} from "@/lib/utils";
+import { PackageSearch, X, Clipboard } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { VideoFormat } from "@/types/video";
+import { z } from "zod";
+import { config } from "@/config";
+import { invoke } from "@tauri-apps/api/core";
+import { readText } from "@tauri-apps/plugin-clipboard-manager";
+import { useTheme } from "@/lib/theme-provider";
+import { VideoDownloader } from "@/components/pages/downloader/video-downloader";
+import { PlaylistDownloader } from "@/components/pages/downloader/playlist-downloader";
+import { BottomBar } from "@/components/pages/downloader/bottom-bar";
+import { Field, FieldError } from "@/components/ui/field";
+import { useForm, useSelector } from "@tanstack/react-form";
+import { Spinner } from "@/components/ui/spinner";
+
+const searchFormSchema = z.object({
+	url: z.url({
+		error: (issue) =>
+			issue.input === undefined || issue.input === null || issue.input === ""
+				? "URL is required"
+				: "Invalid URL format",
+	}),
+});
+
+export const Route = createFileRoute("/")({
+	component: Downloader,
+});
+
+function Downloader() {
+	const { fetchVideoMetadata } = useAppContext();
+	const { setTheme } = useTheme();
+
+	const videoUrl = useCurrentVideoMetadataStore((state) => state.videoUrl);
+	const videoMetadata = useCurrentVideoMetadataStore(
+		(state) => state.videoMetadata,
+	);
+	const isMetadataLoading = useCurrentVideoMetadataStore(
+		(state) => state.isMetadataLoading,
+	);
+	const requestedUrl = useCurrentVideoMetadataStore(
+		(state) => state.requestedUrl,
+	);
+	const autoSubmitSearch = useCurrentVideoMetadataStore(
+		(state) => state.autoSubmitSearch,
+	);
+	const searchPid = useCurrentVideoMetadataStore((state) => state.searchPid);
+	const setVideoUrl = useCurrentVideoMetadataStore(
+		(state) => state.setVideoUrl,
+	);
+	const setVideoMetadata = useCurrentVideoMetadataStore(
+		(state) => state.setVideoMetadata,
+	);
+	const setIsMetadataLoading = useCurrentVideoMetadataStore(
+		(state) => state.setIsMetadataLoading,
+	);
+	const setRequestedUrl = useCurrentVideoMetadataStore(
+		(state) => state.setRequestedUrl,
+	);
+	const setAutoSubmitSearch = useCurrentVideoMetadataStore(
+		(state) => state.setAutoSubmitSearch,
+	);
+	const setSearchPid = useCurrentVideoMetadataStore(
+		(state) => state.setSearchPid,
+	);
+	const setShowSearchError = useCurrentVideoMetadataStore(
+		(state) => state.setShowSearchError,
+	);
+
+	const selectedDownloadFormat = useDownloaderPageStatesStore(
+		(state) => state.selectedDownloadFormat,
+	);
+	const selectedCombinableVideoFormat = useDownloaderPageStatesStore(
+		(state) => state.selectedCombinableVideoFormat,
+	);
+	const selectedCombinableAudioFormats = useDownloaderPageStatesStore(
+		(state) => state.selectedCombinableAudioFormats,
+	);
+	const selectedPlaylistVideos = useDownloaderPageStatesStore(
+		(state) => state.selectedPlaylistVideos,
+	);
+	const setSelectedDownloadFormat = useDownloaderPageStatesStore(
+		(state) => state.setSelectedDownloadFormat,
+	);
+	const setSelectedCombinableVideoFormat = useDownloaderPageStatesStore(
+		(state) => state.setSelectedCombinableVideoFormat,
+	);
+	const setSelectedCombinableAudioFormats = useDownloaderPageStatesStore(
+		(state) => state.setSelectedCombinableAudioFormats,
+	);
+	const setSelectedSubtitles = useDownloaderPageStatesStore(
+		(state) => state.setSelectedSubtitles,
+	);
+	const setSelectedPlaylistVideos = useDownloaderPageStatesStore(
+		(state) => state.setSelectedPlaylistVideos,
+	);
+	const resetDownloadConfiguration = useDownloaderPageStatesStore(
+		(state) => state.resetDownloadConfiguration,
+	);
+
+	const appTheme = useSettingsPageStatesStore((state) => state.settings.theme);
+	const appColorScheme = useSettingsPageStatesStore(
+		(state) => state.settings.color_scheme,
+	);
+
+	const containerRef = useRef<HTMLDivElement>(null);
+
+	const commonFormats = (() => {
+		if (videoMetadata?._type === "video") {
+			return videoMetadata?.formats;
+		} else if (videoMetadata?._type === "playlist") {
+			return getCommonFormats(videoMetadata.entries, selectedPlaylistVideos);
+		}
+		return [];
+	})();
+
+	const audioOnlyFormats = sortByBitrate(
+		commonFormats.filter(fileFormatFilter("audio")),
+	);
+	const videoOnlyFormats = sortByBitrate(
+		commonFormats.filter(fileFormatFilter("video")),
+	);
+	const combinedFormats = sortByBitrate(
+		commonFormats.filter(fileFormatFilter("video+audio")),
+	);
+
+	const av1VideoFormats =
+		videoMetadata?.webpage_url_domain === "youtube.com"
+			? sortByBitrate(
+					commonFormats.filter((format) => format.vcodec?.startsWith("av01")),
+				)
+			: [];
+	const opusAudioFormats =
+		videoMetadata?.webpage_url_domain === "youtube.com"
+			? sortByBitrate(
+					commonFormats.filter((format) => format.acodec?.startsWith("opus")),
+				)
+			: [];
+	const qualityPresetFormats: VideoFormat[] | undefined =
+		videoMetadata?.webpage_url_domain === "youtube.com"
+			? av1VideoFormats && opusAudioFormats
+				? av1VideoFormats.map((av1Format) => {
+						const opusFormat =
+							av1Format.format_note.startsWith("144p") ||
+							av1Format.format_note.startsWith("240p")
+								? opusAudioFormats[opusAudioFormats.length - 1]
+								: opusAudioFormats[0];
+						return {
+							...av1Format,
+							format: `${av1Format.format}+${opusFormat?.format}`,
+							format_id: `${av1Format.format_id}+${opusFormat?.format_id}`,
+							format_note: `${av1Format.format_note}+${opusFormat?.format_note}`,
+							filesize_approx:
+								av1Format.filesize_approx && opusFormat.filesize_approx
+									? av1Format.filesize_approx + opusFormat.filesize_approx
+									: null,
+							acodec: opusFormat?.acodec,
+							audio_ext: opusFormat.audio_ext,
+							ext: "webm",
+							tbr:
+								av1Format.tbr && opusFormat.tbr
+									? av1Format.tbr + opusFormat.tbr
+									: null,
+						};
+					})
+				: []
+			: [];
+
+	const allFilteredFormats = [
+		...(audioOnlyFormats || []),
+		...(videoOnlyFormats || []),
+		...(combinedFormats || []),
+		...(qualityPresetFormats || []),
+	];
+	const selectedFormat = (() => {
+		if (videoMetadata?._type === "video") {
+			if (selectedDownloadFormat === "best") {
+				return videoMetadata?.requested_downloads[0];
+			}
+			return allFilteredFormats.find(
+				(format) => format.format_id === selectedDownloadFormat,
+			);
+		} else if (videoMetadata?._type === "playlist") {
+			if (selectedDownloadFormat === "best") {
+				return getMergedBestFormat(
+					videoMetadata.entries,
+					selectedPlaylistVideos,
+				);
+			}
+			return allFilteredFormats.find(
+				(format) => format.format_id === selectedDownloadFormat,
+			);
+		}
+	})();
+	const selectedFormatFileType = determineFileType(
+		selectedFormat?.vcodec,
+		selectedFormat?.acodec,
+	);
+	const selectedVideoFormat = (() => {
+		if (videoMetadata?._type === "video") {
+			return allFilteredFormats.find(
+				(format) => format.format_id === selectedCombinableVideoFormat,
+			);
+		} else if (videoMetadata?._type === "playlist") {
+			return allFilteredFormats.find(
+				(format) => format.format_id === selectedCombinableVideoFormat,
+			);
+		}
+	})();
+	const selectedAudioFormats = (() => {
+		if (videoMetadata?._type === "video") {
+			return allFilteredFormats.filter((format) =>
+				selectedCombinableAudioFormats.includes(format.format_id),
+			);
+		} else if (videoMetadata?._type === "playlist") {
+			return allFilteredFormats.filter((format) =>
+				selectedCombinableAudioFormats.includes(format.format_id),
+			);
+		}
+	})();
+
+	const subtitles = (() => {
+		if (videoMetadata?._type === "video") {
+			return videoMetadata?.subtitles || {};
+		} else if (videoMetadata?._type === "playlist") {
+			return getCommonSubtitles(videoMetadata.entries, selectedPlaylistVideos);
+		}
+		return {};
+	})();
+	const filteredSubtitles = Object.fromEntries(
+		Object.entries(subtitles).filter(([key]) => key !== "live_chat"),
+	);
+	const autoSubtitles = (() => {
+		if (videoMetadata?._type === "video") {
+			return videoMetadata?.automatic_captions || {};
+		} else if (videoMetadata?._type === "playlist") {
+			return getCommonAutoSubtitles(
+				videoMetadata.entries,
+				selectedPlaylistVideos,
+			);
+		}
+		return {};
+	})();
+	const originalAutoSubtitles = Object.fromEntries(
+		Object.entries(autoSubtitles).filter(([key]) => key.endsWith("-orig")),
+	);
+
+	const subtitleLanguages = Object.keys(filteredSubtitles).map((langCode) => ({
+		code: langCode,
+		lang: filteredSubtitles[langCode][0].name || langCode,
+	}));
+	const autoSubtitleLanguages = Object.keys(originalAutoSubtitles).map(
+		(langCode) => ({
+			code: langCode,
+			lang:
+				originalAutoSubtitles[langCode][0].name + " [auto-generated]" ||
+				langCode + " [auto-generated]",
+		}),
+	);
+	const allSubtitleLanguages = Array.from(
+		new Set(
+			[...subtitleLanguages, ...autoSubtitleLanguages].map((lang) => lang.code),
+		),
+	).map((code) => {
+		return [...subtitleLanguages, ...autoSubtitleLanguages].find(
+			(lang) => lang.code === code,
+		)!;
+	});
+
+	const searchForm = useForm({
+		defaultValues: {
+			url: videoUrl,
+		},
+		validators: {
+			onChange: searchFormSchema,
+		},
+		onSubmit: async ({ value }) => {
+			handleSearchSubmit(value);
+		},
+	});
+	const watchedUrl = useSelector(searchForm.store, (state) => state.values.url);
+	const canSubmitSearch = useSelector(
+		searchForm.store,
+		(state) => state.canSubmit,
+	);
+
+	function handleSearchSubmit(values: z.infer<typeof searchFormSchema>) {
+		setVideoMetadata(null);
+		setSearchPid(null);
+		setShowSearchError(true);
+		setIsMetadataLoading(true);
+		setSelectedDownloadFormat("best");
+		setSelectedCombinableVideoFormat("");
+		setSelectedCombinableAudioFormats([]);
+		setSelectedSubtitles([]);
+		setSelectedPlaylistVideos(["1"]);
+		resetDownloadConfiguration();
+
+		fetchVideoMetadata({ url: values.url }).then((metadata) => {
+			if (
+				!metadata ||
+				(metadata._type !== "video" && metadata._type !== "playlist") ||
+				(metadata &&
+					metadata._type === "video" &&
+					metadata.formats.length <= 0) ||
+				(metadata &&
+					metadata._type === "playlist" &&
+					metadata.entries.length <= 0)
+			) {
+				const showSearchError =
+					useCurrentVideoMetadataStore.getState().showSearchError;
+				if (showSearchError) {
+					toast.error("Oops! No results found", {
+						description:
+							"The provided URL does not contain any downloadable content or you are not connected to the internet. Please check the URL, your network connection and try again.",
+					});
+				}
+			}
+			if (
+				metadata &&
+				(metadata._type === "video" || metadata._type === "playlist") &&
+				((metadata._type === "video" && metadata.formats.length > 0) ||
+					(metadata._type === "playlist" && metadata.entries.length > 0))
+			)
+				setVideoMetadata(metadata);
+			if (metadata) console.log(metadata);
+			setIsMetadataLoading(false);
+		});
+	}
+
+	const cancelSearch = async (pid: number | null) => {
+		setShowSearchError(false);
+		if (pid) {
+			console.log("Killing process with PID:", pid);
+			await invoke("kill_all_process", { pid: pid });
+		}
+		setVideoMetadata(null);
+		setIsMetadataLoading(false);
+	};
+
+	useEffect(() => {
+		if (watchedUrl !== videoUrl) {
+			setVideoUrl(watchedUrl);
+		}
+	}, [watchedUrl, videoUrl, setVideoUrl]);
+
+	useEffect(() => {
+		const handleAutoSubmitRequest = async () => {
+			// Update form and state when requestedUrl changes
+			if (
+				requestedUrl &&
+				requestedUrl !== searchForm.getFieldValue("url") &&
+				!isMetadataLoading
+			) {
+				searchForm.setFieldValue("url", requestedUrl);
+				setVideoUrl(requestedUrl);
+			}
+
+			// Auto-submit the form if the flag is set
+			if (autoSubmitSearch && requestedUrl) {
+				if (!isMetadataLoading) {
+					// trigger a validation check on the URL field first then get the result
+					const errors = await searchForm.validateField("url", "change");
+					const isValidUrl = errors.length === 0;
+
+					if (isValidUrl) {
+						// Reset the flag first to prevent loops
+						setAutoSubmitSearch(false);
+
+						// Submit the form with a small delay to ensure UI is ready
+						setTimeout(() => {
+							handleSearchSubmit({ url: requestedUrl });
+							setRequestedUrl("");
+						}, 300);
+					} else {
+						// If URL is invalid, just reset the flag
+						setAutoSubmitSearch(false);
+						setRequestedUrl("");
+						toast.error("Invalid URL", {
+							description: "The provided URL is not valid.",
+						});
+					}
+				} else {
+					// If metadata is loading, just reset the flag
+					setAutoSubmitSearch(false);
+					setRequestedUrl("");
+					toast.info("Search in progress", {
+						description:
+							"There's a search in progress, Please try again later.",
+					});
+				}
+			} else {
+				// If auto-submit is not set, reset the flag
+				setAutoSubmitSearch(false);
+				setRequestedUrl("");
+			}
+		};
+		handleAutoSubmitRequest();
+	}, [requestedUrl, autoSubmitSearch, isMetadataLoading]);
+
+	useEffect(() => {
+		const updateTheme = async () => {
+			setTheme(appTheme, appColorScheme);
+		};
+		updateTheme().catch(console.error);
+	}, [appTheme, appColorScheme]);
+
+	return (
+		<div
+			className="container mx-auto p-4 space-y-4 relative"
+			ref={containerRef}
+		>
+			<Card className="gap-4">
+				<CardHeader>
+					<CardTitle className="flex items-center">
+						<PackageSearch className="size-5 mr-3 stroke-primary" />
+						{config.appName} Search
+					</CardTitle>
+				</CardHeader>
+				<CardContent className="space-y-4">
+					<form
+						id="search-form"
+						className="flex gap-2 w-full"
+						autoComplete="off"
+						onSubmit={(e) => {
+							e.preventDefault();
+							searchForm.handleSubmit();
+						}}
+					>
+						<searchForm.Field
+							name="url"
+							children={(field) => {
+								const isInvalid =
+									field.state.meta.isTouched && !field.state.meta.isValid;
+								return (
+									<Field data-invalid={isInvalid}>
+										<Input
+											className="focus-visible:ring-0"
+											id={field.name}
+											name={field.name}
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChange={(e) => field.handleChange(e.target.value)}
+											disabled={isMetadataLoading}
+											aria-invalid={isInvalid}
+											placeholder="Enter Video/Playlist URL to Download"
+											autoComplete="off"
+										/>
+										{isInvalid && (
+											<FieldError errors={field.state.meta.errors} />
+										)}
+									</Field>
+								);
+							}}
+						/>
+						{isMetadataLoading && (
+							<Button
+								type="button"
+								variant="destructive"
+								size="icon"
+								disabled={!isMetadataLoading}
+								onClick={() => cancelSearch(searchPid)}
+							>
+								<X className="size-4" />
+							</Button>
+						)}
+						{!isMetadataLoading && !videoUrl && (
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon"
+								className="border border-input"
+								disabled={isMetadataLoading}
+								onClick={async () => {
+									const text = await readText();
+									if (text) {
+										searchForm.setFieldValue("url", text);
+										setVideoUrl(text);
+									}
+								}}
+							>
+								<Clipboard className="size-4" />
+							</Button>
+						)}
+						{!isMetadataLoading && videoUrl && (
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon"
+								className="border border-input"
+								disabled={isMetadataLoading}
+								onClick={() => {
+									searchForm.setFieldValue("url", "");
+									setVideoUrl("");
+								}}
+							>
+								<X className="size-4" />
+							</Button>
+						)}
+						<Button
+							type="submit"
+							disabled={!videoUrl || !canSubmitSearch || isMetadataLoading}
+						>
+							{isMetadataLoading ? (
+								<>
+									<Spinner />
+									Searching
+								</>
+							) : (
+								"Search"
+							)}
+						</Button>
+					</form>
+				</CardContent>
+			</Card>
+			{!isMetadataLoading &&
+				videoMetadata &&
+				videoMetadata._type === "video" && (
+					<VideoDownloader
+						videoMetadata={videoMetadata}
+						audioOnlyFormats={audioOnlyFormats}
+						videoOnlyFormats={videoOnlyFormats}
+						combinedFormats={combinedFormats}
+						qualityPresetFormats={qualityPresetFormats}
+						subtitleLanguages={allSubtitleLanguages}
+					/>
+				)}
+			{!isMetadataLoading &&
+				videoMetadata &&
+				videoMetadata._type === "playlist" && (
+					<PlaylistDownloader
+						videoMetadata={videoMetadata}
+						audioOnlyFormats={audioOnlyFormats}
+						videoOnlyFormats={videoOnlyFormats}
+						combinedFormats={combinedFormats}
+						qualityPresetFormats={qualityPresetFormats}
+						subtitleLanguages={allSubtitleLanguages}
+					/>
+				)}
+			{!isMetadataLoading && videoMetadata && selectedDownloadFormat && (
+				<BottomBar
+					videoMetadata={videoMetadata}
+					selectedFormat={selectedFormat}
+					selectedFormatFileType={selectedFormatFileType}
+					selectedVideoFormat={selectedVideoFormat}
+					selectedAudioFormats={selectedAudioFormats}
+					containerRef={containerRef}
+				/>
+			)}
+		</div>
+	);
+}

@@ -1,52 +1,50 @@
 {
-  "$schema": "../gen/schemas/desktop-schema.json",
-  "identifier": "default",
-  "description": "default capabilities",
-  "windows": [
-    "main"
-  ],
-  "permissions": [
-    "core:default",
-    "core:window:allow-hide",
-    "core:window:allow-show",
-    "core:window:allow-set-focus",
-    "core:window:allow-minimize",
-    "core:window:allow-maximize",
-    "core:window:allow-unmaximize",
-    "core:window:allow-close",
-    "core:window:allow-destroy",
-    "core:window:allow-start-dragging",
-    "opener:default",
-    "shell:default",
-    "fs:default",
-    "os:default",
-    "dialog:default",
-    "shell:allow-open",
-    "sql:default",
-    "sql:allow-execute",
-    "fs:allow-app-write",
-    "fs:allow-app-write-recursive",
-    "updater:default",
-    "process:default",
-    "clipboard-manager:allow-read-text",
-    "clipboard-manager:allow-write-text",
-    "notification:default",
-    "log:default",
-    {
-      "identifier": "fs:scope",
-      "allow": [
-        {
-          "path": "**"
-        }
-      ]
-    },
-    {
-      "identifier": "opener:allow-open-path",
-      "allow": [
-        {
-          "path": "**"
-        }
-      ]
-    }
-  ]
+	"$schema": "../gen/schemas/desktop-schema.json",
+	"identifier": "default",
+	"description": "default capabilities",
+	"windows": ["main"],
+	"permissions": [
+		"core:default",
+		"core:window:allow-hide",
+		"core:window:allow-show",
+		"core:window:allow-set-focus",
+		"core:window:allow-minimize",
+		"core:window:allow-maximize",
+		"core:window:allow-unmaximize",
+		"core:window:allow-close",
+		"core:window:allow-destroy",
+		"core:window:allow-start-dragging",
+		"opener:default",
+		"shell:default",
+		"fs:default",
+		"os:default",
+		"dialog:default",
+		"shell:allow-open",
+		"sql:default",
+		"sql:allow-execute",
+		"fs:allow-app-write",
+		"fs:allow-app-write-recursive",
+		"updater:default",
+		"process:default",
+		"clipboard-manager:allow-read-text",
+		"clipboard-manager:allow-write-text",
+		"notification:default",
+		"log:default",
+		{
+			"identifier": "fs:scope",
+			"allow": [
+				{
+					"path": "**"
+				}
+			]
+		},
+		{
+			"identifier": "opener:allow-open-path",
+			"allow": [
+				{
+					"path": "**"
+				}
+			]
+		}
+	]
 }

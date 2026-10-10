@@ -1,14 +1,14 @@
-import { DownloadState } from '@/types/download'
-import { KvStoreTable } from '@/types/kvStore'
-import { PlaylistInfo } from '@/types/playlist'
-import { SettingsTable } from '@/types/settings'
-import { VideoInfo } from '@/types/video'
-import Database from '@tauri-apps/plugin-sql'
+import Database from "@tauri-apps/plugin-sql";
+import type { DownloadState } from "@/types/download";
+import type { KvStoreTable } from "@/types/kv-store";
+import type { PlaylistInfo } from "@/types/playlist";
+import type { SettingsTable } from "@/types/settings";
+import type { VideoInfo } from "@/types/video";
 
 export const saveVideoInfo = async (videoInfo: VideoInfo) => {
-    const db = await Database.load('sqlite:database.db')
-    return await db.execute(
-        `INSERT INTO video_info (
+	const db = await Database.load("sqlite:database.db");
+	return await db.execute(
+		`INSERT INTO video_info (
             video_id,
             title,
             url,
@@ -30,25 +30,25 @@ export const saveVideoInfo = async (videoInfo: VideoInfo) => {
             release_date = $8,
             view_count = $9,
             like_count = $10`,
-        [
-            videoInfo.video_id,
-            videoInfo.title,
-            videoInfo.url,
-            videoInfo.host,
-            videoInfo.thumbnail,
-            videoInfo.channel,
-            videoInfo.duration_string,
-            videoInfo.release_date,
-            videoInfo.view_count,
-            videoInfo.like_count
-        ]
-    )
-}
+		[
+			videoInfo.video_id,
+			videoInfo.title,
+			videoInfo.url,
+			videoInfo.host,
+			videoInfo.thumbnail,
+			videoInfo.channel,
+			videoInfo.duration_string,
+			videoInfo.release_date,
+			videoInfo.view_count,
+			videoInfo.like_count,
+		],
+	);
+};
 
 export const savePlaylistInfo = async (playlistInfo: PlaylistInfo) => {
-    const db = await Database.load('sqlite:database.db')
-    return await db.execute(
-        `INSERT INTO playlist_info (
+	const db = await Database.load("sqlite:database.db");
+	return await db.execute(
+		`INSERT INTO playlist_info (
             playlist_id,
             playlist_title,
             playlist_url,
@@ -60,20 +60,20 @@ export const savePlaylistInfo = async (playlistInfo: PlaylistInfo) => {
             playlist_url = $3,
             playlist_n_entries = $4,
             playlist_channel = $5`,
-        [
-            playlistInfo.playlist_id,
-            playlistInfo.playlist_title,
-            playlistInfo.playlist_url,
-            playlistInfo.playlist_n_entries,
-            playlistInfo.playlist_channel
-        ]
-    )
-}
+		[
+			playlistInfo.playlist_id,
+			playlistInfo.playlist_title,
+			playlistInfo.playlist_url,
+			playlistInfo.playlist_n_entries,
+			playlistInfo.playlist_channel,
+		],
+	);
+};
 
 export const saveDownloadState = async (downloadState: DownloadState) => {
-    const db = await Database.load('sqlite:database.db')
-    return await db.execute(
-        `INSERT INTO downloads (
+	const db = await Database.load("sqlite:database.db");
+	return await db.execute(
+		`INSERT INTO downloads (
             download_id,
             download_status,
             video_id, format_id,
@@ -146,83 +146,92 @@ export const saveDownloadState = async (downloadState: DownloadState) => {
             custom_command = $34,
             queue_config = $35,
             trim_stamps = $36`,
-        [
-            downloadState.download_id,
-            downloadState.download_status,
-            downloadState.video_id,
-            downloadState.format_id,
-            downloadState.subtitle_id,
-            downloadState.queue_index,
-            downloadState.playlist_id,
-            downloadState.playlist_indices,
-            downloadState.process_id,
-            downloadState.resolution,
-            downloadState.ext,
-            downloadState.abr,
-            downloadState.vbr,
-            downloadState.acodec,
-            downloadState.vcodec,
-            downloadState.dynamic_range,
-            downloadState.status,
-            downloadState.item,
-            downloadState.progress,
-            downloadState.total,
-            downloadState.downloaded,
-            downloadState.speed,
-            downloadState.eta,
-            downloadState.filepath,
-            downloadState.filetype,
-            downloadState.filesize,
-            downloadState.output_format,
-            downloadState.embed_metadata,
-            downloadState.embed_thumbnail,
-            downloadState.square_crop_thumbnail,
-            downloadState.sponsorblock_remove,
-            downloadState.sponsorblock_mark,
-            downloadState.use_aria2,
-            downloadState.custom_command,
-            downloadState.queue_config,
-            downloadState.trim_stamps
-        ]
-    )
-}
+		[
+			downloadState.download_id,
+			downloadState.download_status,
+			downloadState.video_id,
+			downloadState.format_id,
+			downloadState.subtitle_id,
+			downloadState.queue_index,
+			downloadState.playlist_id,
+			downloadState.playlist_indices,
+			downloadState.process_id,
+			downloadState.resolution,
+			downloadState.ext,
+			downloadState.abr,
+			downloadState.vbr,
+			downloadState.acodec,
+			downloadState.vcodec,
+			downloadState.dynamic_range,
+			downloadState.status,
+			downloadState.item,
+			downloadState.progress,
+			downloadState.total,
+			downloadState.downloaded,
+			downloadState.speed,
+			downloadState.eta,
+			downloadState.filepath,
+			downloadState.filetype,
+			downloadState.filesize,
+			downloadState.output_format,
+			downloadState.embed_metadata,
+			downloadState.embed_thumbnail,
+			downloadState.square_crop_thumbnail,
+			downloadState.sponsorblock_remove,
+			downloadState.sponsorblock_mark,
+			downloadState.use_aria2,
+			downloadState.custom_command,
+			downloadState.queue_config,
+			downloadState.trim_stamps,
+		],
+	);
+};
 
-export const updateDownloadStatus = async (download_id: string, download_status: string) => {
-    const db = await Database.load('sqlite:database.db')
-    return await db.execute(
-        'UPDATE downloads SET download_status = $2 WHERE download_id = $1',
-        [download_id, download_status]
-    )
-}
+export const updateDownloadStatus = async (
+	download_id: string,
+	download_status: string,
+) => {
+	const db = await Database.load("sqlite:database.db");
+	return await db.execute(
+		"UPDATE downloads SET download_status = $2 WHERE download_id = $1",
+		[download_id, download_status],
+	);
+};
 
-export const updateDownloadFilePath = async (download_id: string, filepath: string, ext: string) => {
-    const db = await Database.load('sqlite:database.db')
-    return await db.execute(
-        'UPDATE downloads SET filepath = $2, ext = $3 WHERE download_id = $1',
-        [download_id, filepath, ext]
-    )
-}
+export const updateDownloadFilePath = async (
+	download_id: string,
+	filepath: string,
+	ext: string,
+) => {
+	const db = await Database.load("sqlite:database.db");
+	return await db.execute(
+		"UPDATE downloads SET filepath = $2, ext = $3 WHERE download_id = $1",
+		[download_id, filepath, ext],
+	);
+};
 
-export const updateDownloadPlaylistItem = async (download_id: string, item: string) => {
-    const db = await Database.load('sqlite:database.db')
-    return await db.execute(
-        'UPDATE downloads SET item = $2 WHERE download_id = $1',
-        [download_id, item]
-    )
-}
+export const updateDownloadPlaylistItem = async (
+	download_id: string,
+	item: string,
+) => {
+	const db = await Database.load("sqlite:database.db");
+	return await db.execute(
+		"UPDATE downloads SET item = $2 WHERE download_id = $1",
+		[download_id, item],
+	);
+};
 
 export const deleteDownloadState = async (download_id: string) => {
-    const db = await Database.load('sqlite:database.db')
-    return await db.execute(
-        'DELETE FROM downloads WHERE download_id = $1',
-        [download_id]
-    )
-}
+	const db = await Database.load("sqlite:database.db");
+	return await db.execute("DELETE FROM downloads WHERE download_id = $1", [
+		download_id,
+	]);
+};
 
 export const fetchAllDownloadStates = async () => {
-    const db = await Database.load('sqlite:database.db')
-    return await db.select<DownloadState[]>(
-        `SELECT
+	const db = await Database.load("sqlite:database.db");
+	return await db.select<DownloadState[]>(
+		`SELECT
             downloads.*,
             video_info.title,
             video_info.url,
@@ -243,14 +252,14 @@ export const fetchAllDownloadStates = async () => {
         LEFT JOIN playlist_info
             ON downloads.playlist_id = playlist_info.playlist_id
             AND downloads.playlist_id IS NOT NULL
-        ORDER BY downloads.id DESC`
-    )
-}
+        ORDER BY downloads.id DESC`,
+	);
+};
 
 export const fetchDownloadStateById = async (download_id: string) => {
-    const db = await Database.load('sqlite:database.db')
-    const result = await db.select<DownloadState[]>(
-        `SELECT
+	const db = await Database.load("sqlite:database.db");
+	const result = await db.select<DownloadState[]>(
+		`SELECT
             downloads.*,
             video_info.title,
             video_info.url,
@@ -272,86 +281,81 @@ export const fetchDownloadStateById = async (download_id: string) => {
             ON downloads.playlist_id = playlist_info.playlist_id
             AND downloads.playlist_id IS NOT NULL
         WHERE downloads.download_id = $1`,
-        [download_id]
-    )
-    return result.length > 0 ? result[0] : null
-}
+		[download_id],
+	);
+	return result.length > 0 ? result[0] : null;
+};
 
 export const fetchAllSettings = async () => {
-    const db = await Database.load('sqlite:database.db')
-    const result = await db.select<SettingsTable[]>(
-        `SELECT key, json_extract(value, '$.value') as value FROM settings`
-    )
-    if (result.length > 0) {
-        return result.reduce((acc: { [key: string]: unknown }, curr) => {
-            try {
-                acc[curr.key] = JSON.parse(curr.value)
-            } catch (e) {
-                acc[curr.key] = curr.value
-            }
-            return acc
-        }, {})
-    }
-    return {}
-}
+	const db = await Database.load("sqlite:database.db");
+	const result = await db.select<SettingsTable[]>(
+		`SELECT key, value FROM settings`,
+	);
+
+	return result.reduce((acc: Record<string, unknown>, curr) => {
+		try {
+			const parsed = JSON.parse(curr.value) as { value: unknown };
+			acc[curr.key] = parsed.value;
+		} catch (error) {
+			console.error(`Error parsing setting ${curr.key}:`, error);
+		}
+
+		return acc;
+	}, {});
+};
 
 export const saveSettingsKey = async (key: string, value: unknown) => {
-    const db = await Database.load('sqlite:database.db')
-    const jsonValue = JSON.stringify(value)
-    return await db.execute(
-        `INSERT INTO settings (
+	const db = await Database.load("sqlite:database.db");
+	const jsonValue = JSON.stringify(value);
+	return await db.execute(
+		`INSERT INTO settings (
             key,
             value
         ) VALUES ($1, json_object('value', json($2)))
         ON CONFLICT(key) DO UPDATE SET
             value = json_object('value', json($2))`,
-        [key, jsonValue]
-    )
-}
+		[key, jsonValue],
+	);
+};
 
 export const resetSettings = async () => {
-    const db = await Database.load('sqlite:database.db')
-    return await db.execute(
-        'DELETE FROM settings'
-    )
-}
+	const db = await Database.load("sqlite:database.db");
+	return await db.execute("DELETE FROM settings");
+};
 
 export const fetchAllKvPairs = async () => {
-    const db = await Database.load('sqlite:database.db')
-    const result = await db.select<KvStoreTable[]>(
-        `SELECT key, json_extract(value, '$.value') as value FROM kv_store`
-    )
-    if (result.length > 0) {
-        return result.reduce((acc: { [key: string]: unknown }, curr) => {
-            try {
-                acc[curr.key] = JSON.parse(curr.value)
-            } catch (e) {
-                acc[curr.key] = curr.value
-            }
-            return acc
-        }, {})
-    }
-    return {}
-}
+	const db = await Database.load("sqlite:database.db");
+	const result = await db.select<KvStoreTable[]>(
+		`SELECT key, value FROM kv_store`,
+	);
+
+	return result.reduce((acc: Record<string, unknown>, curr) => {
+		try {
+			const parsed = JSON.parse(curr.value) as { value: unknown };
+			acc[curr.key] = parsed.value;
+		} catch (error) {
+			console.error(`Error parsing KV pair ${curr.key}:`, error);
+		}
+
+		return acc;
+	}, {});
+};
 
 export const saveKvPair = async (key: string, value: unknown) => {
-    const db = await Database.load('sqlite:database.db')
-    const jsonValue = JSON.stringify(value)
-    return await db.execute(
-        `INSERT INTO kv_store (
+	const db = await Database.load("sqlite:database.db");
+	const jsonValue = JSON.stringify(value);
+	return await db.execute(
+		`INSERT INTO kv_store (
             key,
             value
         ) VALUES ($1, json_object('value', json($2)))
         ON CONFLICT(key) DO UPDATE SET
             value = json_object('value', json($2))`,
-        [key, jsonValue]
-    )
-}
+		[key, jsonValue],
+	);
+};
 
 export const deleteKvPair = async (key: string) => {
-    const db = await Database.load('sqlite:database.db')
-    return await db.execute(
-        'DELETE FROM kv_store WHERE key = $1',
-        [key]
-    )
-}
+	const db = await Database.load("sqlite:database.db");
+	return await db.execute("DELETE FROM kv_store WHERE key = $1", [key]);
+};

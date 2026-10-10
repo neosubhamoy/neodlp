@@ -1,74 +1,91 @@
-import { VideoInfo } from "@/types/video";
 import { useMutation } from "@tanstack/react-query";
-import { deleteDownloadState, deleteKvPair, resetSettings, saveDownloadState, saveKvPair, savePlaylistInfo, saveSettingsKey, saveVideoInfo, updateDownloadFilePath, updateDownloadPlaylistItem, updateDownloadStatus } from "@/services/database";
-import { DownloadState } from "@/types/download";
-import { PlaylistInfo } from "@/types/playlist";
+import {
+	deleteDownloadState,
+	deleteKvPair,
+	resetSettings,
+	saveDownloadState,
+	saveKvPair,
+	savePlaylistInfo,
+	saveSettingsKey,
+	saveVideoInfo,
+	updateDownloadFilePath,
+	updateDownloadPlaylistItem,
+	updateDownloadStatus,
+} from "@/services/database";
+import type { DownloadState } from "@/types/download";
+import type { PlaylistInfo } from "@/types/playlist";
+import type { VideoInfo } from "@/types/video";
 
 export function useSaveVideoInfo() {
-    return useMutation({
-        mutationFn: (data: VideoInfo) => saveVideoInfo(data)
-    })
+	return useMutation({
+		mutationFn: (data: VideoInfo) => saveVideoInfo(data),
+	});
 }
 
 export function useSavePlaylistInfo() {
-    return useMutation({
-        mutationFn: (data: PlaylistInfo) => savePlaylistInfo(data)
-    })
+	return useMutation({
+		mutationFn: (data: PlaylistInfo) => savePlaylistInfo(data),
+	});
 }
 
 export function useSaveDownloadState() {
-    return useMutation({
-        mutationFn: (data: DownloadState) => saveDownloadState(data)
-    })
+	return useMutation({
+		mutationFn: (data: DownloadState) => saveDownloadState(data),
+	});
 }
 
 export function useUpdateDownloadStatus() {
-    return useMutation({
-        mutationFn: (data: { download_id: string; download_status: string }) =>
-        updateDownloadStatus(data.download_id, data.download_status)
-    })
+	return useMutation({
+		mutationFn: (data: { download_id: string; download_status: string }) =>
+			updateDownloadStatus(data.download_id, data.download_status),
+	});
 }
 
 export function useUpdateDownloadFilePath() {
-    return useMutation({
-        mutationFn: (data: { download_id: string; filepath: string, ext: string }) =>
-        updateDownloadFilePath(data.download_id, data.filepath, data.ext)
-    })
+	return useMutation({
+		mutationFn: (data: {
+			download_id: string;
+			filepath: string;
+			ext: string;
+		}) => updateDownloadFilePath(data.download_id, data.filepath, data.ext),
+	});
 }
 
 export function useUpdateDownloadPlaylistItem() {
-    return useMutation({
-        mutationFn: (data: { download_id: string; item: string }) =>
-        updateDownloadPlaylistItem(data.download_id, data.item)
-    })
+	return useMutation({
+		mutationFn: (data: { download_id: string; item: string }) =>
+			updateDownloadPlaylistItem(data.download_id, data.item),
+	});
 }
 
 export function useDeleteDownloadState() {
-    return useMutation({
-        mutationFn: (data: string) => deleteDownloadState(data)
-    })
+	return useMutation({
+		mutationFn: (data: string) => deleteDownloadState(data),
+	});
 }
 
 export function useSaveSettingsKey() {
-    return useMutation({
-        mutationFn: (data: { key: string; value: unknown }) => saveSettingsKey(data.key, data.value)
-    })
+	return useMutation({
+		mutationFn: (data: { key: string; value: unknown }) =>
+			saveSettingsKey(data.key, data.value),
+	});
 }
 
 export function useResetSettings() {
-    return useMutation({
-        mutationFn: () => resetSettings()
-    })
+	return useMutation({
+		mutationFn: () => resetSettings(),
+	});
 }
 
 export function useSaveKvPair() {
-    return useMutation({
-        mutationFn: (data: { key: string; value: unknown }) => saveKvPair(data.key, data.value)
-    })
+	return useMutation({
+		mutationFn: (data: { key: string; value: unknown }) =>
+			saveKvPair(data.key, data.value),
+	});
 }
 
 export function useDeleteKvPair() {
-    return useMutation({
-        mutationFn: (key: string) => deleteKvPair(key)
-    })
+	return useMutation({
+		mutationFn: (key: string) => deleteKvPair(key),
+	});
 }
