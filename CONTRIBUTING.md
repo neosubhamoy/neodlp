@@ -21,7 +21,7 @@ Please note we have a [code of conduct](https://github.com/neosubhamoy/neodlp?ta
 3. Choose a issue template:  [Report a Bug](https://github.com/neosubhamoy/neodlp/issues/new?template=bug_report.md) / [Request a Feature](https://github.com/neosubhamoy/neodlp/issues/new?template=feature_request.md) / [Other Issue](https://github.com/neosubhamoy/neodlp/issues/new?template=BLANK_ISSUE)
 4. Fill-up all the issue template fields in detail
 5. Click on the 'Create' button to submit the issue
-6. Wait for the maintainers to review your issue! If everything goes well, You will most likely hear back from us within 24-48hrs. (You can view the status of your issue anytime at the [isuues](https://github.com/neosubhamoy/neodlp/issues) tab)
+6. Wait for the maintainers to review your issue! If everything goes well, You will most likely hear back from us within 24-48hrs. (You can view the status of your issue anytime at the [issues](https://github.com/neosubhamoy/neodlp/issues) tab)
 
 > [!NOTE]
 > DO NOT SKIP ANY REQUIRED FIELD INTENTINALY WHILE CREATING AN ISSUE, INCOMPLETE ISSUES WILL BE CLOSED WITHOUT FURTHER  NOTICE. Always make sure to include as much detail as possible to clearly explain the matter! Attach screenshots/links whenever needed.

@@ -167,7 +167,7 @@ Also, want to contribute to this project? Read the [contributing guidelines](htt
 - [Official Website](https://neodlp.neosubhamoy.com)
 - Official Repositories
   - [GitHub (Primary)](https://github.com/neosubhamoy/neodlp)
-  - [Gitea (Mirror)](https://gitea.neosubhamoy.com/neosubhamoy/neodlp)
+  - [Codeberg (Mirror)](https://codeberg.org/neosubhamoy/neodlp)
   - [SourceForge (Releases Only)](https://sourceforge.net/projects/neodlp)
 - Official Distribution Channels
   - [WinGet (for Windows)](https://github.com/microsoft/winget-pkgs/tree/master/manifests/n/neosubhamoy/neodlp)
