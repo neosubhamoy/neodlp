@@ -969,7 +969,10 @@ export default function useDownloader() {
 				);
 			} else if (
 				downloadConfig.trim_stamps &&
-				!arraysEqual(downloadConfig.trim_stamps, [0, videoMetadata.duration])
+				!arraysEqual(downloadConfig.trim_stamps, [
+					0,
+					Math.floor(videoMetadata.duration),
+				])
 			) {
 				trimStamps = `${downloadConfig.trim_stamps[0]},${downloadConfig.trim_stamps[1]}`;
 				args.push(
@@ -1104,81 +1107,89 @@ export default function useDownloader() {
 			addErroredDownload(downloadId);
 		});
 
+		const handleProgressLine = async (line: string) => {
+			if (DEBUG_MODE && LOG_PROGRESS)
+				LOG.progress(`YT-DLP Download ${downloadId}`, line);
+			const currentProgress = await parseProgressLine(line, downloadId);
+			const state: DownloadState = {
+				download_id: downloadId,
+				download_status: "downloading",
+				video_id: videoId,
+				format_id: selectedFormat,
+				subtitle_id: selectedSubtitles || null,
+				queue_index: null,
+				playlist_id: playlistId,
+				playlist_indices: playlistIndices ?? null,
+				title: videoMetadata.title,
+				url: url,
+				host: videoMetadata.webpage_url_domain,
+				thumbnail: videoMetadata.thumbnail || null,
+				channel:
+					videoMetadata.creator ||
+					videoMetadata.channel ||
+					videoMetadata.uploader ||
+					null,
+				duration_string: videoMetadata.duration_string || null,
+				release_date: videoMetadata.release_date || null,
+				view_count: videoMetadata.view_count || null,
+				like_count: videoMetadata.like_count || null,
+				playlist_title: videoMetadata.playlist_title,
+				playlist_url: videoMetadata.playlist_webpage_url,
+				playlist_n_entries:
+					videoMetadata.playlist_count || videoMetadata.n_entries,
+				playlist_channel: videoMetadata.playlist_channel || null,
+				resolution: videoMetadata.resolution || null,
+				ext: videoMetadata.ext || null,
+				abr:
+					resumeState?.abr ||
+					overrideOptions?.tbr / 2 ||
+					videoMetadata.abr ||
+					null,
+				vbr:
+					resumeState?.vbr ||
+					overrideOptions?.tbr / 2 ||
+					videoMetadata.vbr ||
+					null,
+				acodec: videoMetadata.acodec || null,
+				vcodec: videoMetadata.vcodec || null,
+				dynamic_range: videoMetadata.dynamic_range || null,
+				process_id: processPid,
+				status: currentProgress.status || null,
+				item: currentProgress.item || null,
+				progress: currentProgress.progress || null,
+				total: currentProgress.total || null,
+				downloaded: currentProgress.downloaded || null,
+				speed: currentProgress.speed || null,
+				eta: currentProgress.eta || null,
+				filepath: downloadFilePath,
+				filetype: fileType || null,
+				filesize:
+					resumeState?.filesize ||
+					overrideOptions?.filesize ||
+					videoMetadata.filesize_approx ||
+					null,
+				output_format: outputFormat,
+				embed_metadata: embedMetadata,
+				embed_thumbnail: embedThumbnail,
+				square_crop_thumbnail: squareCropThumbnail,
+				sponsorblock_remove: sponsorblockRemove,
+				sponsorblock_mark: sponsorblockMark,
+				use_aria2: useAria2,
+				custom_command: customCommandArgs,
+				queue_config: null,
+				trim_stamps: trimStamps,
+			};
+			updateDownloadProgress(state);
+		};
+
 		command.stdout.on("data", async (line) => {
-			if (line.startsWith("status:") || line.startsWith("[#")) {
+			if (
+				line.startsWith("status:") ||
+				line.startsWith("[#") ||
+				line.trim().startsWith("frame=")
+			) {
 				// console.log(line);
-				if (DEBUG_MODE && LOG_PROGRESS)
-					LOG.progress(`YT-DLP Download ${downloadId}`, line);
-				const currentProgress = await parseProgressLine(line, downloadId);
-				const state: DownloadState = {
-					download_id: downloadId,
-					download_status: "downloading",
-					video_id: videoId,
-					format_id: selectedFormat,
-					subtitle_id: selectedSubtitles || null,
-					queue_index: null,
-					playlist_id: playlistId,
-					playlist_indices: playlistIndices ?? null,
-					title: videoMetadata.title,
-					url: url,
-					host: videoMetadata.webpage_url_domain,
-					thumbnail: videoMetadata.thumbnail || null,
-					channel:
-						videoMetadata.creator ||
-						videoMetadata.channel ||
-						videoMetadata.uploader ||
-						null,
-					duration_string: videoMetadata.duration_string || null,
-					release_date: videoMetadata.release_date || null,
-					view_count: videoMetadata.view_count || null,
-					like_count: videoMetadata.like_count || null,
-					playlist_title: videoMetadata.playlist_title,
-					playlist_url: videoMetadata.playlist_webpage_url,
-					playlist_n_entries:
-						videoMetadata.playlist_count || videoMetadata.n_entries,
-					playlist_channel: videoMetadata.playlist_channel || null,
-					resolution: videoMetadata.resolution || null,
-					ext: videoMetadata.ext || null,
-					abr:
-						resumeState?.abr ||
-						overrideOptions?.tbr / 2 ||
-						videoMetadata.abr ||
-						null,
-					vbr:
-						resumeState?.vbr ||
-						overrideOptions?.tbr / 2 ||
-						videoMetadata.vbr ||
-						null,
-					acodec: videoMetadata.acodec || null,
-					vcodec: videoMetadata.vcodec || null,
-					dynamic_range: videoMetadata.dynamic_range || null,
-					process_id: processPid,
-					status: currentProgress.status || null,
-					item: currentProgress.item || null,
-					progress: currentProgress.progress || null,
-					total: currentProgress.total || null,
-					downloaded: currentProgress.downloaded || null,
-					speed: currentProgress.speed || null,
-					eta: currentProgress.eta || null,
-					filepath: downloadFilePath,
-					filetype: fileType || null,
-					filesize:
-						resumeState?.filesize ||
-						overrideOptions?.filesize ||
-						videoMetadata.filesize_approx ||
-						null,
-					output_format: outputFormat,
-					embed_metadata: embedMetadata,
-					embed_thumbnail: embedThumbnail,
-					square_crop_thumbnail: squareCropThumbnail,
-					sponsorblock_remove: sponsorblockRemove,
-					sponsorblock_mark: sponsorblockMark,
-					use_aria2: useAria2,
-					custom_command: customCommandArgs,
-					queue_config: null,
-					trim_stamps: trimStamps,
-				};
-				updateDownloadProgress(state);
+				await handleProgressLine(line);
 			} else {
 				// console.log(line);
 				if (line.trim() !== "") LOG.info(`YT-DLP Download ${downloadId}`, line);
@@ -1345,8 +1356,13 @@ export default function useDownloader() {
 			}
 		});
 
-		command.stderr.on("data", (line) => {
-			if (line.trim() !== "") LOG.info(`YT-DLP Download ${downloadId}`, line);
+		command.stderr.on("data", async (line) => {
+			// ffmpeg (segmented/trimmed downloads) may report progress via stderr
+			if (line.trim().startsWith("frame=")) {
+				await handleProgressLine(line);
+			} else if (line.trim() !== "") {
+				LOG.info(`YT-DLP Download ${downloadId}`, line);
+			}
 		});
 
 		try {

@@ -5,7 +5,7 @@ import {
 	useDownloaderPageStatesStore,
 	useSettingsPageStatesStore,
 } from "@/services/store";
-import { formatBitrate, formatDuration, formatFileSize } from "@/lib/utils";
+import { cn, formatBitrate, formatDuration, formatFileSize } from "@/lib/utils";
 import {
 	Loader2,
 	Music,
@@ -14,6 +14,8 @@ import {
 	AlertCircleIcon,
 	Scissors,
 	Settings2,
+	EyeOff,
+	TriangleAlert,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { RawVideoInfo, VideoFormat } from "@/types/video";
@@ -80,13 +82,16 @@ function TrimmerDialog({ videoMetadata }: TrimmerDialogProps) {
 
 	const isCombineableAudioSelected =
 		selectedCombinableAudioFormats && selectedCombinableAudioFormats.length > 0;
+	// Trimmer works with whole seconds only, so drop the decimal part of duration (e.g. 30.352 -> 30)
+	const duration = Math.floor(videoMetadata.duration);
+	const isPlaylist = videoMetadata._type === "playlist";
+	const isTrimmable = !isPlaylist && !!duration;
+	const isYoutube = videoMetadata.webpage_url_domain === "youtube.com";
 
-	const trimStamps = downloadConfiguration.trim_stamps ?? [
-		0,
-		videoMetadata.duration,
-	];
+	const trimStamps = downloadConfiguration.trim_stamps ?? [0, duration];
 	const trimStart = trimStamps[0];
 	const trimEnd = trimStamps[1];
+	const isTrimmed = trimStart > 0 || trimEnd < duration;
 
 	const updateTrimStamps = (values: number[]) => {
 		setDownloadConfigurationKey("trim_stamps", values);
@@ -111,13 +116,16 @@ function TrimmerDialog({ videoMetadata }: TrimmerDialogProps) {
 									variant="outline"
 									size="icon"
 									disabled={
+										!isTrimmable ||
 										!selectedDownloadFormat ||
 										(activeDownloadModeTab === "combine" &&
 											(!selectedCombinableVideoFormat ||
 												!isCombineableAudioSelected))
 									}
 								>
-									<Scissors className="size-4" />
+									<Scissors
+										className={cn("size-4", isTrimmed && "stroke-primary")}
+									/>
 								</Button>
 							}
 						></DialogTrigger>
@@ -129,13 +137,38 @@ function TrimmerDialog({ videoMetadata }: TrimmerDialogProps) {
 			</Tooltip>
 			<DialogContent className="sm:max-w-112.5">
 				<DialogHeader>
-					<DialogTitle>Trimmer</DialogTitle>
+					<DialogTitle>Trimmer (Beta)</DialogTitle>
 					<DialogDescription>
-						Download only the trimmed down part of media
+						Partially download selected media segment
 					</DialogDescription>
 				</DialogHeader>
 				<div className="flex flex-col gap-2 items-center">
-					<Player src={`https://www.youtube.com/watch?v=${videoMetadata.id}`} />
+					{isYoutube ? (
+						<Player
+							src={`youtube/${videoMetadata.id}`}
+							thumbnail={videoMetadata.thumbnail}
+						/>
+					) : (
+						<div className="w-full bg-background aspect-video flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-primary/50">
+							<EyeOff className="size-6 stroke-primary" />
+							<p className="text-sm font-medium text-muted-foreground">
+								Preview Unavailable
+							</p>
+							<p className="text-xs text-muted-foreground">
+								Cureently, only YouTube videos can be previewed.
+							</p>
+						</div>
+					)}
+					<Alert className="mt-1">
+						<TriangleAlert className="size-4 stroke-primary" />
+						<AlertTitle className="text-sm">Experimental Feature!</AlertTitle>
+						<AlertDescription className="text-xs">
+							This feature is still in beta and may not work as expected.
+							Trimmed media may have defects, also trimmed downloads doesn't
+							show any download progress and can't be paused/resumed (should be
+							downloaded in one go).
+						</AlertDescription>
+					</Alert>
 					<div className="flex items-center w-full mt-2">
 						<div className="flex gap-4 w-full items-center">
 							<div className="w-full">
@@ -154,7 +187,7 @@ function TrimmerDialog({ videoMetadata }: TrimmerDialogProps) {
 									className="w-full"
 									placeholder="Trim End"
 									min={trimStart + 1}
-									max={videoMetadata.duration}
+									max={duration}
 									value={trimEnd}
 									onChange={updateTrimEnd}
 								/>
@@ -164,20 +197,18 @@ function TrimmerDialog({ videoMetadata }: TrimmerDialogProps) {
 					<div className="flex w-full justify-between items-center mt-1">
 						<p className="text-xs font-medium">00:00</p>
 						<p className="text-xs font-medium text-muted-foreground">
-							{trimStart > 0 || trimEnd < videoMetadata.duration
+							{isTrimmed
 								? `Trimmed • ${formatDuration(trimStart)} - ${formatDuration(trimEnd)}`
 								: "Untrimmed • Full Duration"}
 						</p>
-						<p className="text-xs font-medium">
-							{formatDuration(videoMetadata.duration)}
-						</p>
+						<p className="text-xs font-medium">{formatDuration(duration)}</p>
 					</div>
 					<Slider
 						id="trim-stamps"
 						className="w-full my-2"
 						value={[trimStart, trimEnd]}
 						min={0}
-						max={videoMetadata.duration}
+						max={duration}
 						minStepsBetweenValues={1}
 						onValueChange={(value) => updateTrimStamps(value as number[])}
 					/>

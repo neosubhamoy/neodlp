@@ -30,3 +30,11 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# Agent file and configs
+.claude
+.codex
+.cursor
+CLAUDE.md
+AGENTS.md
+opencode.json

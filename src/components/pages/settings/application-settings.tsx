@@ -37,7 +37,6 @@ import {
 	Heart,
 	Info,
 	KeyRound,
-	Loader2,
 	LucideIcon,
 	Mail,
 	Monitor,
@@ -109,6 +108,7 @@ import {
 } from "@/components/ui/dialog";
 import { NumberInput } from "@/components/custom/number-input";
 import usePotServer from "@/hooks/use-pot-server";
+import { Spinner } from "@/components/ui/spinner";
 
 const proxyUrlSchema = z.object({
 	url: z.url({
@@ -2197,7 +2197,7 @@ function AppPoTokenSettings() {
 						>
 							{isChangingPotServerPort ? (
 								<>
-									<Loader2 className="h-4 w-4 animate-spin" />
+									<Spinner className="size-4" />
 									Changing
 								</>
 							) : (
@@ -2805,6 +2805,14 @@ function AppInfoSettings() {
 			licenseUrl: "https://github.com/TanStack/pacer/blob/main/LICENSE",
 		},
 		{
+			key: "video-js",
+			name: "Video.js",
+			desc: "The open-source media player framework for the web",
+			url: "https://videojs.org/",
+			license: "Apache-2.0",
+			licenseUrl: "https://github.com/videojs/video.js/blob/main/LICENSE",
+		},
+		{
 			key: "zustand",
 			name: "Zustand",
 			desc: "A small, fast and scalable bearbones state-management solution",
@@ -2895,7 +2903,7 @@ function AppInfoSettings() {
 				</div>
 				<a href={dep.licenseUrl} target="_blank">
 					<Badge className="border-input rounded-full" variant="outline">
-						<span className="mb-0.5">{dep.license}</span>
+						<span className="">{dep.license}</span>
 					</Badge>
 				</a>
 			</div>
@@ -2912,8 +2920,11 @@ function AppInfoSettings() {
 					<div className="flex flex-col justify-center gap-1">
 						<span className="truncate font-semibold">
 							{config.appName}{" "}
-							<Badge className="ml-1 border-primary px-1.5" variant="outline">
-								<span className="mb-0.5">v{appVersion}</span>
+							<Badge
+								className="ml-1 border-2 border-primary/75 px-1.5"
+								variant="outline"
+							>
+								<span className="">v{appVersion}</span>
 							</Badge>
 						</span>
 						<span className="truncate text-xs text-muted-foreground">
@@ -2936,7 +2947,7 @@ function AppInfoSettings() {
 							>
 								<HugeiconsIcon icon={GithubIcon} className="size-3.5" />
 							</a>
-							<p className="text-muted-foreground">•</p>
+							<p className="text-primary">•</p>
 							<a
 								href={config.appHomepage + "/privacy-policy"}
 								target="_blank"
@@ -2944,7 +2955,7 @@ function AppInfoSettings() {
 							>
 								Privacy Policy
 							</a>
-							<p className="text-muted-foreground">•</p>
+							<p className="text-primary">•</p>
 							<a
 								href={config.appHomepage + "/terms-of-use"}
 								target="_blank"
@@ -3384,7 +3395,7 @@ export function ApplicationSettings() {
 						>
 							{isUpdatingYtDlp ? (
 								<>
-									<Loader2 className="h-4 w-4 animate-spin" />
+									<Spinner className="size-4" />
 									Updating
 								</>
 							) : (

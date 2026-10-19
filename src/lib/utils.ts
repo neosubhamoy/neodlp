@@ -61,6 +61,20 @@ export const parseProgressLine = async (
 		item: state?.item || null,
 	};
 
+	// Check if line is ffmpeg format (segmented/trimmed downloads): frame= 3376 fps= 46 q=-1.0 size= 31488KiB time=00:02:15.80 bitrate=1899.4kbits/s speed=1.87x
+	// ffmpeg doesn't report usable progress, so skip straight to 'finished' to show indeterminate progress
+	if (line.trim().startsWith("frame=")) {
+		return {
+			status: "finished",
+			item: null,
+			progress: null,
+			speed: null,
+			downloaded: null,
+			total: null,
+			eta: null,
+		};
+	}
+
 	// Check if line contains both aria2c and yt-dlp format (combined format)
 	if (line.includes("]status:")) {
 		// Extract the status part after the closing bracket
