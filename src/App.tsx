@@ -4,27 +4,16 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppContext } from "@/lib/app-context-provider";
 import { useEffect, useRef, useState } from "react";
 import { arch, exeExtension } from "@tauri-apps/plugin-os";
-import {
-	downloadDir,
-	join,
-	resourceDir,
-	tempDir,
-	dataDir,
-} from "@tauri-apps/api/path";
+import { downloadDir, join, resourceDir, tempDir } from "@tauri-apps/api/path";
 import {
 	useBasePathsStore,
 	useCurrentVideoMetadataStore,
-	useDownloadActionStatesStore,
-	useDownloaderPageStatesStore,
 	useDownloadStatesStore,
 	useEnvironmentStore,
 	useKvPairsStatesStore,
 	useSettingsPageStatesStore,
 } from "@/services/store";
 import { isObjEmpty } from "@/lib/utils";
-import { Command } from "@tauri-apps/plugin-shell";
-import { useUpdateDownloadStatus } from "@/services/mutations";
-import { useQueryClient } from "@tanstack/react-query";
 import {
 	useFetchAllDownloadStates,
 	useFetchAllkVPairs,
@@ -41,12 +30,30 @@ import { platform } from "@tauri-apps/plugin-os";
 import { useMacOsRegisterer } from "@/hooks/use-macos-registerer";
 import useAppUpdater from "@/hooks/use-app-updater";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { toast } from "sonner";
 import { useLogger } from "@/hooks/use-logger";
-import useDownloader from "@/hooks/use-downloader";
-import usePotServer from "@/hooks/use-pot-server";
+import { useDownloadEvents } from "@/hooks/use-download-events";
+import {
+	cancelDownload,
+	fetchVideoMetadata,
+	pauseDownload,
+	resumeDownload,
+	setDownloadPaths,
+	shutdownDownloads,
+	startDownload,
+} from "@/services/downloads";
+import { usePotEvents } from "@/hooks/use-pot-events";
+import { getYtDlpVersion } from "@/services/tools";
 import { useLinuxRegisterer } from "@/hooks/use-linux-registerer";
 import { invoke } from "@tauri-apps/api/core";
+
+// Download work happens in the Rust backend; these are plain commands, so the object is stable.
+const downloader = {
+	fetchVideoMetadata,
+	startDownload,
+	pauseDownload,
+	resumeDownload,
+	cancelDownload,
+};
 
 export default function App({ children }: { children: React.ReactNode }) {
 	const { data: downloadStates, isSuccess: isSuccessFetchingDownloadStates } =
@@ -59,13 +66,14 @@ export default function App({ children }: { children: React.ReactNode }) {
 		useState(false);
 	const [isKvPairsStatePropagated, setIsKvPairsStatePropagated] =
 		useState(false);
-	const globalDownloadStates = useDownloadStatesStore(
-		(state) => state.downloadStates,
-	);
 	const setDownloadStates = useDownloadStatesStore(
 		(state) => state.setDownloadStates,
 	);
 	const setPath = useBasePathsStore((state) => state.setPath);
+	const tempDownloadDirPath = useBasePathsStore(
+		(state) => state.tempDownloadDirPath,
+	);
+	const downloadDirPath = useBasePathsStore((state) => state.downloadDirPath);
 
 	const setIsFlatpak = useEnvironmentStore((state) => state.setIsFlatpak);
 	const setIsAppimage = useEnvironmentStore((state) => state.setIsAppimage);
@@ -78,9 +86,6 @@ export default function App({ children }: { children: React.ReactNode }) {
 		(state) => state.setSettingsKey,
 	);
 	const appVersion = useSettingsPageStatesStore((state) => state.appVersion);
-	const isRunningPotServer = useSettingsPageStatesStore(
-		(state) => state.isRunningPotServer,
-	);
 	const ytDlpVersion = useSettingsPageStatesStore(
 		(state) => state.ytDlpVersion,
 	);
@@ -102,22 +107,8 @@ export default function App({ children }: { children: React.ReactNode }) {
 		download_dir: DOWNLOAD_DIR,
 		theme: APP_THEME,
 		color_scheme: APP_COLOR_SCHEME,
-		use_potoken: USE_POTOKEN,
 		quit_on_close: QUIT_ON_CLOSE,
 	} = useSettingsPageStatesStore((state) => state.settings);
-
-	const erroredDownloadIds = useDownloaderPageStatesStore(
-		(state) => state.erroredDownloadIds,
-	);
-	const expectedErrorDownloadIds = useDownloaderPageStatesStore(
-		(state) => state.expectedErrorDownloadIds,
-	);
-	const removeErroredDownload = useDownloaderPageStatesStore(
-		(state) => state.removeErroredDownload,
-	);
-	const removeExpectedErrorDownload = useDownloaderPageStatesStore(
-		(state) => state.removeExpectedErrorDownload,
-	);
 
 	const appWindow = getCurrentWebviewWindow();
 	const navigate = useNavigate();
@@ -127,7 +118,7 @@ export default function App({ children }: { children: React.ReactNode }) {
 	const { registerToMac } = useMacOsRegisterer();
 	const { registerToLinux } = useLinuxRegisterer();
 	const { checkForAppUpdate } = useAppUpdater();
-	const { startPotServer, stopPotServer } = usePotServer();
+	usePotEvents();
 	const setKvPairsKey = useKvPairsStatesStore((state) => state.setKvPairsKey);
 	const ytDlpUpdateLastCheck = useKvPairsStatesStore(
 		(state) => state.kvPairs.ytdlp_update_last_check,
@@ -139,55 +130,12 @@ export default function App({ children }: { children: React.ReactNode }) {
 		(state) => state.kvPairs.linux_registered_version,
 	);
 
-	const queryClient = useQueryClient();
-	const downloadStatusUpdater = useUpdateDownloadStatus();
-
-	const ongoingDownloads = globalDownloadStates.filter(
-		(state) =>
-			state.download_status === "downloading" ||
-			state.download_status === "starting",
-	);
-	const queuedDownloads = globalDownloadStates
-		.filter((state) => state.download_status === "queued")
-		.sort((a, b) => a.queue_index! - b.queue_index!);
+	useDownloadEvents();
 
 	const hasRunYtDlpAutoUpdateRef = useRef(false);
 	const hasRunAppUpdateCheckRef = useRef(false);
-	const hasRunPotServerStatusCheckRef = useRef(false);
 	const isRegisteredToMacOsRef = useRef(false);
 	const isRegisteredToLinuxRef = useRef(false);
-	const pendingErrorUpdatesRef = useRef<Set<string>>(new Set());
-
-	const {
-		fetchVideoMetadata,
-		startDownload,
-		pauseDownload,
-		resumeDownload,
-		cancelDownload,
-		processQueuedDownloads,
-	} = useDownloader();
-
-	const ongoingDownloadsCloseable = globalDownloadStates.filter((state) =>
-		["starting", "downloading", "queued"].includes(state.download_status),
-	);
-	const setIsPausingDownload = useDownloadActionStatesStore(
-		(state) => state.setIsPausingDownload,
-	);
-
-	const stopOngoingDownloads = async () => {
-		if (ongoingDownloadsCloseable.length > 0) {
-			for (const state of ongoingDownloadsCloseable) {
-				setIsPausingDownload(state.download_id, true);
-				try {
-					await pauseDownload(state);
-				} catch (e) {
-					console.error(e);
-				} finally {
-					setIsPausingDownload(state.download_id, false);
-				}
-			}
-		}
-	};
 
 	// Prevent right click context menu in production
 	if (!import.meta.env.DEV) {
@@ -201,8 +149,10 @@ export default function App({ children }: { children: React.ReactNode }) {
 		const handleCloseRequested = async (event: any) => {
 			event.preventDefault();
 			if (QUIT_ON_CLOSE) {
-				if (ongoingDownloads.length > 0) {
-					await stopOngoingDownloads();
+				try {
+					await shutdownDownloads();
+				} catch (e) {
+					console.error("Failed to stop downloads before quitting:", e);
 				}
 				await appWindow.destroy();
 			} else {
@@ -212,19 +162,6 @@ export default function App({ children }: { children: React.ReactNode }) {
 
 		appWindow.onCloseRequested(handleCloseRequested);
 	}, []);
-
-	// Cleanup before page refresh/unload
-	useEffect(() => {
-		const handleBeforeUnload = (_event: BeforeUnloadEvent) => {
-			if (isRunningPotServer) {
-				stopPotServer();
-			}
-		};
-		window.addEventListener("beforeunload", handleBeforeUnload);
-		return () => {
-			window.removeEventListener("beforeunload", handleBeforeUnload);
-		};
-	}, [stopPotServer]);
 
 	// Detect sandbox environments
 	useEffect(() => {
@@ -352,6 +289,15 @@ export default function App({ children }: { children: React.ReactNode }) {
 		initPaths();
 	}, [DOWNLOAD_DIR, setPath]);
 
+	// Tell the downloader where files go. It won't start (or resume) anything before this.
+	useEffect(() => {
+		if (tempDownloadDirPath && downloadDirPath) {
+			setDownloadPaths(tempDownloadDirPath, downloadDirPath).catch((e) =>
+				console.error("Failed to set download paths:", e),
+			);
+		}
+	}, [tempDownloadDirPath, downloadDirPath]);
+
 	// Fetch app version
 	useEffect(() => {
 		const fetchAppVersion = async () => {
@@ -374,22 +320,9 @@ export default function App({ children }: { children: React.ReactNode }) {
 		const fetchYtDlpVersion = async () => {
 			setIsFetchingYtDlpVersion(true);
 			try {
-				const isFlatpak = await invoke<boolean>("is_flatpak");
-				const xdgDataDir = await dataDir();
-				const command = isFlatpak
-					? Command.create("sh", [
-							"-c",
-							`${xdgDataDir}/yt-dlp/yt-dlp --version`,
-						])
-					: Command.sidecar("binaries/yt-dlp", ["--version"]);
-				const output = await command.execute();
-				if (output.code === 0) {
-					const version = output.stdout.trim();
-					console.log("yt-dlp version fetched successfully:", version);
-					setYtDlpVersion(version);
-				} else {
-					console.error("Failed to fetch yt-dlp version:", output.stderr);
-				}
+				const version = await getYtDlpVersion();
+				console.log("yt-dlp version fetched successfully:", version);
+				setYtDlpVersion(version);
 			} catch (e) {
 				console.error("Failed to fetch yt-dlp version:", e);
 			} finally {
@@ -488,36 +421,6 @@ export default function App({ children }: { children: React.ReactNode }) {
 		handleYtDlpAutoUpdate();
 	}, [isSettingsStatePropagated, isKvPairsStatePropagated]);
 
-	// Check POT server status and auto-start if enabled
-	useEffect(() => {
-		// Only run once when both settings and KV pairs are loaded
-		if (!isSettingsStatePropagated || !isKvPairsStatePropagated) {
-			console.log(
-				"Skipping POT server status check, waiting for configs to load...",
-			);
-			return;
-		}
-		// Skip if we've already run the POT server status check once
-		if (hasRunPotServerStatusCheckRef.current) {
-			console.log(
-				"POT server status check already performed in this session, skipping",
-			);
-			return;
-		}
-		hasRunPotServerStatusCheckRef.current = true;
-		console.log("Checking POT server status with loaded config values:", {
-			usePotoken: USE_POTOKEN,
-		});
-		if (USE_POTOKEN) {
-			console.log("Auto-starting POT server...");
-			startPotServer().catch((error) => {
-				console.error("Error starting POT server:", error);
-			});
-		} else {
-			console.log("Skipping POT server auto-start, not enabled.");
-		}
-	}, [isSettingsStatePropagated, isKvPairsStatePropagated]);
-
 	// Check for MacOS auto-registration
 	useEffect(() => {
 		// Only run once when both settings and KV pairs are loaded
@@ -613,97 +516,8 @@ export default function App({ children }: { children: React.ReactNode }) {
 		}
 	}, [downloadStates, isSuccessFetchingDownloadStates, setDownloadStates]);
 
-	// Process queued downloads
-	useEffect(() => {
-		// Safely process the queue when dependencies change
-		const timeoutId = setTimeout(() => {
-			processQueuedDownloads();
-		}, 500);
-
-		// Cleanup timeout if component unmounts or dependencies change
-		return () => clearTimeout(timeoutId);
-	}, [processQueuedDownloads, ongoingDownloads, queuedDownloads]);
-
-	// show a toast and pause the download when yt-dlp exits unexpectedly
-	useEffect(() => {
-		const unexpectedErrors = Array.from(erroredDownloadIds).filter(
-			(id) => !expectedErrorDownloadIds.has(id),
-		);
-		const processedUnexpectedErrors = unexpectedErrors.filter(
-			(id) => !pendingErrorUpdatesRef.current.has(id),
-		);
-		if (unexpectedErrors.length === 0) return;
-
-		processedUnexpectedErrors.forEach((downloadId) => {
-			const downloadState = globalDownloadStates.find(
-				(d) => d.download_id === downloadId,
-			);
-			const isPlaylist =
-				downloadState?.playlist_id !== null &&
-				downloadState?.playlist_indices !== null;
-			const isMultiplePlaylistItems =
-				isPlaylist &&
-				downloadState?.playlist_indices &&
-				downloadState?.playlist_indices.includes(",");
-
-			toast.error("Download Failed", {
-				description: `The download for ${isMultiplePlaylistItems ? "playlist " : ""}"${isMultiplePlaylistItems ? downloadState?.playlist_title : downloadState?.title}" failed because yt-dlp exited unexpectedly. Please try again later.`,
-			});
-		});
-
-		const timeoutIds: ReturnType<typeof setTimeout>[] = [];
-		unexpectedErrors.forEach((downloadId) => {
-			pendingErrorUpdatesRef.current.add(downloadId);
-
-			const timeoutId = setTimeout(() => {
-				downloadStatusUpdater.mutate(
-					{ download_id: downloadId, download_status: "errored" },
-					{
-						onSuccess: (data) => {
-							console.log("Download status updated successfully:", data);
-							queryClient.invalidateQueries({ queryKey: ["download-states"] });
-							removeErroredDownload(downloadId);
-							pendingErrorUpdatesRef.current.delete(downloadId);
-						},
-						onError: (error) => {
-							console.error("Failed to update download status:", error);
-							removeErroredDownload(downloadId);
-							pendingErrorUpdatesRef.current.delete(downloadId);
-						},
-					},
-				);
-			}, 500);
-			timeoutIds.push(timeoutId);
-		});
-
-		return () => {
-			timeoutIds.forEach((id) => clearTimeout(id));
-		};
-	}, [erroredDownloadIds, expectedErrorDownloadIds]);
-
-	// auto reset error states after 3 seconds of expecting an error
-	useEffect(() => {
-		if (expectedErrorDownloadIds.size > 0) {
-			const timeoutId = setTimeout(() => {
-				expectedErrorDownloadIds.forEach((downloadId) => {
-					removeErroredDownload(downloadId);
-					removeExpectedErrorDownload(downloadId);
-				});
-			}, 3000);
-			return () => clearTimeout(timeoutId);
-		}
-	}, [expectedErrorDownloadIds]);
-
 	return (
-		<AppContext.Provider
-			value={{
-				fetchVideoMetadata,
-				startDownload,
-				pauseDownload,
-				resumeDownload,
-				cancelDownload,
-			}}
-		>
+		<AppContext.Provider value={downloader}>
 			<ThemeProvider
 				defaultTheme={APP_THEME || "system"}
 				defaultColorScheme={APP_COLOR_SCHEME || "default"}

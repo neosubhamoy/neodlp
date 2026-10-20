@@ -1,20 +1,19 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 mod config;
+mod downloader;
 mod migrations;
+mod sidecar;
+mod tools;
 use base64::{engine::general_purpose::STANDARD, Engine};
 use config::{get_config_path, load_config, save_config, Config};
 use futures_util::{SinkExt, StreamExt};
 use reqwest;
 use serde_json::Value;
-use sqlx::{
-    sqlite::{SqliteConnectOptions, SqlitePool},
-    Pool, Row, Sqlite,
-};
+use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use std::{
     collections::{hash_map::DefaultHasher, HashMap},
     env, fs,
     hash::{Hash, Hasher},
-    process::Command as StdCommand,
     sync::{Arc, Mutex as StdMutex},
     time::Duration,
 };
@@ -49,15 +48,6 @@ struct WebSocketState {
     response_channel: ResponseChannel,
     server_abort: Option<tokio::sync::oneshot::Sender<()>>,
     config: Config,
-}
-
-#[derive(Debug, serde::Serialize)]
-struct DownloadState {
-    id: i32,
-    download_id: String,
-    download_status: String,
-    process_id: Option<i32>,
-    status: String,
 }
 
 async fn is_port_available(port: u16) -> bool {
@@ -177,18 +167,8 @@ fn get_config_file_path() -> Result<String, String> {
 }
 
 #[tauri::command]
-fn get_current_app_path() -> Result<String, String> {
-    let exe_path = std::env::current_exe().map_err(|e| e.to_string())?;
-    Ok(exe_path
-        .parent()
-        .ok_or("Failed to get parent directory")?
-        .to_string_lossy()
-        .into_owned())
-}
-
-#[tauri::command]
 fn is_flatpak() -> bool {
-    std::env::var("FLATPAK").is_ok()
+    sidecar::is_flatpak()
 }
 
 #[tauri::command]
@@ -270,31 +250,8 @@ async fn receive_frontend_response(
 
 #[tauri::command]
 async fn kill_all_process(pid: i32) -> Result<(), String> {
-    #[cfg(unix)]
-    {
-        println!("Sending INT signal to process with PID: {}", pid);
-        let mut kill = StdCommand::new("kill")
-            .args(["-s", "SIGINT", &pid.to_string()])
-            .spawn()
-            .map_err(|e| e.to_string())?;
-        kill.wait().map_err(|e| e.to_string())?;
-    }
-
-    #[cfg(windows)]
-    {
-        use std::os::windows::process::CommandExt;
-        const CREATE_NO_WINDOW: u32 = 0x08000000;
-
-        println!("Sending taskkill to process with PID: {}", pid);
-        let mut kill = StdCommand::new("taskkill")
-            .args(["/PID", &pid.to_string(), "/F", "/T"]) // /T flag kills the process tree
-            .creation_flags(CREATE_NO_WINDOW)
-            .spawn()
-            .map_err(|e| e.to_string())?;
-        kill.wait().map_err(|e| e.to_string())?;
-    }
-
-    Ok(())
+    let pid = u32::try_from(pid).map_err(|_| format!("Invalid process id: {pid}"))?;
+    downloader::process::kill_process_tree(pid)
 }
 
 #[tauri::command]
@@ -402,103 +359,6 @@ async fn open_link_with_app(
         })
 }
 
-#[tauri::command]
-async fn list_ongoing_downloads(
-    state_mutex: State<'_, StdMutex<Pool<Sqlite>>>,
-) -> Result<Vec<DownloadState>, String> {
-    let pool_clone = {
-        let pool = state_mutex.lock().map_err(|e| e.to_string())?;
-        pool.clone()
-    };
-
-    let qry = "SELECT * FROM downloads WHERE download_status = 'downloading' OR download_status = 'starting' OR download_status = 'queued'";
-
-    match sqlx::query(qry).fetch_all(&pool_clone).await {
-        Ok(rows) => {
-            let mut downloads = Vec::new();
-            for row in rows {
-                downloads.push(DownloadState {
-                    id: row.get("id"),
-                    download_id: row.get("download_id"),
-                    download_status: row.get("download_status"),
-                    process_id: row.get("process_id"),
-                    status: row.get("status"),
-                });
-            }
-            Ok(downloads)
-        }
-        Err(e) => Err(e.to_string()),
-    }
-}
-
-#[tauri::command]
-async fn pause_ongoing_downloads(
-    state_mutex: State<'_, StdMutex<Pool<Sqlite>>>,
-) -> Result<(), String> {
-    // Get database connection
-    let pool_clone = {
-        let pool = state_mutex.lock().map_err(|e| e.to_string())?;
-        pool.clone()
-    };
-
-    // Fetch all ongoing downloads
-    let qry = "SELECT * FROM downloads WHERE download_status = 'downloading' OR download_status = 'starting' OR download_status = 'queued'";
-
-    let downloads = match sqlx::query(qry).fetch_all(&pool_clone).await {
-        Ok(rows) => {
-            let mut downloads = Vec::new();
-            for row in rows {
-                downloads.push(DownloadState {
-                    id: row.get("id"),
-                    download_id: row.get("download_id"),
-                    download_status: row.get("download_status"),
-                    process_id: row.get("process_id"),
-                    status: row.get("status"),
-                });
-            }
-            downloads
-        }
-        Err(e) => return Err(e.to_string()),
-    };
-
-    println!("Found {} ongoing downloads to pause", downloads.len());
-
-    // Process each download
-    for download in downloads {
-        println!(
-            "Pausing download: {} ({}), Status: {}",
-            download.download_id, download.id, download.download_status
-        );
-
-        // Kill the process if it exists
-        if let Some(pid) = download.process_id {
-            println!("Terminating process with PID: {}", pid);
-            if let Err(e) = kill_all_process(pid).await {
-                println!("Failed to kill process {}: {}", pid, e);
-            } else {
-                println!("Successfully terminated process {}", pid);
-            }
-        }
-
-        // Update the download status in the database
-        let update_qry = "UPDATE downloads SET download_status = 'paused' WHERE id = ?";
-        if let Err(e) = sqlx::query(update_qry)
-            .bind(download.id)
-            .execute(&pool_clone)
-            .await
-        {
-            println!(
-                "Failed to update download status for ID {}: {}",
-                download.id, e
-            );
-        } else {
-            println!("Updated download status to 'paused' for ID {}", download.id);
-        }
-    }
-
-    Ok(())
-}
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub async fn run() {
     let _ = fix_path_env::fix();
@@ -535,7 +395,6 @@ pub async fn run() {
         )
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_process::init())
@@ -544,26 +403,40 @@ pub async fn run() {
         .manage(ImageCache(StdMutex::new(HashMap::new())))
         .manage(websocket_state.clone())
         .setup(move |app| {
-            let app_handle = app.handle().clone();
+            // The SQL plugin has already created and migrated `database.db` in the app config dir
+            // (it runs during plugin setup), so open that same file. The pool connects lazily, which
+            // lets the manager be registered before any command can run.
+            let config_dir = app
+                .path()
+                .app_config_dir()
+                .map_err(|e| format!("Failed to resolve the app config dir: {}", e))?;
+            let db_options = SqliteConnectOptions::new()
+                .filename(config_dir.join("database.db"))
+                .busy_timeout(Duration::from_secs(5));
+            let pool = SqlitePoolOptions::new()
+                .max_connections(4)
+                .connect_lazy_with(db_options);
+            let launcher = sidecar::Launcher::for_current_app(
+                app.path().data_dir().unwrap_or_default(),
+            )
+            .map_err(|e| format!("Failed to locate the app's executable: {}", e))?;
+            let download_manager = downloader::commands::new_app_manager(
+                app.handle().clone(),
+                launcher.clone(),
+                pool.clone(),
+            );
+            app.manage(download_manager.clone());
+            let tools = tools::commands::new_tools(app.handle().clone(), launcher);
+            app.manage(tools.clone());
+            let settings = downloader::repo::Repo::new(pool);
             tauri::async_runtime::spawn(async move {
-                let _ = fs::create_dir_all(app_handle.path().app_data_dir().unwrap());
-                let db_path = app_handle
-                    .path()
-                    .app_data_dir()
-                    .unwrap()
-                    .join("database.db");
-
-                let options = SqliteConnectOptions::new()
-                    .filename(db_path)
-                    .create_if_missing(true);
-                let pool = SqlitePool::connect_with(options).await;
-                match pool {
-                    Ok(db) => {
-                        app_handle.manage(StdMutex::new(db.clone()));
+                download_manager.recover().await;
+                // Start the PO-token server at launch if the user turned it on.
+                match settings.load_settings().await {
+                    Ok(settings) => {
+                        tools.pot.start_if_enabled(&settings);
                     }
-                    Err(e) => {
-                        eprintln!("Database connection error: {}", e);
-                    }
+                    Err(e) => log::warn!("Could not read settings to start the POT server: {}", e),
                 }
             });
 
@@ -587,10 +460,8 @@ pub async fn run() {
                     "quit" => {
                         let app_handle = app.clone();
                         tauri::async_runtime::spawn(async move {
-                            let state_mutex = app_handle.state::<StdMutex<Pool<Sqlite>>>();
-                            if let Err(e) = pause_ongoing_downloads(state_mutex).await {
-                                println!("Error pausing downloads: {}", e);
-                            }
+                            let manager = app_handle.state::<downloader::commands::AppManager>();
+                            manager.shutdown().await;
                             app_handle.exit(0);
                         });
                     }
@@ -648,8 +519,15 @@ pub async fn run() {
             fetch_image,
             open_file_with_app,
             open_link_with_app,
-            list_ongoing_downloads,
-            pause_ongoing_downloads,
+            downloader::commands::fetch_video_metadata,
+            downloader::commands::cancel_metadata_fetch,
+            downloader::commands::start_download,
+            downloader::commands::pause_download,
+            downloader::commands::resume_download,
+            downloader::commands::cancel_download,
+            downloader::commands::list_download_states,
+            downloader::commands::set_download_paths,
+            downloader::commands::shutdown_downloads,
             send_to_extension,
             receive_frontend_response,
             get_config,
@@ -657,12 +535,26 @@ pub async fn run() {
             reset_config,
             get_config_file_path,
             restart_websocket_server,
-            get_current_app_path,
             is_flatpak,
-            get_appimage_path
+            get_appimage_path,
+            tools::commands::start_pot_server,
+            tools::commands::stop_pot_server,
+            tools::commands::get_pot_status,
+            tools::commands::get_ytdlp_version,
+            tools::commands::update_ytdlp,
+            tools::commands::register_macos,
+            tools::commands::register_linux
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|app, event| {
+            // Child processes outlive their parent, so stop the POT server explicitly.
+            if let tauri::RunEvent::Exit = event {
+                if let Some(tools) = app.try_state::<tools::commands::Tools>() {
+                    tools.pot.shutdown();
+                }
+            }
+        });
 }
 
 async fn handle_connection(stream: TcpStream, app_handle: tauri::AppHandle) {

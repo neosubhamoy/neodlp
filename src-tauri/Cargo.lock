@@ -2922,9 +2922,11 @@ dependencies = [
  "fix-path-env",
  "futures-util",
  "log",
+ "regex",
  "reqwest",
  "serde",
  "serde_json",
+ "shell-words",
  "sqlx 0.9.0",
  "tauri",
  "tauri-build",
@@ -2936,12 +2938,13 @@ dependencies = [
  "tauri-plugin-opener",
  "tauri-plugin-os",
  "tauri-plugin-process",
- "tauri-plugin-shell",
  "tauri-plugin-single-instance",
  "tauri-plugin-sql",
  "tauri-plugin-updater",
+ "tempfile",
  "tokio",
  "tokio-tungstenite",
+ "ulid",
 ]
 
 [[package]]
@@ -4601,42 +4604,16 @@ dependencies = [
 ]
 
 [[package]]
-name = "shared_child"
-version = "1.1.2"
+name = "shell-words"
+version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "607549934f6cc26b89cfecfdc46fa90f1e5d1536a68349b0c3a4f9d1c0d37959"
-dependencies = [
- "libc",
- "sigchld",
- "windows-sys 0.61.2",
-]
+checksum = "dc6fe69c597f9c37bfeeeeeb33da3530379845f10be461a66d16d03eca2ded77"
 
 [[package]]
 name = "shlex"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba"
-
-[[package]]
-name = "sigchld"
-version = "0.2.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "24f2b37f04360cd465089b87a9c3869c08220a2f3458463f0adf8badf5e77f2c"
-dependencies = [
- "libc",
- "os_pipe",
- "signal-hook",
-]
-
-[[package]]
-name = "signal-hook"
-version = "0.4.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b29ffa27d3d59a049bb328258de100f8012848d1b08d444e08bbc02ac468435e"
-dependencies = [
- "libc",
- "signal-hook-registry",
-]
 
 [[package]]
 name = "signal-hook-registry"
@@ -5662,27 +5639,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tauri-plugin-shell"
-version = "2.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9bd8f131731087b2608ad604969af43b06c5411d094d635a81fc8c852dda5634"
-dependencies = [
- "encoding_rs",
- "log",
- "open",
- "os_pipe",
- "regex",
- "schemars 0.8.22",
- "serde",
- "serde_json",
- "shared_child",
- "tauri",
- "tauri-plugin",
- "thiserror 2.0.21",
- "tokio",
-]
-
-[[package]]
 name = "tauri-plugin-single-instance"
 version = "2.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6312,6 +6268,16 @@ dependencies = [
  "memoffset",
  "tempfile",
  "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "ulid"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "947dde63b6d514cc5e044edad4e0ca7261afd1099d16c83d942cb2b2f348689c"
+dependencies = [
+ "rand 0.10.3",
+ "web-time",
 ]
 
 [[package]]

@@ -31,6 +31,7 @@ Please note we have a [code of conduct](https://github.com/neosubhamoy/neodlp?ta
 ### PR Guidelines
 
 - Each pull request must be tied to resolve a sole pourpose/goal, it should not change anything extra out of it's primary scope.
+- Include tests for the behaviour you add or fix, and make sure the existing tests still pass.
 - The pull request body should briefly describe the notable changes made through the PR and why it is done in that way!
 - The PR body should include screenshots/links if applicable.
 - The PR title must be related to the primary goal (it should be short, precise and easy to understand)
@@ -72,12 +73,43 @@ npm run tauri:build:macos-x64       # for intel x86 macs
 npm run tauri:dev:macos-arm64       # for apple silicon macs
 npm run tauri:dev:macos-x64         # for intel x86 macs
 ```
-10. Do the required code changes (following the style guidelines)
-11. Add and commit the changes: `git add .` then `git commit -m "prefix: your message here"`
-12. Push the commits: `git push origin <new-branch-name>`
-13. Visit GitHub and send the pull request. (following the PR guidelines)
-14. Wait for the maintainers to review your PR! You will most likely hear back from us within 24-48hrs. (You can view the status of your PR anytime at the [pull requests](https://github.com/neosubhamoy/neodlp/pulls) tab)
-15. You might be asked to do more changes if required. (try to resolve the requested changes ASAP, and always follow-up the maintainers). If everything goes well, your pull request will be merged by the maintainers.
+10. Do the required code changes (following the style guidelines). Add or update tests for what you change (see [Running Tests](#running-tests))
+11. Make sure everything passes before committing:
+```shell
+npm run test                                          # frontend tests (Vitest)
+cargo test --manifest-path src-tauri/Cargo.toml       # backend tests (Rust)
+npm run format                                        # format the code (Biome)
+```
+12. Add and commit the changes: `git add .` then `git commit -m "prefix: your message here"`
+13. Push the commits: `git push origin <new-branch-name>`
+14. Visit GitHub and send the pull request. (following the PR guidelines)
+15. Wait for the maintainers to review your PR! You will most likely hear back from us within 24-48hrs. (You can view the status of your PR anytime at the [pull requests](https://github.com/neosubhamoy/neodlp/pulls) tab)
+16. You might be asked to do more changes if required. (try to resolve the requested changes ASAP, and always follow-up the maintainers). If everything goes well, your pull request will be merged by the maintainers.
+
+## Running Tests
+
+NeoDLP has two test suites. Both run without any external services, and they should pass (together with the build check above) before you send a PR.
+
+```shell
+# frontend (Vitest)
+npm run test:front                  # run once
+npm run test:front:watch            # re-run on changes
+
+# backend (Rust)
+npm run test:back
+
+# run all tests (frontend + backend)
+npm run test
+```
+
+- Tests live next to the code they cover: `*.test.ts` files in `src/`, and `#[cfg(test)] mod tests` blocks in `src-tauri/src/`.
+- The Rust tests compile the whole app, so the [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/) must be installed and the first run takes a few minutes.
+- Prefer writing the test first, then the code that makes it pass. Bug fixes should come with a test that fails without the fix.
+- A few end-to-end tests run the real yt-dlp / PO-token server binaries. They are skipped by default; run them after changing how yt-dlp is called or how its output is handled (needs `npm run download` first, and the app built or run once so the binaries sit next to the executable):
+
+```shell
+npm run test:e2e
+```
 
 ## Style Guidelines
 

@@ -333,5 +333,19 @@ pub fn get_migrations() -> Vec<Migration> {
             CREATE INDEX IF NOT EXISTS idx_downloads_id_desc ON downloads(id DESC);
         ",
         kind: MigrationKind::Up,
+    },
+    Migration {
+        version: 5,
+        description: "add_error_and_timing_columns_to_downloads",
+        // Purely additive (no table rebuild), so existing rows and indices are untouched.
+        sql: "
+            ALTER TABLE downloads ADD COLUMN error_message TEXT;
+            ALTER TABLE downloads ADD COLUMN started_at TEXT;
+            ALTER TABLE downloads ADD COLUMN completed_at TEXT;
+
+            -- Queue lookups: next queued download by queue_index
+            CREATE INDEX IF NOT EXISTS idx_downloads_status_queue ON downloads(download_status, queue_index);
+        ",
+        kind: MigrationKind::Up,
     }]
 }

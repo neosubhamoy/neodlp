@@ -18,7 +18,7 @@
 		],
 		"security": {
 			"csp": null,
-			"capabilities": ["default", "shell-scope"]
+			"capabilities": ["default"]
 		}
 	},
 	"bundle": {

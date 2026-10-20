@@ -38,8 +38,7 @@ import { invoke } from "@tauri-apps/api/core";
 import * as fs from "@tauri-apps/plugin-fs";
 import { dirname } from "@tauri-apps/api/path";
 import { DownloadState } from "@/types/download";
-import { useQueryClient } from "@tanstack/react-query";
-import { useDeleteDownloadState } from "@/services/mutations";
+import { cancelDownload } from "@/services/downloads";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -83,8 +82,6 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
 
 	const isFlatpak = useEnvironmentStore((state) => state.isFlatpak);
 
-	const queryClient = useQueryClient();
-	const downloadStateDeleter = useDeleteDownloadState();
 	const navigate = useNavigate();
 	const LOG = useLogger();
 
@@ -149,33 +146,30 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
 			}
 		}
 
-		downloadStateDeleter.mutate(downloadState.download_id, {
-			onSuccess: (data) => {
-				console.log("Download State deleted successfully:", data);
-				queryClient.invalidateQueries({ queryKey: ["download-states"] });
-				if (delete_file && downloadState.filepath) {
-					toast.success("Deleted from downloads", {
-						description: `The download for ${isMultiplePlaylistItems ? "playlist " : ""}"${isMultiplePlaylistItems ? downloadState.playlist_title : downloadState.title}" has been deleted successfully.`,
-					});
-				} else {
-					toast.success("Removed from downloads", {
-						description: `The download for ${isMultiplePlaylistItems ? "playlist " : ""}"${isMultiplePlaylistItems ? downloadState.playlist_title : downloadState.title}" has been removed successfully.`,
-					});
-				}
-			},
-			onError: (error) => {
-				console.error("Failed to delete download state:", error);
-				if (delete_file && downloadState.filepath) {
-					toast.error("Failed to delete download", {
-						description: `An error occurred while trying to delete the download for ${isMultiplePlaylistItems ? "playlist " : ""}"${isMultiplePlaylistItems ? downloadState.playlist_title : downloadState.title}".`,
-					});
-				} else {
-					toast.error("Failed to remove download", {
-						description: `An error occurred while trying to remove the download for ${isMultiplePlaylistItems ? "playlist " : ""}"${isMultiplePlaylistItems ? downloadState.playlist_title : downloadState.title}".`,
-					});
-				}
-			},
-		});
+		// The backend deletes the row and tells the UI through a "removed" event.
+		try {
+			await cancelDownload(downloadState);
+			if (delete_file && downloadState.filepath) {
+				toast.success("Deleted from downloads", {
+					description: `The download for ${isMultiplePlaylistItems ? "playlist " : ""}"${isMultiplePlaylistItems ? downloadState.playlist_title : downloadState.title}" has been deleted successfully.`,
+				});
+			} else {
+				toast.success("Removed from downloads", {
+					description: `The download for ${isMultiplePlaylistItems ? "playlist " : ""}"${isMultiplePlaylistItems ? downloadState.playlist_title : downloadState.title}" has been removed successfully.`,
+				});
+			}
+		} catch (error) {
+			console.error("Failed to delete download state:", error);
+			if (delete_file && downloadState.filepath) {
+				toast.error("Failed to delete download", {
+					description: `An error occurred while trying to delete the download for ${isMultiplePlaylistItems ? "playlist " : ""}"${isMultiplePlaylistItems ? downloadState.playlist_title : downloadState.title}".`,
+				});
+			} else {
+				toast.error("Failed to remove download", {
+					description: `An error occurred while trying to remove the download for ${isMultiplePlaylistItems ? "playlist " : ""}"${isMultiplePlaylistItems ? downloadState.playlist_title : downloadState.title}".`,
+				});
+			}
+		}
 	};
 
 	const handleSearch = async (url: string, isPlaylist: boolean) => {

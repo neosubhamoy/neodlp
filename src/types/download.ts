@@ -48,6 +48,10 @@ export interface DownloadState {
 	custom_command: string | null;
 	queue_config: string | null;
 	trim_stamps: string | null;
+	id?: number;
+	error_message?: string | null;
+	started_at?: string | null;
+	completed_at?: string | null;
 	created_at?: string;
 	updated_at?: string;
 }

@@ -1,28 +1,12 @@
 import { createContext, useContext } from "react";
+import type {
+	FetchVideoMetadataParams,
+	StartDownloadParams,
+} from "@/services/downloads";
 import type { DownloadState } from "@/types/download";
-import type { DownloadConfiguration } from "@/types/settings";
 import type { RawVideoInfo } from "@/types/video";
 
-export interface FetchVideoMetadataParams {
-	url: string;
-	formatId?: string;
-	playlistIndices?: string;
-	selectedSubtitles?: string | null;
-	resumeState?: DownloadState;
-	downloadConfig?: DownloadConfiguration;
-}
-
-export interface StartDownloadParams {
-	url: string;
-	selectedFormat: string;
-	downloadConfig: DownloadConfiguration;
-	selectedSubtitles?: string | null;
-	resumeState?: DownloadState;
-	playlistItems?: string;
-	overrideOptions?: {
-		[key: string]: any;
-	};
-}
+export type { FetchVideoMetadataParams, StartDownloadParams };
 
 interface AppContextType {
 	fetchVideoMetadata: (

@@ -160,6 +160,16 @@ npm run tauri:build:macos-x64       # for intel x86 macs
 ```
 6. Give it the time to compile (~10-15min). After completion, You can find the compiled packages under: `src-tauri/target/release/bundle` directory.
 
+## Running Tests
+
+```shell
+npm run test                        # run all tests (frontend + backend)
+npm run test:front                  # frontend only (Vitest)
+npm run test:back                   # backend only (Rust)
+```
+
+The Rust tests compile the whole app, so the [Tauri Prerequisites](https://v2.tauri.app/start/prerequisites/) are required. See the [contributing guidelines](https://github.com/neosubhamoy/neodlp?tab=contributing-ov-file) for more about writing and running tests.
+
 Also, want to contribute to this project? Read the [contributing guidelines](https://github.com/neosubhamoy/neodlp?tab=contributing-ov-file).
 
 ## Sources

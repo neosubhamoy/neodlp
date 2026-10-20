@@ -23,7 +23,7 @@ import { useEffect, useRef } from "react";
 import { VideoFormat } from "@/types/video";
 import { z } from "zod";
 import { config } from "@/config";
-import { invoke } from "@tauri-apps/api/core";
+import { cancelMetadataFetch } from "@/services/downloads";
 import { readText } from "@tauri-apps/plugin-clipboard-manager";
 import { useTheme } from "@/lib/theme-provider";
 import { VideoDownloader } from "@/components/pages/downloader/video-downloader";
@@ -63,7 +63,6 @@ function Downloader() {
 	const autoSubmitSearch = useCurrentVideoMetadataStore(
 		(state) => state.autoSubmitSearch,
 	);
-	const searchPid = useCurrentVideoMetadataStore((state) => state.searchPid);
 	const setVideoUrl = useCurrentVideoMetadataStore(
 		(state) => state.setVideoUrl,
 	);
@@ -78,9 +77,6 @@ function Downloader() {
 	);
 	const setAutoSubmitSearch = useCurrentVideoMetadataStore(
 		(state) => state.setAutoSubmitSearch,
-	);
-	const setSearchPid = useCurrentVideoMetadataStore(
-		(state) => state.setSearchPid,
 	);
 	const setShowSearchError = useCurrentVideoMetadataStore(
 		(state) => state.setShowSearchError,
@@ -305,7 +301,6 @@ function Downloader() {
 
 	function handleSearchSubmit(values: z.infer<typeof searchFormSchema>) {
 		setVideoMetadata(null);
-		setSearchPid(null);
 		setShowSearchError(true);
 		setIsMetadataLoading(true);
 		setSelectedDownloadFormat("best");
@@ -347,11 +342,12 @@ function Downloader() {
 		});
 	}
 
-	const cancelSearch = async (pid: number | null) => {
+	const cancelSearch = async () => {
 		setShowSearchError(false);
-		if (pid) {
-			console.log("Killing process with PID:", pid);
-			await invoke("kill_all_process", { pid: pid });
+		try {
+			await cancelMetadataFetch();
+		} catch (e) {
+			console.error("Failed to cancel the search:", e);
 		}
 		setVideoMetadata(null);
 		setIsMetadataLoading(false);
@@ -478,7 +474,7 @@ function Downloader() {
 								variant="destructive"
 								size="icon"
 								disabled={!isMetadataLoading}
-								onClick={() => cancelSearch(searchPid)}
+								onClick={() => cancelSearch()}
 							>
 								<X className="size-4" />
 							</Button>

@@ -47,7 +47,6 @@ export const useCurrentVideoMetadataStore = create<CurrentVideoMetadataStore>(
 		isMetadataLoading: false,
 		requestedUrl: "",
 		autoSubmitSearch: false,
-		searchPid: null,
 		showSearchError: true,
 		setVideoUrl: (url) => set(() => ({ videoUrl: url })),
 		setVideoMetadata: (metadata) => set(() => ({ videoMetadata: metadata })),
@@ -56,7 +55,6 @@ export const useCurrentVideoMetadataStore = create<CurrentVideoMetadataStore>(
 		setRequestedUrl: (url) => set(() => ({ requestedUrl: url })),
 		setAutoSubmitSearch: (autoSubmit) =>
 			set(() => ({ autoSubmitSearch: autoSubmit })),
-		setSearchPid: (pid) => set(() => ({ searchPid: pid })),
 		setShowSearchError: (showError) =>
 			set(() => ({ showSearchError: showError })),
 	}),
@@ -81,8 +79,6 @@ export const useDownloaderPageStatesStore = create<DownloaderPageStatesStore>(
 			custom_command: null,
 			trim_stamps: null,
 		},
-		erroredDownloadIds: new Set(),
-		expectedErrorDownloadIds: new Set(),
 		videoPanelSizes: [35, 65],
 		playlistPanelSizes: [45, 55],
 		setActiveDownloadModeTab: (tab) =>
@@ -122,33 +118,6 @@ export const useDownloaderPageStatesStore = create<DownloaderPageStatesStore>(
 					trim_stamps: null,
 				},
 			})),
-		addErroredDownload: (downloadId) =>
-			set((state) => ({
-				erroredDownloadIds: new Set(state.erroredDownloadIds).add(downloadId),
-			})),
-		removeErroredDownload: (downloadId) =>
-			set((state) => {
-				const newSet = new Set(state.erroredDownloadIds);
-				newSet.delete(downloadId);
-				return { erroredDownloadIds: newSet };
-			}),
-		addExpectedErrorDownload: (downloadId) =>
-			set((state) => ({
-				expectedErrorDownloadIds: new Set(state.expectedErrorDownloadIds).add(
-					downloadId,
-				),
-			})),
-		removeExpectedErrorDownload: (downloadId) =>
-			set((state) => {
-				const newSet = new Set(state.expectedErrorDownloadIds);
-				newSet.delete(downloadId);
-				return { expectedErrorDownloadIds: newSet };
-			}),
-		clearErrorStates: () =>
-			set({
-				erroredDownloadIds: new Set(),
-				expectedErrorDownloadIds: new Set(),
-			}),
 		setVideoPanelSizes: (sizes) => set(() => ({ videoPanelSizes: sizes })),
 		setPlaylistPanelSizes: (sizes) =>
 			set(() => ({ playlistPanelSizes: sizes })),
