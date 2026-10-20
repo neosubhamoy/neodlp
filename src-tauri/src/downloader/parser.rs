@@ -17,8 +17,8 @@ pub struct ProgressUpdate {
 pub enum Line {
     /// A progress report from yt-dlp's progress template or from aria2c.
     Progress(ProgressUpdate),
-    /// ffmpeg is running (segmented/trimmed downloads); it has no usable progress.
-    Ffmpeg,
+    /// ffmpeg is running (segmented/trimmed downloads); it has no percentage, only a frame count.
+    Ffmpeg { frame: Option<i64>, fps: Option<f64> },
     /// `[download] Downloading item N of M`
     PlaylistItem { current: u32, total: u32 },
     /// `Finalpath: <path>` printed after the file is moved to its final location.
@@ -37,6 +37,8 @@ static ARIA_SIZES: LazyLock<Regex> = LazyLock::new(|| {
 static ARIA_SPEED: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"DL:(\d+(?:\.\d+)?)(KiB|MiB|GiB|B)").unwrap());
 static ARIA_ETA: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"ETA:(\d+)s").unwrap());
+static FFMPEG_FRAME: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"frame=\s*(\d+)").unwrap());
+static FFMPEG_FPS: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"fps=\s*(\d+(?:\.\d+)?)").unwrap());
 static PLAYLIST_ITEM: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"\[download\] Downloading item (\d+) of (\d+)").unwrap());
 
@@ -113,7 +115,10 @@ pub fn parse_line(line: &str) -> Line {
         return Line::FinalPath(path.to_string());
     }
     if line.trim_start().starts_with("frame=") {
-        return Line::Ffmpeg;
+        return Line::Ffmpeg {
+            frame: FFMPEG_FRAME.captures(line).and_then(|c| c[1].parse().ok()),
+            fps: FFMPEG_FPS.captures(line).and_then(|c| c[1].parse().ok()),
+        };
     }
     // aria2c and yt-dlp output can be interleaved on one line: "[#..]status:downloading,..."
     if let Some(idx) = line.find("]status:") {
@@ -228,9 +233,21 @@ mod tests {
     fn ffmpeg_frame_lines() {
         assert_eq!(
             parse_line("frame= 3376 fps= 46 q=-1.0 size= 31488KiB time=00:02:15.80 bitrate=1899.4kbits/s speed=1.87x"),
-            Line::Ffmpeg
+            Line::Ffmpeg { frame: Some(3376), fps: Some(46.0) }
         );
-        assert_eq!(parse_line("  frame=1 fps=0"), Line::Ffmpeg);
+        assert_eq!(
+            parse_line("  frame=1 fps=0"),
+            Line::Ffmpeg { frame: Some(1), fps: Some(0.0) }
+        );
+    }
+
+    #[test]
+    fn ffmpeg_fps_can_be_fractional_and_missing() {
+        assert_eq!(
+            parse_line("frame=11456 fps=48.6 q=-1.0"),
+            Line::Ffmpeg { frame: Some(11456), fps: Some(48.6) }
+        );
+        assert_eq!(parse_line("frame=  12 q=-1.0"), Line::Ffmpeg { frame: Some(12), fps: None });
     }
 
     #[test]

@@ -42,23 +42,39 @@ impl ProcessHandle {
     }
 }
 
-/// Reads the next line as lossily-decoded UTF-8 without the trailing `\n` / `\r\n`.
-/// `buf` is scratch space reused between calls. Returns `Ok(None)` at EOF.
+/// Reads the next line as lossily-decoded UTF-8. A line ends at `\n`, `\r\n` or a lone `\r`:
+/// aria2c redraws its progress readout in place with `\r` and never prints `\n` between updates.
+/// `buf` is scratch space reused between calls; `skip_lf` carries a pending `\r` across calls so
+/// `\r\n` counts once. Returns `Ok(None)` at EOF.
 pub async fn next_line<R: AsyncBufReadExt + Unpin>(
     reader: &mut R,
     buf: &mut Vec<u8>,
+    skip_lf: &mut bool,
 ) -> io::Result<Option<String>> {
     buf.clear();
-    if reader.read_until(b'\n', buf).await? == 0 {
-        return Ok(None);
-    }
-    if buf.last() == Some(&b'\n') {
-        buf.pop();
-        if buf.last() == Some(&b'\r') {
-            buf.pop();
+    loop {
+        let available = reader.fill_buf().await?;
+        if available.is_empty() {
+            return Ok((!buf.is_empty()).then(|| String::from_utf8_lossy(buf).into_owned()));
+        }
+        if std::mem::take(skip_lf) && available[0] == b'\n' {
+            reader.consume(1);
+            continue;
+        }
+        match available.iter().position(|&b| b == b'\n' || b == b'\r') {
+            Some(i) => {
+                buf.extend_from_slice(&available[..i]);
+                *skip_lf = available[i] == b'\r';
+                reader.consume(i + 1);
+                return Ok(Some(String::from_utf8_lossy(buf).into_owned()));
+            }
+            None => {
+                let n = available.len();
+                buf.extend_from_slice(available);
+                reader.consume(n);
+            }
         }
     }
-    Ok(Some(String::from_utf8_lossy(buf).into_owned()))
 }
 
 /// Forces UTF-8 from Python-based tools, hides the console window on Windows and pipes stdio.
@@ -120,7 +136,8 @@ async fn forward<R: AsyncRead + Unpin>(
 ) {
     let mut reader = BufReader::new(reader);
     let mut buf = Vec::new();
-    while let Ok(Some(line)) = next_line(&mut reader, &mut buf).await {
+    let mut skip_lf = false;
+    while let Ok(Some(line)) = next_line(&mut reader, &mut buf, &mut skip_lf).await {
         if tx.send(wrap(line)).await.is_err() {
             break;
         }
@@ -136,8 +153,9 @@ mod tests {
     async fn collect(input: &[u8]) -> Vec<String> {
         let mut reader = BufReader::new(input);
         let mut buf = Vec::new();
+        let mut skip_lf = false;
         let mut out = Vec::new();
-        while let Some(line) = next_line(&mut reader, &mut buf).await.unwrap() {
+        while let Some(line) = next_line(&mut reader, &mut buf, &mut skip_lf).await.unwrap() {
             out.push(line);
         }
         out
@@ -146,6 +164,31 @@ mod tests {
     #[tokio::test]
     async fn splits_lf_and_crlf_and_keeps_last_unterminated_line() {
         assert_eq!(collect(b"a\nb\r\nc").await, ["a", "b", "c"]);
+    }
+
+    #[tokio::test]
+    async fn lone_carriage_return_ends_a_line() {
+        // aria2c redraws its progress readout in place with `\r` and never prints `\n` between updates.
+        assert_eq!(
+            collect(b"[#a 1MiB/4MiB(25%)]\r[#a 2MiB/4MiB(50%)]\r[#a 4MiB/4MiB(100%)]\n").await,
+            ["[#a 1MiB/4MiB(25%)]", "[#a 2MiB/4MiB(50%)]", "[#a 4MiB/4MiB(100%)]"]
+        );
+    }
+
+    #[tokio::test]
+    async fn crlf_is_one_terminator_even_when_split_across_reads() {
+        use tokio::io::AsyncWriteExt;
+        let (mut tx, rx) = tokio::io::duplex(64);
+        let mut reader = BufReader::new(rx);
+        let (mut buf, mut skip_lf) = (Vec::new(), false);
+        tx.write_all(b"a\r").await.unwrap();
+        let first = next_line(&mut reader, &mut buf, &mut skip_lf).await.unwrap();
+        assert_eq!(first.as_deref(), Some("a"));
+        tx.write_all(b"\nb\n").await.unwrap();
+        drop(tx);
+        let second = next_line(&mut reader, &mut buf, &mut skip_lf).await.unwrap();
+        assert_eq!(second.as_deref(), Some("b"));
+        assert_eq!(next_line(&mut reader, &mut buf, &mut skip_lf).await.unwrap(), None);
     }
 
     #[tokio::test]

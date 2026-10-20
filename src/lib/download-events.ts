@@ -19,6 +19,9 @@ export interface DownloadProgressEvent {
 	downloaded: number | null;
 	total: number | null;
 	eta: number | null;
+	/** ffmpeg's frame counter and fps while it processes a trimmed/merged file. */
+	frame: number | null;
+	fps: number | null;
 }
 
 export interface DownloadLogEvent {
@@ -57,6 +60,8 @@ export function patchDownloadProgress(
 		downloaded: event.downloaded,
 		total: event.total,
 		eta: event.eta,
+		frame: event.frame,
+		fps: event.fps,
 	};
 	return next;
 }

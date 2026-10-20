@@ -67,6 +67,8 @@ pub struct ProgressEvent {
     pub downloaded: Option<i64>,
     pub total: Option<i64>,
     pub eta: Option<i64>,
+    pub frame: Option<i64>,
+    pub fps: Option<f64>,
 }
 
 /// Everything the UI is told about.
@@ -161,6 +163,8 @@ fn progress_event(id: &str, row: &ProgressRow) -> ProgressEvent {
         downloaded: row.downloaded,
         total: row.total,
         eta: row.eta,
+        frame: row.frame,
+        fps: row.fps,
     }
 }
 
@@ -862,15 +866,22 @@ async fn supervise<R: Runner, E: Events>(inner: Arc<Inner<R, E>>, ctx: Supervise
                     downloaded: nonzero_i64(update.downloaded),
                     speed: nonzero_f64(update.speed),
                     eta: nonzero_i64(update.eta),
+                    ..Default::default()
                 };
                 run.on_progress(&inner, &ctx, row).await;
             }
-            Line::Ffmpeg => {
-                // ffmpeg reports no usable progress: show an indeterminate "finished" state.
+            Line::Ffmpeg { frame, fps } => {
+                // ffmpeg has no percentage: an indeterminate "finished" state that also carries frame/fps.
                 if ctx.log_progress {
                     inner.events.log(LogLevel::Progress, &source, &text);
                 }
-                let row = ProgressRow { status: Some("finished".into()), item: item.clone(), ..Default::default() };
+                let row = ProgressRow {
+                    status: Some("finished".into()),
+                    item: item.clone(),
+                    frame,
+                    fps,
+                    ..Default::default()
+                };
                 run.on_progress(&inner, &ctx, row).await;
             }
             Line::PlaylistItem { current, total } => {
@@ -1231,6 +1242,28 @@ mod tests {
     }
 
     // ---------- single download ----------
+
+    #[tokio::test]
+    async fn ffmpeg_output_reports_frame_and_fps_as_processing() {
+        let h = harness(2).await;
+        h.runner.add_metadata("https://x/v1", video_json("v1", "A title"));
+        let id = h.manager.start_download(params("https://x/v1")).await.unwrap();
+        let pid = wait_spawn(&h, "https://x/v1", 1).await;
+
+        h.runner.say(pid, "frame=11456 fps= 49 q=-1.0 size= 31488KiB time=00:02:15.80 speed=1.87x");
+        wait_status(&h, &id, "downloading").await;
+
+        let events = h.events.clone();
+        eventually("an ffmpeg progress event", move || {
+            let events = events.clone();
+            async move {
+                events.0.lock().unwrap().progress.iter().any(|p| {
+                    p.status.as_deref() == Some("finished") && p.frame == Some(11456) && p.fps == Some(49.0)
+                })
+            }
+        })
+        .await;
+    }
 
     #[tokio::test]
     async fn downloads_a_video_end_to_end() {

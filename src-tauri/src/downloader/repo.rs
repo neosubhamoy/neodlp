@@ -109,6 +109,9 @@ pub struct ProgressRow {
     pub downloaded: Option<i64>,
     pub speed: Option<f64>,
     pub eta: Option<i64>,
+    /// ffmpeg's live frame counter and fps; sent to the UI but not stored.
+    pub frame: Option<i64>,
+    pub fps: Option<f64>,
 }
 
 #[derive(Clone)]
@@ -662,6 +665,7 @@ mod tests {
                 downloaded: Some(400),
                 speed: Some(12.5),
                 eta: Some(7),
+                ..Default::default()
             },
         )
         .await

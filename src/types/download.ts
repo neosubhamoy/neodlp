@@ -49,6 +49,9 @@ export interface DownloadState {
 	queue_config: string | null;
 	trim_stamps: string | null;
 	id?: number;
+	/** Live ffmpeg progress; only set by progress events, never stored. */
+	frame?: number | null;
+	fps?: number | null;
 	error_message?: string | null;
 	started_at?: string | null;
 	completed_at?: string | null;

@@ -225,6 +225,20 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
 									{formatSpeed(state.speed)}
 								</>
 							)}{" "}
+						{state.download_status === "downloading" &&
+						state.status === "finished" &&
+						state.frame ? (
+							<>
+								<span className="text-primary">•</span> Frame: {state.frame}
+								{state.fps ? (
+									<>
+										{" "}
+										<span className="text-primary">•</span> FPS:{" "}
+										{Math.round(state.fps)}
+									</>
+								) : null}
+							</>
+						) : null}{" "}
 						{state.download_status === "downloading" && state.eta && (
 							<>
 								<span className="text-primary">•</span> ETA:{" "}

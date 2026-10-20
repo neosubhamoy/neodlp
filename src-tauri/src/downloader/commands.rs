@@ -179,12 +179,14 @@ mod tests {
             downloaded: Some(10),
             total: Some(20),
             eta: Some(3),
+            frame: Some(120),
+            fps: Some(30.5),
         };
         assert_eq!(
             serde_json::to_value(progress).unwrap(),
             json!({
                 "download_id": "d1", "status": "downloading", "item": "1/2", "progress": 50.5,
-                "speed": null, "downloaded": 10, "total": 20, "eta": 3
+                "speed": null, "downloaded": 10, "total": 20, "eta": 3, "frame": 120, "fps": 30.5
             })
         );
     }

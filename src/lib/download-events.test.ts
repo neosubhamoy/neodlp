@@ -53,6 +53,8 @@ const progress = (
 	downloaded: 500,
 	total: 1000,
 	eta: 3,
+	frame: null,
+	fps: null,
 	...p,
 });
 
@@ -92,6 +94,16 @@ describe("patchDownloadProgress", () => {
 			total: 1000,
 			eta: 3,
 		});
+	});
+
+	it("carries ffmpeg frame and fps, and clears them on the next normal update", () => {
+		const processing = patchDownloadProgress(
+			[download("a")],
+			progress("a", { status: "finished", frame: 11456, fps: 49 }),
+		);
+		expect(processing[0]).toMatchObject({ frame: 11456, fps: 49 });
+		const back = patchDownloadProgress(processing, progress("a"));
+		expect(back[0]).toMatchObject({ frame: null, fps: null });
 	});
 
 	it("keeps the current playlist item unless the event carries one", () => {
