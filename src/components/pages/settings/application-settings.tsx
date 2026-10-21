@@ -2009,7 +2009,7 @@ function AppPoTokenSettings() {
 	);
 
 	const { saveSettingsKey } = useSettings();
-	const { startPotServer, stopPotServer } = usePotServer();
+	const { syncPotServer } = usePotServer();
 
 	const potServerPortForm = useForm({
 		defaultValues: {
@@ -2036,12 +2036,11 @@ function AppPoTokenSettings() {
 	) {
 		setIsChangingPotServerPort(true);
 		try {
-			saveSettingsKey("pot_server_port", values.port);
-			if (isRunningPotServer) {
-				await stopPotServer();
-				await new Promise((resolve) => setTimeout(resolve, 1000));
-				await startPotServer(values.port);
+			if (!(await saveSettingsKey("pot_server_port", values.port))) {
+				return;
 			}
+			// The backend restarts the server on the new port if it is running.
+			await syncPotServer();
 			toast.success("POT Server Port updated", {
 				description: `PO Token Server Port changed to ${values.port}`,
 			});
@@ -2077,11 +2076,8 @@ function AppPoTokenSettings() {
 						id="use-potoken"
 						checked={usePotoken}
 						onCheckedChange={async (checked) => {
-							saveSettingsKey("use_potoken", checked);
-							if (checked) {
-								await startPotServer();
-							} else {
-								await stopPotServer();
+							if (await saveSettingsKey("use_potoken", checked)) {
+								await syncPotServer();
 							}
 						}}
 						disabled={
@@ -2292,7 +2288,7 @@ function AppNotificationSettings() {
 
 function AppCommandSettings() {
 	const { saveSettingsKey } = useSettings();
-	const { startPotServer, stopPotServer } = usePotServer();
+	const { syncPotServer } = usePotServer();
 
 	const formResetTrigger = useSettingsPageStatesStore(
 		(state) => state.formResetTrigger,
@@ -2306,9 +2302,6 @@ function AppCommandSettings() {
 	);
 	const customCommands = useSettingsPageStatesStore(
 		(state) => state.settings.custom_commands,
-	);
-	const usePotoken = useSettingsPageStatesStore(
-		(state) => state.settings.use_potoken,
 	);
 
 	const setDownloadConfigurationKey = useDownloaderPageStatesStore(
@@ -2421,12 +2414,10 @@ function AppCommandSettings() {
 						id="use-custom-commands"
 						checked={useCustomCommands}
 						onCheckedChange={async (checked) => {
-							saveSettingsKey("use_custom_commands", checked);
 							resetDownloadConfiguration();
-							if (checked && usePotoken) {
-								await stopPotServer();
-							} else if (!checked && usePotoken) {
-								await startPotServer();
+							if (await saveSettingsKey("use_custom_commands", checked)) {
+								// Custom commands replace PO tokens; the backend applies that.
+								await syncPotServer();
 							}
 						}}
 					/>

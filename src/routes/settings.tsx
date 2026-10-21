@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ExtensionSettings } from "@/components/pages/settings/extension-settings";
 import { ApplicationSettings } from "@/components/pages/settings/application-settings";
-import usePotServer from "@/hooks/use-pot-server";
 
 export const Route = createFileRoute("/settings")({
 	component: Settings,
@@ -37,16 +36,12 @@ function Settings() {
 	const isUsingDefaultSettings = useSettingsPageStatesStore(
 		(state) => state.isUsingDefaultSettings,
 	);
-	const isRunningPotServer = useSettingsPageStatesStore(
-		(state) => state.isRunningPotServer,
-	);
 	const appTheme = useSettingsPageStatesStore((state) => state.settings.theme);
 	const appColorScheme = useSettingsPageStatesStore(
 		(state) => state.settings.color_scheme,
 	);
 
 	const { resetSettings } = useSettings();
-	const { stopPotServer } = usePotServer();
 
 	useEffect(() => {
 		const updateTheme = async () => {
@@ -94,10 +89,8 @@ function Settings() {
 								<AlertDialogAction
 									variant="destructive"
 									onClick={async () => {
+										// The backend stops the POT server when the defaults turn it off.
 										resetSettings();
-										if (isRunningPotServer) {
-											await stopPotServer();
-										}
 									}}
 								>
 									Reset

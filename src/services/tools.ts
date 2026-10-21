@@ -20,9 +20,13 @@ export type UpdateOutcome =
 	/** The update couldn't even be attempted. */
 	| { status: "error"; message: string };
 
-export const startPotServer = (port: number) =>
-	invoke<void>("start_pot_server", { port });
+/**
+ * Tells the backend the PO-token settings changed (call after saving them). It reads the saved
+ * settings and starts, stops or restarts the server itself; the UI never decides.
+ */
+export const syncPotServer = () => invoke<void>("sync_pot_server");
 
+/** Stops the server if one is running (a no-op otherwise). */
 export const stopPotServer = () => invoke<void>("stop_pot_server");
 
 export const getPotStatus = () => invoke<PotStatus>("get_pot_status");

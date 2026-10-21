@@ -25,11 +25,8 @@ export default function useAppUpdater() {
 	const updateNotification = useSettingsPageStatesStore(
 		(state) => state.settings.update_notification,
 	);
-	const isRunningPotServer = useSettingsPageStatesStore(
-		(state) => state.isRunningPotServer,
-	);
 
-	const { stopPotServer } = usePotServer();
+	const { stopPotServer, syncPotServer } = usePotServer();
 	const LOG = useLogger();
 
 	const checkForAppUpdate = async () => {
@@ -56,38 +53,43 @@ export default function useAppUpdater() {
 
 	const downloadAndInstallAppUpdate = async (update: Update) => {
 		setIsUpdating(true);
-		if (isRunningPotServer) {
-			LOG.info("NEODLP", "Stopping POT Server before starting app update");
-			await stopPotServer();
-		}
+		// The installer replaces the POT server's binary, so it must not be running. Stopping is a
+		// no-op when it isn't, so there is no need to check the (possibly stale) UI state.
+		await stopPotServer();
 		LOG.info(
 			"NEODLP",
 			`Downloading and installing app update v${update.version}`,
 		);
 		let downloaded = 0;
 		let contentLength: number | undefined = 0;
-		await update.downloadAndInstall((event) => {
-			switch (event.event) {
-				case "Started":
-					contentLength = event.data.contentLength;
-					console.log(
-						`started downloading app update of ${event.data.contentLength} bytes`,
-					);
-					break;
-				case "Progress":
-					downloaded += event.data.chunkLength;
-					const progress = (downloaded / (contentLength || 1)) * 100;
-					setDownloadProgress(Math.round(progress * 10) / 10);
-					console.log(
-						`downloaded ${downloaded} bytes from ${contentLength} bytes of app update`,
-					);
-					break;
-				case "Finished":
-					console.log("app update download finished");
-					setIsUpdating(false);
-					break;
-			}
-		});
+		try {
+			await update.downloadAndInstall((event) => {
+				switch (event.event) {
+					case "Started":
+						contentLength = event.data.contentLength;
+						console.log(
+							`started downloading app update of ${event.data.contentLength} bytes`,
+						);
+						break;
+					case "Progress":
+						downloaded += event.data.chunkLength;
+						const progress = (downloaded / (contentLength || 1)) * 100;
+						setDownloadProgress(Math.round(progress * 10) / 10);
+						console.log(
+							`downloaded ${downloaded} bytes from ${contentLength} bytes of app update`,
+						);
+						break;
+					case "Finished":
+						console.log("app update download finished");
+						setIsUpdating(false);
+						break;
+				}
+			});
+		} catch (error) {
+			// The app keeps running, so let the backend bring the POT server back if it is enabled.
+			await syncPotServer();
+			throw error;
+		}
 		await relaunchApp();
 	};
 

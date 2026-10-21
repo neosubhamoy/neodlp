@@ -17,6 +17,12 @@ use std::io;
 
 pub trait ToolRunner: Send + Sync + 'static {
     fn spawn(&self, program: &Program, args: Vec<String>) -> io::Result<Spawned>;
+    /// Like [`spawn`](Self::spawn), for a long-lived background process: the OS also ends it when
+    /// the app process disappears by any route (installer exit, crash, killed), not only when the
+    /// app shuts down cleanly.
+    fn spawn_bound(&self, program: &Program, args: Vec<String>) -> io::Result<Spawned> {
+        self.spawn(program, args)
+    }
     /// Terminates the process tree; the exit is reported through [`Spawned::exit`].
     fn kill(&self, pid: u32);
 }
@@ -92,6 +98,7 @@ pub(crate) mod testing {
         procs: HashMap<u32, Proc>,
         spawned: Vec<(u32, Program, Vec<String>)>,
         killed: Vec<u32>,
+        bound: Vec<u32>,
     }
 
     #[derive(Clone, Default)]
@@ -109,6 +116,10 @@ pub(crate) mod testing {
         }
         pub fn killed(&self) -> Vec<u32> {
             self.0.lock().unwrap().killed.clone()
+        }
+        /// Processes started through `spawn_bound`.
+        pub fn bound(&self) -> Vec<u32> {
+            self.0.lock().unwrap().bound.clone()
         }
         pub fn say(&self, pid: u32, line: &str) {
             let tx = self.0.lock().unwrap().procs[&pid].lines.clone();
@@ -157,6 +168,12 @@ pub(crate) mod testing {
                 Script::SpawnError(_) => unreachable!(),
             }
             Ok(Spawned { pid, lines, exit })
+        }
+
+        fn spawn_bound(&self, program: &Program, args: Vec<String>) -> io::Result<Spawned> {
+            let spawned = self.spawn(program, args)?;
+            self.0.lock().unwrap().bound.push(spawned.pid);
+            Ok(spawned)
         }
 
         fn kill(&self, pid: u32) {

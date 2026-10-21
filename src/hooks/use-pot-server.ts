@@ -1,22 +1,20 @@
-import { useSettingsPageStatesStore } from "@/services/store";
 import * as tools from "@/services/tools";
 
-// The PO-token server runs in the Rust backend, which also starts it at launch when enabled and
-// stops it on quit. Its status reaches the UI through use-pot-events.
+// The PO-token server is owned by the Rust backend: it starts it at launch, restarts it when the
+// saved settings change, and stops it on quit. The UI only reports "settings changed" and shows the
+// status it receives through use-pot-events; it never decides whether to start or stop.
 export default function usePotServer() {
-	const potServerPort = useSettingsPageStatesStore(
-		(state) => state.settings.pot_server_port,
-	);
-
-	const startPotServer = async (port?: number) => {
+	/** Call after saving a PO-token or custom-command setting. */
+	const syncPotServer = async () => {
 		try {
-			await tools.startPotServer(port ?? potServerPort);
+			await tools.syncPotServer();
 		} catch (error) {
 			// The backend has already logged the reason.
-			console.error("Failed to start the POT server:", error);
+			console.error("Failed to apply the POT server settings:", error);
 		}
 	};
 
+	/** Stops the server (a no-op when none runs), e.g. before the installer replaces its binary. */
 	const stopPotServer = async () => {
 		try {
 			await tools.stopPotServer();
@@ -25,5 +23,5 @@ export default function usePotServer() {
 		}
 	};
 
-	return { startPotServer, stopPotServer };
+	return { syncPotServer, stopPotServer };
 }

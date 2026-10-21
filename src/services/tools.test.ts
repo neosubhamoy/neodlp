@@ -13,8 +13,8 @@ import {
 	POT_STATE_EVENT,
 	registerLinux,
 	registerMacos,
-	startPotServer,
 	stopPotServer,
+	syncPotServer,
 	updateYtDlp,
 	type PotStatus,
 } from "./tools";
@@ -25,21 +25,21 @@ beforeEach(() => {
 });
 
 describe("PO-token server commands", () => {
-	it("start, stop and status", async () => {
+	it("sync, stop and status take no arguments: the backend decides from its own state", async () => {
 		invoke.mockResolvedValue(undefined);
-		await startPotServer(4416);
+		await syncPotServer();
 		await stopPotServer();
 		await getPotStatus();
 		expect(invoke.mock.calls).toEqual([
-			["start_pot_server", { port: 4416 }],
+			["sync_pot_server"],
 			["stop_pot_server"],
 			["get_pot_status"],
 		]);
 	});
 
-	it("lets start failures reach the caller", async () => {
+	it("lets sync failures reach the caller", async () => {
 		invoke.mockRejectedValue("Error starting POT Server: not found");
-		await expect(startPotServer(1)).rejects.toBe(
+		await expect(syncPotServer()).rejects.toBe(
 			"Error starting POT Server: not found",
 		);
 	});

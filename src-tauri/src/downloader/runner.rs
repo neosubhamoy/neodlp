@@ -2,6 +2,7 @@
 
 use super::manager::{ExitInfo, Runner, Spawned};
 use super::process;
+use crate::lifetime;
 use crate::sidecar::{Launcher, Program};
 use crate::tools::ToolRunner;
 use std::io;
@@ -51,6 +52,15 @@ impl Runner for SidecarRunner {
 impl ToolRunner for SidecarRunner {
     fn spawn(&self, program: &Program, args: Vec<String>) -> io::Result<Spawned> {
         spawn_command(self.launcher.command(program, args))
+    }
+
+    fn spawn_bound(&self, program: &Program, args: Vec<String>) -> io::Result<Spawned> {
+        let spawned = ToolRunner::spawn(self, program, args)?;
+        if let Err(e) = lifetime::bind_to_app(spawned.pid) {
+            // The server still works and is stopped on a normal quit; only the crash safety net is missing.
+            log::warn!("Could not tie process {} to the app's lifetime: {e}", spawned.pid);
+        }
+        Ok(spawned)
     }
 
     fn kill(&self, pid: u32) {

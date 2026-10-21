@@ -10,6 +10,7 @@ use super::ytdlp::{Platform, UpdateOutcome, UpdaterConfig, YtDlp};
 use super::ToolEvents;
 use crate::downloader::commands::{LogEvent, LOG_EVENT};
 use crate::downloader::manager::LogLevel;
+use crate::downloader::repo::Repo;
 use crate::downloader::runner::SidecarRunner;
 use crate::sidecar::{is_flatpak, Launcher};
 use tauri::{AppHandle, Emitter, Manager, State};
@@ -55,16 +56,24 @@ pub fn new_tools(app: AppHandle, launcher: Launcher) -> Tools {
     }
 }
 
-// Async on purpose: starting the server spawns background tasks, which needs the async runtime.
+// Stopping is idempotent: nothing running is not an error, so callers needn't check the status first.
 #[tauri::command]
-pub async fn start_pot_server(tools: State<'_, Tools>, port: u16) -> Result<(), String> {
-    tools.pot.start(port)
+pub async fn stop_pot_server(tools: State<'_, Tools>) -> Result<(), String> {
+    tools.pot.shutdown();
+    Ok(())
+}
+
+/// Reads the saved settings and starts, stops or restarts the server to match them. The backend
+/// decides; the frontend only says "settings changed" (after saving them). Async on purpose:
+/// starting the server spawns background tasks, which needs the async runtime.
+pub async fn sync_pot_server_with(tools: &Tools, repo: &Repo) -> Result<(), String> {
+    let settings = repo.load_settings().await.map_err(|e| e.to_string())?;
+    tools.pot.apply(&settings).await
 }
 
 #[tauri::command]
-pub async fn stop_pot_server(tools: State<'_, Tools>) -> Result<(), String> {
-    tools.pot.stop();
-    Ok(())
+pub async fn sync_pot_server(tools: State<'_, Tools>, repo: State<'_, Repo>) -> Result<(), String> {
+    sync_pot_server_with(&tools, &repo).await
 }
 
 #[tauri::command]

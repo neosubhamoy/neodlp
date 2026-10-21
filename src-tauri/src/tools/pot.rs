@@ -9,6 +9,7 @@ use crate::sidecar::Program;
 use regex::Regex;
 use serde::Serialize;
 use std::sync::{Arc, LazyLock, Mutex};
+use std::time::Duration;
 
 const SOURCE: &str = "NEODLP POT-SERVER";
 
@@ -33,7 +34,12 @@ struct Inner<R, E> {
     runner: R,
     events: E,
     status: Mutex<PotStatus>,
+    /// The port of the server that is starting or running; only meaningful while `status` says so.
+    port: Mutex<u16>,
 }
+
+/// Pause between stopping a server and starting its replacement, so the old one releases the port.
+const RESTART_PAUSE: Duration = Duration::from_millis(300);
 
 pub struct PotServer<R, E> {
     inner: Arc<Inner<R, E>>,
@@ -47,7 +53,14 @@ impl<R, E> Clone for PotServer<R, E> {
 
 impl<R: ToolRunner, E: ToolEvents> PotServer<R, E> {
     pub fn new(runner: R, events: E) -> Self {
-        Self { inner: Arc::new(Inner { runner, events, status: Mutex::new(PotStatus::default()) }) }
+        Self {
+            inner: Arc::new(Inner {
+                runner,
+                events,
+                status: Mutex::new(PotStatus::default()),
+                port: Mutex::new(0),
+            }),
+        }
     }
 
     pub fn status(&self) -> PotStatus {
@@ -65,12 +78,13 @@ impl<R: ToolRunner, E: ToolEvents> PotServer<R, E> {
                 return Ok(());
             }
             status.starting = true;
+            *inner.port.lock().unwrap() = port;
             inner.events.pot_state(&status);
         }
         inner.events.log(LogLevel::Info, SOURCE, &format!("Starting POT Server on port: {port}"));
 
         let args = vec!["server".to_string(), "--port".into(), port.to_string()];
-        let spawned = match inner.runner.spawn(&Program::Sidecar("neodlp-pot"), args) {
+        let spawned = match inner.runner.spawn_bound(&Program::Sidecar("neodlp-pot"), args) {
             Ok(spawned) => spawned,
             Err(e) => {
                 let message = format!("Error starting POT Server: {e}");
@@ -87,14 +101,30 @@ impl<R: ToolRunner, E: ToolEvents> PotServer<R, E> {
         Ok(())
     }
 
-    /// Starts the server if the user has PO tokens enabled. Returns whether a start was attempted.
-    pub fn start_if_enabled(&self, settings: &DownloadSettings) -> bool {
-        if !settings.use_potoken {
-            return false;
+    /// Makes the server match the saved settings: running on the configured port when PO tokens are
+    /// on (and custom commands, which replace PO tokens, are off), stopped otherwise. Safe to call
+    /// at any time, so launch, the settings page and a reset all go through here and nobody has to
+    /// know the current state. A start failure is logged and returned.
+    pub async fn apply(&self, settings: &DownloadSettings) -> Result<(), String> {
+        let wanted = (settings.use_potoken && !settings.use_custom_commands).then_some(settings.pot_server_port);
+        let active = {
+            let status = self.inner.status.lock().unwrap();
+            (status.pid.is_some() || status.starting).then(|| *self.inner.port.lock().unwrap())
+        };
+        match (wanted, active) {
+            (Some(wanted), Some(active)) if wanted == active => Ok(()),
+            (Some(wanted), Some(_)) => {
+                self.shutdown();
+                tokio::time::sleep(RESTART_PAUSE).await;
+                self.start(wanted)
+            }
+            (Some(wanted), None) => self.start(wanted),
+            (None, Some(_)) => {
+                self.shutdown();
+                Ok(())
+            }
+            (None, None) => Ok(()),
         }
-        // A failure is already logged (and reported through the status); nothing else to do.
-        let _ = self.start(settings.pot_server_port);
-        true
     }
 
     /// For app quit: stops the server if it is running, without complaining when it isn't.
@@ -371,20 +401,116 @@ mod tests {
         assert_eq!(pot.status(), PotStatus { running: true, starting: false, pid: Some(new) });
     }
 
-    // ---------- startup / quit ----------
+    // ---------- settings drive the server ----------
+
+    fn settings(use_potoken: bool, port: u16, use_custom_commands: bool) -> DownloadSettings {
+        DownloadSettings { use_potoken, pot_server_port: port, use_custom_commands, ..Default::default() }
+    }
+
+    fn port_arg(args: &[String]) -> &str {
+        &args[args.iter().position(|a| a == "--port").unwrap() + 1]
+    }
 
     #[tokio::test]
-    async fn starts_at_launch_only_when_enabled_in_the_settings() {
+    async fn enabled_settings_start_the_server_on_the_configured_port() {
         let (pot, runner, _) = server();
-        let enabled = DownloadSettings { use_potoken: true, pot_server_port: 5555, ..Default::default() };
         runner.push(Script::Hold);
-        assert!(pot.start_if_enabled(&enabled));
+        pot.apply(&settings(true, 5555, false)).await.unwrap();
         assert_eq!(runner.spawned()[0].1, vec!["server".to_string(), "--port".into(), "5555".into()]);
+    }
 
+    #[tokio::test]
+    async fn disabled_settings_start_nothing() {
         let (pot, runner, _) = server();
-        let disabled = DownloadSettings { use_potoken: false, ..Default::default() };
-        assert!(!pot.start_if_enabled(&disabled));
+        pot.apply(&settings(false, 4416, false)).await.unwrap();
         assert!(runner.spawned().is_empty());
+    }
+
+    #[tokio::test]
+    async fn custom_commands_keep_the_server_off() {
+        let (pot, runner, _) = server();
+        pot.apply(&settings(true, 4416, true)).await.unwrap();
+        assert!(runner.spawned().is_empty());
+
+        // ...and turning them on stops a server that was already running.
+        runner.push(Script::Hold);
+        pot.apply(&settings(true, 4416, false)).await.unwrap();
+        let pid = runner.pids()[0];
+        pot.apply(&settings(true, 4416, true)).await.unwrap();
+        assert_eq!(runner.killed(), [pid]);
+        assert_eq!(pot.status(), PotStatus::default());
+    }
+
+    #[tokio::test]
+    async fn applying_the_same_settings_again_keeps_the_running_server() {
+        let (pot, runner, _) = server();
+        runner.push(Script::Hold);
+        pot.apply(&settings(true, 4416, false)).await.unwrap();
+        pot.apply(&settings(true, 4416, false)).await.unwrap();
+        assert_eq!(runner.spawned().len(), 1);
+        assert!(runner.killed().is_empty());
+    }
+
+    #[tokio::test]
+    async fn a_changed_port_restarts_the_server() {
+        let (pot, runner, _) = server();
+        runner.push(Script::Hold);
+        pot.apply(&settings(true, 4416, false)).await.unwrap();
+        let old = runner.pids()[0];
+
+        runner.push(Script::Hold);
+        pot.apply(&settings(true, 5555, false)).await.unwrap();
+
+        assert_eq!(runner.killed(), [old]);
+        let spawned = runner.spawned();
+        assert_eq!(spawned.len(), 2);
+        assert_eq!(port_arg(&spawned[1].1), "5555");
+        assert_eq!(pot.status().pid, Some(runner.pids()[1]));
+    }
+
+    #[tokio::test]
+    async fn turning_the_setting_off_stops_the_server() {
+        let (pot, runner, _) = server();
+        runner.push(Script::Hold);
+        pot.apply(&settings(true, 4416, false)).await.unwrap();
+        let pid = runner.pids()[0];
+
+        pot.apply(&settings(false, 4416, false)).await.unwrap();
+        assert_eq!(runner.killed(), [pid]);
+        assert_eq!(pot.status(), PotStatus::default());
+    }
+
+    #[tokio::test]
+    async fn a_crashed_server_is_started_again_by_the_next_apply() {
+        let (pot, runner, _) = server();
+        runner.push(Script::Hold);
+        pot.apply(&settings(true, 4416, false)).await.unwrap();
+        runner.finish(runner.pids()[0], false);
+        eventually("reset", || pot.status() == PotStatus::default()).await;
+
+        runner.push(Script::Hold);
+        pot.apply(&settings(true, 4416, false)).await.unwrap();
+        assert_eq!(runner.spawned().len(), 2);
+    }
+
+    #[tokio::test]
+    async fn apply_reports_a_spawn_failure() {
+        let (pot, runner, _) = server();
+        runner.push(Script::SpawnError("neodlp-pot not found"));
+        let err = pot.apply(&settings(true, 4416, false)).await.unwrap_err();
+        assert!(err.contains("neodlp-pot not found"), "{err}");
+    }
+
+    // ---------- quit ----------
+
+    #[tokio::test]
+    async fn the_server_is_tied_to_the_apps_lifetime() {
+        // If the app dies without cleaning up (installer exit, crash, killed), the OS must take
+        // the server down with it.
+        let (pot, runner, _) = server();
+        runner.push(Script::Hold);
+        pot.start(4416).unwrap();
+        assert_eq!(runner.bound(), runner.pids());
     }
 
     #[tokio::test]

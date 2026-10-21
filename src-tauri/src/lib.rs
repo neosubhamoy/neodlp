@@ -1,6 +1,7 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 mod config;
 mod downloader;
+mod lifetime;
 mod migrations;
 mod sidecar;
 mod tools;
@@ -429,14 +430,12 @@ pub async fn run() {
             let tools = tools::commands::new_tools(app.handle().clone(), launcher);
             app.manage(tools.clone());
             let settings = downloader::repo::Repo::new(pool);
+            app.manage(settings.clone());
             tauri::async_runtime::spawn(async move {
                 download_manager.recover().await;
-                // Start the PO-token server at launch if the user turned it on.
-                match settings.load_settings().await {
-                    Ok(settings) => {
-                        tools.pot.start_if_enabled(&settings);
-                    }
-                    Err(e) => log::warn!("Could not read settings to start the POT server: {}", e),
+                // Bring the PO-token server in line with the saved settings.
+                if let Err(e) = tools::commands::sync_pot_server_with(&tools, &settings).await {
+                    log::warn!("Could not start the POT server at launch: {}", e);
                 }
             });
 
@@ -537,8 +536,8 @@ pub async fn run() {
             restart_websocket_server,
             is_flatpak,
             get_appimage_path,
-            tools::commands::start_pot_server,
             tools::commands::stop_pot_server,
+            tools::commands::sync_pot_server,
             tools::commands::get_pot_status,
             tools::commands::get_ytdlp_version,
             tools::commands::update_ytdlp,
