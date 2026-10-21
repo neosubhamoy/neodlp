@@ -807,10 +807,14 @@ impl Run {
             inner.emit_state(&ctx.id).await;
         }
         let now = Instant::now();
-        if self.emit_gate.ready(now) {
+        // A change of status (downloading -> finished, i.e. "processing") is sent at once: yt-dlp
+        // prints it right after the last 100% line and then stays silent while it post-processes,
+        // so a throttled-away transition would never be corrected.
+        let status_changed = self.latest.as_ref().is_some_and(|l| l.status != row.status);
+        if self.emit_gate.ready(now) || status_changed {
             inner.events.progress(&progress_event(&ctx.id, &row));
         }
-        if self.persist_gate.ready(now) {
+        if self.persist_gate.ready(now) || status_changed {
             self.save(inner, &ctx.id, &row).await;
             self.unsaved = false;
         } else {
@@ -1544,6 +1548,59 @@ mod tests {
         assert_eq!(h.runner.killed(), [pa]);
         assert_eq!(h.events.removed(), [a.clone()]);
         wait_spawn(&h, "https://x/b", 1).await;
+    }
+
+    const FFMPEG: &str = "frame=300 fps= 30 q=-1.0 size= 1024KiB time=00:00:10.00 speed=1.0x";
+
+    #[tokio::test]
+    async fn the_finished_status_right_after_the_last_download_line_is_not_throttled_away() {
+        // yt-dlp prints `status:finished` immediately after the final 100% line, then stays silent
+        // while it re-encodes. If that line is dropped by the throttle the UI never leaves 100%.
+        let h = harness(1).await;
+        h.runner.add_metadata("https://x/a", video_json("a1", "a"));
+        let a = h.manager.start_download(params("https://x/a")).await.unwrap();
+        let pa = wait_spawn(&h, "https://x/a", 1).await;
+
+        h.runner.say(pa, "status:downloading,progress: 100.0%,speed:1000.5,downloaded:1000,total:1000,eta:0");
+        h.runner.say(pa, "status:finished,progress: 100.0%,speed:NA,downloaded:1000,total:1000,eta:NA");
+        wait_status(&h, &a, "downloading").await;
+
+        let events = h.events.clone();
+        eventually("a finished progress event", move || {
+            let events = events.clone();
+            async move { events.0.lock().unwrap().progress.iter().any(|p| p.status.as_deref() == Some("finished")) }
+        })
+        .await;
+    }
+
+    #[tokio::test]
+    async fn a_download_can_be_paused_while_ffmpeg_is_processing() {
+        let h = harness(1).await;
+        h.runner.add_metadata("https://x/a", video_json("a1", "a"));
+        let a = h.manager.start_download(params("https://x/a")).await.unwrap();
+        let pa = wait_spawn(&h, "https://x/a", 1).await;
+        h.runner.say(pa, FFMPEG);
+        wait_status(&h, &a, "downloading").await;
+
+        h.manager.pause_download(&a).await.unwrap();
+        wait_status(&h, &a, "paused").await;
+        assert_eq!(h.runner.killed(), [pa]);
+        assert_eq!(h.manager.running_count(), 0);
+    }
+
+    #[tokio::test]
+    async fn a_download_can_be_cancelled_while_ffmpeg_is_processing() {
+        let h = harness(1).await;
+        h.runner.add_metadata("https://x/a", video_json("a1", "a"));
+        let a = h.manager.start_download(params("https://x/a")).await.unwrap();
+        let pa = wait_spawn(&h, "https://x/a", 1).await;
+        h.runner.say(pa, FFMPEG);
+        wait_status(&h, &a, "downloading").await;
+
+        h.manager.cancel_download(&a).await.unwrap();
+        eventually("row to be deleted", || async { h.repo.fetch_by_id(&a).await.unwrap().is_none() }).await;
+        assert_eq!(h.runner.killed(), [pa]);
+        assert_eq!(h.events.removed(), [a]);
     }
 
     #[tokio::test]

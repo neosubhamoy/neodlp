@@ -15,7 +15,6 @@ import {
 	Scissors,
 	Settings2,
 	EyeOff,
-	TriangleAlert,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { RawVideoInfo, VideoFormat } from "@/types/video";
@@ -137,7 +136,7 @@ function TrimmerDialog({ videoMetadata }: TrimmerDialogProps) {
 			</Tooltip>
 			<DialogContent className="sm:max-w-112.5">
 				<DialogHeader>
-					<DialogTitle>Trimmer (Beta)</DialogTitle>
+					<DialogTitle>Trimmer</DialogTitle>
 					<DialogDescription>
 						Partially download selected media segment
 					</DialogDescription>
@@ -159,16 +158,6 @@ function TrimmerDialog({ videoMetadata }: TrimmerDialogProps) {
 							</p>
 						</div>
 					)}
-					<Alert className="mt-1">
-						<TriangleAlert className="size-4 stroke-primary" />
-						<AlertTitle className="text-sm">Experimental Feature!</AlertTitle>
-						<AlertDescription className="text-xs">
-							This feature is still in beta and may not work as expected.
-							Trimmed media may have defects, also trimmed downloads doesn't
-							show any download progress and can't be paused/resumed (should be
-							downloaded in one go).
-						</AlertDescription>
-					</Alert>
 					<div className="flex items-center w-full mt-2">
 						<div className="flex gap-4 w-full items-center">
 							<div className="w-full">

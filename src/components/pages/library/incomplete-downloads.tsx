@@ -340,9 +340,7 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
 							disabled={
 								itemActionStates.isPausing ||
 								itemActionStates.isCanceling ||
-								state.download_status !== "downloading" ||
-								(state.download_status === "downloading" &&
-									state.status === "finished")
+								state.download_status !== "downloading"
 							}
 						>
 							{itemActionStates.isPausing ? (
@@ -381,9 +379,7 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
 							itemActionStates.isCanceling ||
 							itemActionStates.isResuming ||
 							itemActionStates.isPausing ||
-							state.download_status === "starting" ||
-							(state.download_status === "downloading" &&
-								state.status === "finished")
+							state.download_status === "starting"
 						}
 					>
 						{itemActionStates.isCanceling ? (
