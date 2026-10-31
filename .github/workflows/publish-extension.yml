@@ -1,0 +1,43 @@
+on:
+  workflow_dispatch:
+
+name: 🚀 Publish Extension
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: extension
+    steps:
+      - name: 🚚 Checkout repository
+        uses: actions/checkout@v7
+
+      - name: 📦 Setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+          cache-dependency-path: extension/package-lock.json
+
+      - name: 🛠️ Install dependencies
+        run: npm ci
+
+      - name: 🤐 Zip extensions
+        run: |
+          npm run zip
+          npm run zip:firefox
+
+      - name: 🚀 Submit to stores
+        run: |
+          npm run submit -- --dry-run --chrome-zip .output/*-chrome.zip \
+            --firefox-zip .output/*-firefox.zip --firefox-sources-zip .output/*-sources.zip
+        env:
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          CHROME_SKIP_SUBMIT_REVIEW: true
+          FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
+          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+          FIREFOX_SKIP_SUBMIT_REVIEW: true

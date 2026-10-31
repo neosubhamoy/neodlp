@@ -76,8 +76,8 @@ npm run tauri:dev:macos-x64         # for intel x86 macs
 10. Do the required code changes (following the style guidelines). Add or update tests for what you change (see [Running Tests](#running-tests))
 11. Make sure everything passes before committing:
 ```shell
-npm run test                                          # run tests
-npm run format                                        # format code
+npm run test                        # run tests
+npm run format                      # format code
 ```
 12. Add and commit the changes: `git add .` then `git commit -m "prefix: your message here"`
 13. Push the commits: `git push origin <new-branch-name>`

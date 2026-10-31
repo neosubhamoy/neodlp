@@ -21,6 +21,11 @@ export default defineConfig(async () => ({
 	build: {
 		chunkSizeWarningLimit: 1024, // 1MB
 	},
+	// The browser extension in ./extension is a separate project with its own node_modules and index.html.
+	// Scan only our own page, otherwise Vite pre-bundles the extension's copy of React alongside ours.
+	optimizeDeps: {
+		entries: ["index.html"],
+	},
 	// Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
 	//
 	// 1. prevent vite from obscuring rust errors
@@ -38,8 +43,8 @@ export default defineConfig(async () => ({
 				}
 			: undefined,
 		watch: {
-			// 3. tell vite to ignore watching `src-tauri`
-			ignored: ["**/src-tauri/**"],
+			// 3. tell vite to ignore watching `src-tauri` and the separate `extension` project
+			ignored: ["**/src-tauri/**", "**/extension/**"],
 		},
 	},
 	resolve: {

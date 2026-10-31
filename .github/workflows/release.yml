@@ -45,7 +45,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: 🚚 Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: 🛠️ Install dependencies
         if: matrix.platform == 'ubuntu-22.04' || matrix.platform == 'ubuntu-22.04-arm'
@@ -54,7 +54,7 @@ jobs:
             sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
 
       - name: 📦 Setup node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 'lts/*'
           cache: 'npm'
@@ -70,7 +70,7 @@ jobs:
           workspaces: './src-tauri -> target'
 
       - name: 🛠️ Install frontend dependencies
-        run: npm install
+        run: npm ci
 
       - name: 📥 Download binaries
         run: npm run download -- ${{ matrix.target_platform }} ${{ matrix.target_arch }}
@@ -132,3 +132,75 @@ jobs:
           includeUpdaterJson: true
           updaterJsonPreferNsis: true
           args: ${{ matrix.args }}
+
+  release-extension:
+    needs: release
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: extension
+    steps:
+      - name: 🚚 Checkout repository
+        uses: actions/checkout@v7
+
+      - name: 📦 Setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+          cache-dependency-path: extension/package-lock.json
+
+      - name: 🛠️ Install dependencies
+        run: npm ci
+
+      - name: 🤐 Zip extensions
+        run: |
+          npm run zip
+          npm run zip:firefox
+
+      - name: ✨ Extract version number
+        shell: bash
+        run: |
+          TAG="${{ inputs.tag_name || github.ref_name }}"
+          echo "tag=$TAG" >> $GITHUB_ENV
+          echo "version=$(echo "$TAG" | sed -E 's/^v([0-9]+\.[0-9]+\.[0-9]+)(-.*)?$/\1/')" >> $GITHUB_ENV
+
+      - name: 📄 Read and process changelog
+        shell: bash
+        run: |
+          if [ -f ../CHANGELOG.md ]; then
+            CONTENT=$(cat ../CHANGELOG.md)
+            CONTENT=${CONTENT//<release_tag>/${{ env.tag }}}
+            CONTENT=${CONTENT//<version>/${{ env.version }}}
+            echo "$CONTENT" > CHANGELOG_PROCESSED.md
+          else
+            echo "No changelog found" > CHANGELOG_PROCESSED.md
+          fi
+
+      - name: 📝 Create latest-extension.json
+        shell: bash
+        run: |
+          # not named latest.json: that one is the desktop app's updater manifest
+          BASE="https://github.com/${{ github.repository }}/releases/download/${{ env.tag }}/neodlp-extension-${{ env.version }}"
+          jq -n \
+            --arg version "${{ env.version }}" \
+            --rawfile notes CHANGELOG_PROCESSED.md \
+            --arg chrome "$BASE-chrome.zip" \
+            --arg firefox "$BASE-firefox.zip" \
+            '{version: $version, notes: $notes, browsers: {chrome: {url: $chrome}, firefox: {url: $firefox}}}' \
+            > latest-extension.json
+
+      - name: 🚀 Upload to github releases
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ env.tag }}
+          files: |
+            extension/.output/neodlp-extension-${{ env.version }}-chrome.zip
+            extension/.output/neodlp-extension-${{ env.version }}-firefox.zip
+            extension/.output/neodlp-extension-${{ env.version }}-sources.zip
+            extension/latest-extension.json
+          draft: true
+          prerelease: false
+          fail_on_unmatched_files: true
