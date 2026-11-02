@@ -55,7 +55,7 @@ Want to run/build NeoDLP Extension from the source code? Follow these simple ste
 2. Go inside the cloned project directory: `cd neodlp/extension`
 3. Install Node.js dependencies: `npm install`
 4. Run development / build / zipping process
-```code
+```shell
 npm run dev              # for development (chrome)
 npm run dev:firefox      # for development (firefox)
 npm run build            # for production build (chrome)

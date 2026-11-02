@@ -3,7 +3,7 @@
 Official Website of NeoDLP (Neo Downloader Plus)
 
 [![github release](https://img.shields.io/github/v/tag/neosubhamoy/neodlp?color=lime-green&style=for-the-badge)](https://github.com/neosubhamoy/neodlp/tags)
-[![github license](https://img.shields.io/github/license/neosubhamoy/neodlp-website?color=blue&style=for-the-badge)](https://github.com/neosubhamoy/neodlp-website/blob/main/website/LICENSE)
+[![github license](https://img.shields.io/github/license/neosubhamoy/neodlp?color=blue&style=for-the-badge)](https://github.com/neosubhamoy/neodlp/blob/main/website/LICENSE)
 
 > [!TIP]
 > **🥰 Liked this project? Please consider giving it a star (🌟) on github to show us your appreciation and help the algorithm recommend this project to even more awesome people like you!**
@@ -26,7 +26,7 @@ Want to run/build NeoDLP Website from the source code? Follow these simple steps
 2. Go inside the cloned project directory: `cd neodlp/website`
 3. Install Node.js dependencies: `npm install`
 4. Run development / build process
-```code
+```shell
 npm run dev              # for development
 npm run build            # for production build
 
@@ -36,4 +36,4 @@ npm run format           # format the code
 
 ## License
 
-NeoDLP Website is Licensed under the [MIT license](https://github.com/neosubhamoy/neodlp-website/blob/main/website/LICENSE). Anyone can view, modify, use (personal and commercial) or distribute it's sources without any attribution and extra permissions.
+NeoDLP Website is Licensed under the [MIT license](https://github.com/neosubhamoy/neodlp/blob/main/website/LICENSE). Anyone can view, modify, use (personal and commercial) or distribute it's sources without any attribution and extra permissions.

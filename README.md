@@ -33,7 +33,7 @@ Modern Video/Audio Downloader based on YT-DLP with Browser Integration
 
 ## Browser Integration
 
-You can integrate NeoDLP with your favourite browser (any Chromium/Firefox based browser) Just, install [NeoDLP Extension](https://github.com/neosubhamoy/neodlp-extension) to get started!
+You can integrate NeoDLP with your favourite browser (any Chromium/Firefox based browser) Just, install [NeoDLP Extension](https://github.com/neosubhamoy/neodlp/tree/main/extension) to get started!
 
 After installing the extension you can do the following directly from the browser:
 
@@ -184,8 +184,8 @@ Also, want to contribute to this project? Read the [contributing guidelines](htt
   - [Flathub (for Linux)](https://flathub.org/en/apps/com.neosubhamoy.neodlp)
   - [AUR (for Arch Linux)](https://aur.archlinux.org/packages/neodlp)
 - Related Projects
-  - [NeoDLP Extension](https://github.com/neosubhamoy/neodlp-extension)
-  - [NeoDLP Website](https://github.com/neosubhamoy/neodlp-website)
+  - [NeoDLP Extension](https://github.com/neosubhamoy/neodlp-extension) (Now part of this repo at `extension/`)
+  - [NeoDLP Website](https://github.com/neosubhamoy/neodlp-website) (Now part of this repo at `website/`)
 
 ## Credits
 

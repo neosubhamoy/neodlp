@@ -85,6 +85,26 @@ npm run format                      # format code
 15. Wait for the maintainers to review your PR! You will most likely hear back from us within 24-48hrs. (You can view the status of your PR anytime at the [pull requests](https://github.com/neosubhamoy/neodlp/pulls) tab)
 16. You might be asked to do more changes if required. (try to resolve the requested changes ASAP, and always follow-up the maintainers). If everything goes well, your pull request will be merged by the maintainers.
 
+## Working on the Extension or Website
+
+This repository also contains the browser extension (`extension/`) and the official website (`website/`). They are independent projects with their own dependencies, so install and run them from inside their folder (never from the repo root), and send changes to them as separate pull requests from changes to the desktop app.
+
+```shell
+# browser extension (needs Node.js)
+cd extension
+npm install
+npm run dev                         # Chromium only (use `npm run dev:firefox` for Firefox)
+npm run format                      # format code
+
+# website (needs Node.js)
+cd website
+npm install
+npm run dev
+npm run format                      # format code
+```
+
+The app, extension and website share one version number, which is bumped for all of them at release time. Contributors do not need to change versions.
+
 ## Running Tests
 
 NeoDLP has two test suites. Both run without any external services, and they should pass (together with the build check above) before you send a PR.
