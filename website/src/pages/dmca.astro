@@ -1,0 +1,9 @@
+---
+export const prerender = true;
+import DmcaNoticeSection from "@/components/sections/dmca-notice-section";
+import Main from "@/layouts/main.astro";
+---
+
+<Main title="DMCA Notice - NeoDLP">
+	<DmcaNoticeSection client:load />
+</Main>

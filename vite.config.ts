@@ -43,8 +43,8 @@ export default defineConfig(async () => ({
 				}
 			: undefined,
 		watch: {
-			// 3. tell vite to ignore watching `src-tauri` and the separate `extension` project
-			ignored: ["**/src-tauri/**", "**/extension/**"],
+			// 3. tell vite to ignore watching `src-tauri` and the separate `extension`, `website` projects
+			ignored: ["**/src-tauri/**", "**/extension/**", "**/website/**"],
 		},
 	},
 	resolve: {

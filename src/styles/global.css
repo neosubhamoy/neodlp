@@ -3,8 +3,9 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/inter";
 
-/* the browser extension is a separate project; keep its sources out of the app's class scan */
+/* the browser extension and website are a separate projects; keep their sources out of the app's class scan */
 @source not "../../extension";
+@source not "../../website";
 
 @custom-variant dark (
 	&:is(

@@ -1,0 +1,120 @@
+---
+import FeaturesSection from "@/components/sections/features-section";
+import HeroSection from "@/components/sections/hero-section";
+import HighlightSection from "@/components/sections/highlight-section";
+import TestimonialSection from "@/components/sections/testimonial-section";
+import Main from "@/layouts/main.astro";
+
+// Default fallback data in case fetch fails
+let data = {
+	version: "0.0.0",
+	notes:
+		"### Unable to fetch latest release information\n\nPlease check back later or visit our [GitHub repository](https://github.com/neosubhamoy/neodlp) for the latest releases.",
+	pub_date: new Date().toISOString(),
+	platforms: {
+		"darwin-x86_64": {
+			signature: "",
+			url: "https://github.com/neosubhamoy/neodlp/releases/download/v0.0.0/NeoDLP_x64.app.tar.gz",
+		},
+		"darwin-aarch64": {
+			signature: "",
+			url: "https://github.com/neosubhamoy/neodlp/releases/download/v0.0.0/NeoDLP_aarch64.app.tar.gz",
+		},
+		"windows-x86_64": {
+			signature: "",
+			url: "https://github.com/neosubhamoy/neodlp/releases/download/v0.0.0/NeoDLP_0.0.0_x64-setup.exe",
+		},
+		"windows-aarch64": {
+			signature: "",
+			url: "https://github.com/neosubhamoy/neodlp/releases/download/v0.0.0/NeoDLP_0.0.0_arm64-setup.exe",
+		},
+		"linux-x86_64": {
+			signature: "",
+			url: "https://github.com/neosubhamoy/neodlp/releases/download/v0.0.0/NeoDLP_0.0.0_amd64.deb",
+		},
+		"linux-aarch64": {
+			signature: "",
+			url: "https://github.com/neosubhamoy/neodlp/releases/download/v0.0.0/NeoDLP_0.0.0_arm64.deb",
+		},
+		"darwin-aarch64-app": {
+			signature: "",
+			url: "https://github.com/neosubhamoy/neodlp/releases/download/v0.0.0/NeoDLP_aarch64.app.tar.gz",
+		},
+		"darwin-x86_64-app": {
+			signature: "",
+			url: "https://github.com/neosubhamoy/neodlp/releases/download/v0.0.0/NeoDLP_x64.app.tar.gz",
+		},
+		"linux-aarch64-deb": {
+			signature: "",
+			url: "https://github.com/neosubhamoy/neodlp/releases/download/v0.0.0/NeoDLP_0.0.0_arm64.deb",
+		},
+		"linux-aarch64-rpm": {
+			signature: "",
+			url: "https://github.com/neosubhamoy/neodlp/releases/download/v0.0.0/NeoDLP-0.0.0-1.aarch64.rpm",
+		},
+		"linux-x86_64-deb": {
+			signature: "",
+			url: "https://github.com/neosubhamoy/neodlp/releases/download/v0.0.0/NeoDLP_0.0.0_amd64.deb",
+		},
+		"linux-x86_64-rpm": {
+			signature: "",
+			url: "https://github.com/neosubhamoy/neodlp/releases/download/v0.0.0/NeoDLP-0.0.0-1.x86_64.rpm",
+		},
+		"windows-x86_64-nsis": {
+			signature: "",
+			url: "https://github.com/neosubhamoy/neodlp/releases/download/v0.0.0/NeoDLP_0.0.0_x64-setup.exe",
+		},
+		"windows-x86_64-msi": {
+			signature: "",
+			url: "https://github.com/neosubhamoy/neodlp/releases/download/v0.0.0/NeoDLP_0.0.0_x64_en-US.msi",
+		},
+		"windows-aarch64-nsis": {
+			signature: "",
+			url: "https://github.com/neosubhamoy/neodlp/releases/download/v0.0.0/NeoDLP_0.0.0_arm64-setup.exe",
+		},
+		"windows-aarch64-msi": {
+			signature: "",
+			url: "https://github.com/neosubhamoy/neodlp/releases/download/v0.0.0/NeoDLP_0.0.0_arm64_en-US.msi",
+		},
+	},
+};
+
+try {
+	const response = await fetch(
+		"https://github.com/neosubhamoy/neodlp/releases/latest/download/latest.json",
+	);
+	data = await response.json();
+
+	// Add additional custom platform objects
+	const baseUrl =
+		"https://github.com/neosubhamoy/neodlp/releases/download/v" +
+		data.version +
+		"/";
+	const additionalPlatforms = {
+		"darwin-x86_64-dmg": {
+			signature: "",
+			url: baseUrl + `NeoDLP_${data.version}_x64.dmg`,
+		},
+		"darwin-aarch64-dmg": {
+			signature: "",
+			url: baseUrl + `NeoDLP_${data.version}_aarch64.dmg`,
+		},
+		//   "linux-x86_64+aarch64-aur": {
+		// 	signature: "",
+		// 	url: `https://aur.archlinux.org/cgit/aur.git/snapshot/neodlp.tar.gz`
+		//   }
+	};
+
+	// Merge additional custom platforms with the original data
+	data.platforms = { ...data.platforms, ...additionalPlatforms };
+} catch (error) {
+	console.error("Error fetching the latest release information:", error);
+}
+---
+
+<Main title="NeoDLP - Neo Downloader Plus | Official Website" description="NeoDLP (Neo Downloader Plus) is a fully Cross-Platform Video/Audio Downloader Desktop Application with Modern UI and Browser Integration.">
+	<HeroSection release={data} client:load />
+	<HighlightSection client:load />
+	<FeaturesSection client:load />
+	<TestimonialSection client:load />
+</Main>

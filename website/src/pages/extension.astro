@@ -1,0 +1,31 @@
+---
+import Main from "@/layouts/main.astro";
+import GetExtensionSection from "@/components/sections/get-extension-section";
+
+let data = {
+	version: "0.0.0",
+	notes:
+		"### Unable to fetch latest release information\n\nPlease check back later or visit our [GitHub repository](https://github.com/neosubhamoy/neodlp-extension) for the latest releases.",
+	browsers: {
+		chrome: {
+			url: "https://github.com/neosubhamoy/neodlp-extension/releases/download/v0.0.0/neodlp-extension-0.0.0-chrome.zip",
+		},
+		firefox: {
+			url: "https://github.com/neosubhamoy/neodlp-extension/releases/download/v0.0.0/neodlp-extension-0.0.0-firefox.zip",
+		},
+	},
+};
+
+try {
+	const response = await fetch(
+		"https://github.com/neosubhamoy/neodlp-extension/releases/latest/download/latest.json",
+	);
+	data = await response.json();
+} catch (error) {
+	console.error("Error fetching data:", error);
+}
+---
+
+<Main title="Get NeoDLP Extension - NeoDLP">
+	<GetExtensionSection release={data} client:load />
+</Main>

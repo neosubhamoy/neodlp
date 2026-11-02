@@ -1,0 +1,9 @@
+---
+export const prerender = true;
+import PrivacyPolicySection from "@/components/sections/privacy-policy-section";
+import Main from "@/layouts/main.astro";
+---
+
+<Main title="Privacy Policy - NeoDLP">
+	<PrivacyPolicySection client:load />
+</Main>

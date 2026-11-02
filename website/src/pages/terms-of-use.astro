@@ -1,0 +1,9 @@
+---
+export const prerender = true;
+import TermsOfUseSection from "@/components/sections/terms-of-use-section";
+import Main from "@/layouts/main.astro";
+---
+
+<Main title="Terms Of Use - NeoDLP">
+	<TermsOfUseSection client:load />
+</Main>
