@@ -13,6 +13,7 @@ import {
 	DOWNLOAD_STATE_EVENT,
 } from "./download-events";
 import { POT_STATE_EVENT } from "@/services/tools";
+import { WEBSOCKET_STATE_EVENT } from "@/services/websocket";
 
 /** Event names the Rust side emits, read straight from its source so the two can't drift apart. */
 function rustEventNames(file: string): Record<string, string> {
@@ -29,6 +30,7 @@ function rustEventNames(file: string): Record<string, string> {
 describe("backend event names", () => {
 	const downloads = rustEventNames("src-tauri/src/downloader/commands.rs");
 	const tools = rustEventNames("src-tauri/src/tools/commands.rs");
+	const websocket = rustEventNames("src-tauri/src/websocket.rs");
 
 	it("are found in the Rust source", () => {
 		expect(Object.keys(downloads).sort()).toEqual([
@@ -38,6 +40,7 @@ describe("backend event names", () => {
 			"STATE_EVENT",
 		]);
 		expect(Object.keys(tools)).toEqual(["POT_STATE_EVENT"]);
+		expect(Object.keys(websocket)).toEqual(["WEBSOCKET_STATE_EVENT"]);
 	});
 
 	it("match what the frontend listens for", () => {
@@ -48,5 +51,6 @@ describe("backend event names", () => {
 			LOG_EVENT: APP_LOG_EVENT,
 		}).toEqual(downloads);
 		expect({ POT_STATE_EVENT }).toEqual(tools);
+		expect({ WEBSOCKET_STATE_EVENT }).toEqual(websocket);
 	});
 });

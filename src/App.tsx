@@ -42,6 +42,7 @@ import {
 	startDownload,
 } from "@/services/downloads";
 import { usePotEvents } from "@/hooks/use-pot-events";
+import { useWebSocketEvents } from "@/hooks/use-websocket-events";
 import { getYtDlpVersion } from "@/services/tools";
 import { useLinuxRegisterer } from "@/hooks/use-linux-registerer";
 import { invoke } from "@tauri-apps/api/core";
@@ -119,6 +120,7 @@ export default function App({ children }: { children: React.ReactNode }) {
 	const { registerToLinux } = useLinuxRegisterer();
 	const { checkForAppUpdate } = useAppUpdater();
 	usePotEvents();
+	useWebSocketEvents();
 	const setKvPairsKey = useKvPairsStatesStore((state) => state.setKvPairsKey);
 	const ytDlpUpdateLastCheck = useKvPairsStatesStore(
 		(state) => state.kvPairs.ytdlp_update_last_check,

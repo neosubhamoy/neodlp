@@ -5,6 +5,7 @@ mod lifetime;
 mod migrations;
 mod sidecar;
 mod tools;
+mod websocket;
 use base64::{engine::general_purpose::STANDARD, Engine};
 use config::{get_config_path, load_config, save_config, Config};
 use futures_util::{SinkExt, StreamExt};
@@ -25,12 +26,13 @@ use tauri::{
     Emitter, Manager, State,
 };
 use tauri_plugin_opener::OpenerExt;
+use futures_util::future::BoxFuture;
 use tokio::{
-    net::{TcpListener, TcpStream},
+    net::TcpStream,
     sync::{oneshot, Mutex},
-    time::sleep,
 };
 use tokio_tungstenite::accept_async;
+use websocket::{WsHost, WsServer, WsStatus, WEBSOCKET_STATE_EVENT};
 use log::{info, error};
 
 struct ImageCache(StdMutex<HashMap<String, String>>);
@@ -47,110 +49,96 @@ struct WebSocketState {
         >,
     >,
     response_channel: ResponseChannel,
-    server_abort: Option<tokio::sync::oneshot::Sender<()>>,
     config: Config,
 }
 
-async fn is_port_available(port: u16) -> bool {
-    match TcpListener::bind(format!("127.0.0.1:{}", port)).await {
-        Ok(_) => true,
-        Err(_) => false,
+/// Connects the extension server to the app: status goes to the UI, connections to
+/// `handle_connection`.
+struct TauriWsHost {
+    app: tauri::AppHandle,
+}
+
+impl WsHost for TauriWsHost {
+    fn status_changed(&self, status: &WsStatus) {
+        if let Err(e) = self.app.emit(WEBSOCKET_STATE_EVENT, status) {
+            log::warn!("Could not emit {WEBSOCKET_STATE_EVENT}: {e}");
+        }
+    }
+
+    fn serve(&self, stream: TcpStream) -> BoxFuture<'static, ()> {
+        Box::pin(handle_connection(stream, self.app.clone()))
     }
 }
 
-async fn wait_for_port_availability(port: u16, max_attempts: u32) -> Result<(), String> {
-    let mut attempts = 0;
-    while attempts < max_attempts {
-        if is_port_available(port).await {
-            return Ok(());
-        }
-        sleep(Duration::from_millis(500)).await;
-        attempts += 1;
-    }
-    Err(format!(
-        "Port {} did not become available after {} attempts",
-        port, max_attempts
-    ))
+type ExtensionServer = Arc<WsServer<TauriWsHost>>;
+
+/// Saves the server's port and whether it should run, so the next launch matches.
+async fn save_server_config(
+    state: &Mutex<WebSocketState>,
+    status: &WsStatus,
+) -> Result<Config, String> {
+    let mut state = state.lock().await;
+    state.config.port = status.port;
+    state.config.enabled = status.enabled;
+    save_config(&state.config)?;
+    Ok(state.config.clone())
 }
 
-async fn start_websocket_server(app_handle: tauri::AppHandle, port: u16) -> Result<(), String> {
-    let addr = format!("127.0.0.1:{}", port);
-
-    // First ensure any existing server is stopped
-    {
-        let state = app_handle.state::<Arc<Mutex<WebSocketState>>>();
-        let mut state = state.lock().await;
-        if let Some(old_abort) = state.server_abort.take() {
-            let _ = old_abort.send(());
-            // Wait for the port to become available
-            wait_for_port_availability(port, 6).await?; // Try for 3 seconds (6 attempts * 500ms)
-        }
-    }
-
-    // Now try to bind to the port
-    let listener = match TcpListener::bind(&addr).await {
-        Ok(l) => l,
-        Err(_e) => {
-            // One final attempt to wait and retry
-            sleep(Duration::from_secs(1)).await;
-            TcpListener::bind(&addr)
-                .await
-                .map_err(|e| format!("Failed to bind to port {}: {}", port, e))?
-        }
-    };
-
-    let (abort_sender, mut abort_receiver) = tokio::sync::oneshot::channel();
-
-    // Store the new abort sender
-    {
-        let state = app_handle.state::<Arc<Mutex<WebSocketState>>>();
-        let mut state = state.lock().await;
-        state.server_abort = Some(abort_sender);
-    }
-
-    // Spawn the server task
-    tokio::spawn(async move {
-        println!("Starting WebSocket server on port {}", port);
-        loop {
-            tokio::select! {
-                accept_result = listener.accept() => {
-                    match accept_result {
-                        Ok((stream, _)) => {
-                            let app_handle = app_handle.clone();
-                            tokio::spawn(handle_connection(stream, app_handle));
-                        }
-                        Err(e) => {
-                            println!("Error accepting connection: {}", e);
-                            break;
-                        }
-                    }
-                }
-                _ = &mut abort_receiver => {
-                    println!("WebSocket server shutting down on port {}...", port);
-                    break;
-                }
-            }
-        }
-    });
-
-    // Wait a moment to ensure the server has started
-    sleep(Duration::from_millis(100)).await;
-    Ok(())
+/// Forgets the extension connection after the server dropped it.
+async fn forget_connection(state: &Mutex<WebSocketState>) {
+    let mut state = state.lock().await;
+    state.sender = None;
+    state.response_channel.sender = None;
 }
 
 #[tauri::command]
-async fn restart_websocket_server(
-    state: tauri::State<'_, Arc<Mutex<WebSocketState>>>,
-    app_handle: tauri::AppHandle,
-) -> Result<(), String> {
-    let port = {
-        let state = state.lock().await;
-        state.config.port
-    };
+async fn get_websocket_status(server: State<'_, ExtensionServer>) -> Result<WsStatus, String> {
+    Ok(server.status().await)
+}
 
-    println!("Restarting WebSocket server on port {}", port);
-    // Start the server (this will also handle stopping the old one)
-    start_websocket_server(app_handle, port).await
+#[tauri::command]
+async fn start_websocket_server(
+    server: State<'_, ExtensionServer>,
+    state: State<'_, Arc<Mutex<WebSocketState>>>,
+) -> Result<WsStatus, String> {
+    let status = server.start().await;
+    if !status.supported {
+        return Err("The extension server isn't available in the Flatpak version".into());
+    }
+    save_server_config(&state, &status).await?;
+    if status.running {
+        Ok(status)
+    } else {
+        Err(status.error.unwrap_or_else(|| "The extension server didn't start".into()))
+    }
+}
+
+#[tauri::command]
+async fn stop_websocket_server(
+    server: State<'_, ExtensionServer>,
+    state: State<'_, Arc<Mutex<WebSocketState>>>,
+) -> Result<WsStatus, String> {
+    let status = server.stop().await;
+    forget_connection(&state).await;
+    if status.supported {
+        save_server_config(&state, &status).await?;
+    }
+    Ok(status)
+}
+
+/// Moves the server to `port` (restarting it there only if it should run) and saves the port.
+async fn change_port(
+    port: u16,
+    server: &WsServer<TauriWsHost>,
+    state: &Mutex<WebSocketState>,
+) -> Result<Config, String> {
+    let status = server.set_port(port).await;
+    forget_connection(state).await;
+    let config = save_server_config(state, &status).await?;
+    match status.error {
+        Some(e) if !status.running => Err(e),
+        _ => Ok(config),
+    }
 }
 
 #[tauri::command]
@@ -177,43 +165,24 @@ fn get_appimage_path() -> Option<String> {
     std::env::var("APPDIR").ok()
 }
 
+/// Changes the port. Whether the server runs is kept as it is (only `port` is read from
+/// `new_config`); use start/stop for that.
 #[tauri::command]
 async fn update_config(
     new_config: Config,
-    state: tauri::State<'_, Arc<Mutex<WebSocketState>>>,
-    app_handle: tauri::AppHandle,
+    server: State<'_, ExtensionServer>,
+    state: State<'_, Arc<Mutex<WebSocketState>>>,
 ) -> Result<Config, String> {
-    // Save the new config first
-    save_config(&new_config)?;
-
-    // Update the state with new config
-    {
-        let mut state = state.lock().await;
-        state.config = new_config.clone();
-    }
-
-    // Start the new server (this will also handle stopping the old one)
-    start_websocket_server(app_handle, new_config.port).await?;
-
-    Ok(new_config)
+    change_port(new_config.port, &server, &state).await
 }
 
+/// Resets the port to the default; a stopped server stays stopped.
 #[tauri::command]
 async fn reset_config(
-    state: tauri::State<'_, Arc<Mutex<WebSocketState>>>,
-    app_handle: tauri::AppHandle,
+    server: State<'_, ExtensionServer>,
+    state: State<'_, Arc<Mutex<WebSocketState>>>,
 ) -> Result<Config, String> {
-    let config = Config::default();
-    save_config(&config)?;
-
-    {
-        let mut state = state.lock().await;
-        state.config = config.clone();
-    }
-
-    start_websocket_server(app_handle, config.port).await?;
-
-    Ok(config)
+    change_port(Config::default().port, &server, &state).await
 }
 
 #[tauri::command]
@@ -365,11 +334,10 @@ pub async fn run() {
     let _ = fix_path_env::fix();
     let migrations = migrations::get_migrations();
     let config = load_config();
-    let port = config.port;
+    let (port, server_enabled) = (config.port, config.enabled);
     let websocket_state = Arc::new(Mutex::new(WebSocketState {
         sender: None,
         response_channel: ResponseChannel { sender: None },
-        server_abort: None,
         config,
     }));
 
@@ -504,11 +472,16 @@ pub async fn run() {
                 window.show().unwrap();
             }
 
-            let websocket_app_handle = app.handle().clone();
-            tokio::spawn(async move {
-                if let Err(e) = start_websocket_server(websocket_app_handle, port).await {
-                    println!("Failed to start initial WebSocket server: {}", e);
-                }
+            // The extension server runs unless it was stopped; never under Flatpak.
+            let server: ExtensionServer = Arc::new(WsServer::new(
+                TauriWsHost { app: app.handle().clone() },
+                !sidecar::is_flatpak(),
+                port,
+                server_enabled,
+            ));
+            app.manage(server.clone());
+            tauri::async_runtime::spawn(async move {
+                server.apply().await;
             });
 
             Ok(())
@@ -533,7 +506,9 @@ pub async fn run() {
             update_config,
             reset_config,
             get_config_file_path,
-            restart_websocket_server,
+            start_websocket_server,
+            stop_websocket_server,
+            get_websocket_status,
             is_flatpak,
             get_appimage_path,
             tools::commands::stop_pot_server,
@@ -557,7 +532,14 @@ pub async fn run() {
 }
 
 async fn handle_connection(stream: TcpStream, app_handle: tauri::AppHandle) {
-    let ws_stream = accept_async(stream).await.unwrap();
+    // Anything that isn't a WebSocket handshake (e.g. a port probe) is just dropped.
+    let ws_stream = match accept_async(stream).await {
+        Ok(ws) => ws,
+        Err(e) => {
+            log::warn!("Rejected a non-WebSocket connection to the extension server: {}", e);
+            return;
+        }
+    };
     let (ws_sender, mut ws_receiver) = ws_stream.split();
 
     // Store the sender in the shared state

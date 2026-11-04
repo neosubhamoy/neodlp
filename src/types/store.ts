@@ -4,6 +4,7 @@ import type { Log } from "@/types/index";
 import type { KvStore } from "@/types/kv-store";
 import type { DownloadConfiguration, Settings } from "@/types/settings";
 import type { RawVideoInfo } from "@/types/video";
+import type { WebSocketServerStatus } from "@/services/websocket";
 
 export interface BasePathsStore {
 	ffmpegPath: string | null;
@@ -97,7 +98,10 @@ export interface SettingsPageStatesStore {
 	settings: Settings;
 	isUsingDefaultSettings: boolean;
 	isChangingWebSocketPort: boolean;
-	isRestartingWebSocketServer: boolean;
+	/** Reported by the backend; null until the first status arrives. */
+	webSocketServerStatus: WebSocketServerStatus | null;
+	/** A start/stop the user asked for that hasn't finished yet. */
+	webSocketServerAction: "starting" | "stopping" | null;
 	isCheckingAppUpdate: boolean;
 	appUpdate: Update | null;
 	isUpdatingApp: boolean;
@@ -121,7 +125,8 @@ export interface SettingsPageStatesStore {
 	resetSettings: () => void;
 	setIsUsingDefaultSettings: (isUsingDefault: boolean) => void;
 	setIsChangingWebSocketPort: (isChanging: boolean) => void;
-	setIsRestartingWebSocketServer: (isRestarting: boolean) => void;
+	setWebSocketServerStatus: (status: WebSocketServerStatus) => void;
+	setWebSocketServerAction: (action: "starting" | "stopping" | null) => void;
 	setIsCheckingAppUpdate: (isChecking: boolean) => void;
 	setAppUpdate: (update: Update | null) => void;
 	setIsUpdatingApp: (isUpdating: boolean) => void;

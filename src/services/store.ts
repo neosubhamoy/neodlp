@@ -252,7 +252,8 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>(
 		},
 		isUsingDefaultSettings: true,
 		isChangingWebSocketPort: false,
-		isRestartingWebSocketServer: false,
+		webSocketServerStatus: null,
+		webSocketServerAction: null,
 		isCheckingAppUpdate: false,
 		appUpdate: null,
 		isUpdatingApp: false,
@@ -350,8 +351,10 @@ export const useSettingsPageStatesStore = create<SettingsPageStatesStore>(
 			set(() => ({ isUsingDefaultSettings: isUsing })),
 		setIsChangingWebSocketPort: (isChanging) =>
 			set(() => ({ isChangingWebSocketPort: isChanging })),
-		setIsRestartingWebSocketServer: (isRestarting) =>
-			set(() => ({ isRestartingWebSocketServer: isRestarting })),
+		setWebSocketServerStatus: (status) =>
+			set(() => ({ webSocketServerStatus: status })),
+		setWebSocketServerAction: (action) =>
+			set(() => ({ webSocketServerAction: action })),
 		setIsCheckingAppUpdate: (isChecking) =>
 			set(() => ({ isCheckingAppUpdate: isChecking })),
 		setAppUpdate: (update) => set(() => ({ appUpdate: update })),

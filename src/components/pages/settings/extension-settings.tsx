@@ -12,9 +12,14 @@ import {
 	ArrowRight,
 	EthernetPort,
 	Loader2,
+	Play,
 	Radio,
-	RotateCw,
+	Square,
 } from "lucide-react";
+import {
+	startWebSocketServer,
+	stopWebSocketServer,
+} from "@/services/websocket";
 import { useSettings } from "@/hooks/use-settings";
 import { z } from "zod";
 import { useForm, useSelector } from "@tanstack/react-form";
@@ -23,6 +28,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { SlidingButton } from "@/components/custom/sliding-button";
 import { cn } from "cn";
 import { NumberInput } from "@/components/custom/number-input";
+import { Spinner } from "@/components/ui/spinner";
 import { platform } from "@tauri-apps/plugin-os";
 
 const websocketPortSchema = z.object({
@@ -211,8 +217,8 @@ function ExtPortSettings() {
 	const setIsChangingWebSocketPort = useSettingsPageStatesStore(
 		(state) => state.setIsChangingWebSocketPort,
 	);
-	const isRestartingWebSocketServer = useSettingsPageStatesStore(
-		(state) => state.isRestartingWebSocketServer,
+	const webSocketServerAction = useSettingsPageStatesStore(
+		(state) => state.webSocketServerAction,
 	);
 
 	const { saveSettingsKey } = useSettings();
@@ -328,7 +334,7 @@ function ExtPortSettings() {
 							Number(watchedPort) === websocketPort ||
 							!canSubmitWebsocketPortForm ||
 							isChangingWebSocketPort ||
-							isRestartingWebSocketServer
+							webSocketServerAction !== null
 						}
 					>
 						{isChangingWebSocketPort ? (
@@ -357,12 +363,77 @@ export function ExtensionSettings() {
 	const isChangingWebSocketPort = useSettingsPageStatesStore(
 		(state) => state.isChangingWebSocketPort,
 	);
-	const isRestartingWebSocketServer = useSettingsPageStatesStore(
-		(state) => state.isRestartingWebSocketServer,
+	const serverStatus = useSettingsPageStatesStore(
+		(state) => state.webSocketServerStatus,
 	);
-	const setIsRestartingWebSocketServer = useSettingsPageStatesStore(
-		(state) => state.setIsRestartingWebSocketServer,
+	const serverAction = useSettingsPageStatesStore(
+		(state) => state.webSocketServerAction,
 	);
+	const setServerAction = useSettingsPageStatesStore(
+		(state) => state.setWebSocketServerAction,
+	);
+
+	const isBusy = serverAction !== null || isChangingWebSocketPort;
+	const isSupported = serverStatus?.supported ?? false;
+	const isRunning = serverStatus?.running ?? false;
+	// One button at a time: Stop while running, Start otherwise. An in-flight action keeps its own
+	// button (with a spinner) even if the status event lands before the call returns.
+	const showStopButton =
+		serverAction === "stopping" || (serverAction !== "starting" && isRunning);
+
+	const handleStart = async () => {
+		setServerAction("starting");
+		try {
+			const status = await startWebSocketServer();
+			toast.success("Websocket server started", {
+				description: `Websocket server is running on port ${status.port}.`,
+			});
+		} catch (error) {
+			console.error("Error starting websocket server:", error);
+			toast.error("Failed to start websocket server", {
+				description: String(error),
+			});
+		} finally {
+			setServerAction(null);
+		}
+	};
+
+	const handleStop = async () => {
+		setServerAction("stopping");
+		try {
+			await stopWebSocketServer();
+			toast.success("Websocket server stopped", {
+				description:
+					"The browser extension can't reach NeoDLP until the server is started again.",
+			});
+		} catch (error) {
+			console.error("Error stopping websocket server:", error);
+			toast.error("Failed to stop websocket server", {
+				description: String(error),
+			});
+		} finally {
+			setServerAction(null);
+		}
+	};
+
+	let statusLabel: { text: string; tone: "ok" | "busy" | "off" | "error" };
+	if (serverAction === "starting") {
+		statusLabel = { text: "Starting...", tone: "busy" };
+	} else if (serverAction === "stopping") {
+		statusLabel = { text: "Stopping...", tone: "busy" };
+	} else if (isChangingWebSocketPort && isRunning) {
+		statusLabel = { text: "Restarting...", tone: "busy" };
+	} else if (!serverStatus) {
+		statusLabel = { text: "Checking...", tone: "busy" };
+	} else if (isRunning) {
+		statusLabel = { text: `Running on Port ${serverStatus.port}`, tone: "ok" };
+	} else if (!isSupported) {
+		statusLabel = { text: "Unavailable", tone: "off" };
+	} else if (serverStatus.error) {
+		statusLabel = { text: "Errored", tone: "error" };
+	} else {
+		statusLabel = { text: "Stopped", tone: "error" };
+	}
 
 	const tabsList = [
 		{
@@ -389,58 +460,70 @@ export function ExtensionSettings() {
 						</div>
 						<div className="flex flex-col">
 							<h3 className="">Extension Websocket Server</h3>
-							<div className="text-xs flex items-center">
-								{isChangingWebSocketPort || isRestartingWebSocketServer ? (
-									<>
-										<div className="h-1.5 w-1.5 rounded-full bg-amber-600 dark:bg-amber-500 mr-1.5 mt-0.5" />
-										<span className="text-amber-600 dark:text-amber-500">
-											Restarting...
-										</span>
-									</>
-								) : (
-									<>
-										<div className="h-1.5 w-1.5 rounded-full bg-emerald-600 dark:bg-emerald-500 mr-1.5 mt-0.5" />
-										<span className="text-emerald-600 dark:text-emerald-500">
-											Running
-										</span>
-									</>
-								)}
+							<div
+								className="text-xs flex items-center"
+								title={serverStatus?.error ?? undefined}
+							>
+								<div
+									className={cn(
+										"h-1.5 w-1.5 rounded-full mr-1.5 mt-0.5",
+										statusLabel.tone === "ok" &&
+											"bg-emerald-600 dark:bg-emerald-500",
+										statusLabel.tone === "busy" &&
+											"bg-amber-600 dark:bg-amber-500",
+										statusLabel.tone === "off" && "bg-muted-foreground",
+										statusLabel.tone === "error" && "bg-destructive",
+									)}
+								/>
+								<span
+									className={cn(
+										statusLabel.tone === "ok" &&
+											"text-emerald-600 dark:text-emerald-500",
+										statusLabel.tone === "busy" &&
+											"text-amber-600 dark:text-amber-500",
+										statusLabel.tone === "off" && "text-muted-foreground",
+										statusLabel.tone === "error" && "text-destructive",
+									)}
+								>
+									{statusLabel.text}
+								</span>
 							</div>
 						</div>
 					</div>
 					<div className="flex gap-4 items-center">
-						<Button
-							onClick={async () => {
-								setIsRestartingWebSocketServer(true);
-								try {
-									await invoke("restart_websocket_server");
-									toast.success("Websocket server restarted", {
-										description: "Websocket server restarted successfully.",
-									});
-								} catch (error) {
-									console.error("Error restarting websocket server:", error);
-									toast.error("Failed to restart websocket server", {
-										description:
-											"An error occurred while trying to restart the websocket server. Please try again.",
-									});
-								} finally {
-									setIsRestartingWebSocketServer(false);
-								}
-							}}
-							disabled={isRestartingWebSocketServer || isChangingWebSocketPort}
-						>
-							{isRestartingWebSocketServer ? (
-								<>
-									<Loader2 className="h-4 w-4 animate-spin" />
-									Restarting
-								</>
-							) : (
-								<>
-									<RotateCw className="h-4 w-4" />
-									Restart
-								</>
-							)}
-						</Button>
+						{showStopButton ? (
+							<Button
+								variant="destructive"
+								onClick={handleStop}
+								disabled={isBusy}
+							>
+								{serverAction === "stopping" ? (
+									<>
+										<Spinner />
+										Stopping
+									</>
+								) : (
+									<>
+										<Square className="h-4 w-4" />
+										Stop
+									</>
+								)}
+							</Button>
+						) : (
+							<Button onClick={handleStart} disabled={isBusy || !isSupported}>
+								{serverAction === "starting" ? (
+									<>
+										<Spinner />
+										Starting
+									</>
+								) : (
+									<>
+										<Play className="h-4 w-4" />
+										Start
+									</>
+								)}
+							</Button>
+						)}
 					</div>
 				</div>
 			</Card>
