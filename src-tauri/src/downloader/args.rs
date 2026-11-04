@@ -50,6 +50,8 @@ pub struct DownloadPlan {
     pub sponsorblock_mark: Option<String>,
     pub use_aria2: bool,
     pub custom_command: Option<String>,
+    /// Re-encode (`--recode-video`) instead of remux/merge; kept on resume.
+    pub always_reencode_video: bool,
 }
 
 const PROGRESS_TEMPLATE: &str = "status:%(progress.status)s,progress:%(progress._percent_str)s,speed:%(progress.speed)f,downloaded:%(progress.downloaded_bytes)d,total:%(progress.total_bytes)d,eta:%(progress.eta)d";
@@ -377,6 +379,12 @@ pub fn build_download_args(
 
     // Output format / remux / recode / audio extraction
     let config_output = opt(&cfg.output_format).filter(|f| *f != "auto");
+    // A resumed download keeps the re-encode choice it started with: switching between
+    // `--recode-video` and remux/merge mid-download breaks the resume.
+    let reencode = resume
+        .and_then(|r| r.always_reencode_video)
+        .unwrap_or(s.always_reencode_video);
+    plan.always_reencode_video = reencode;
     let resume_output = resume.and_then(|r| opt(&r.output_format));
     let format = resume_output.or(config_output);
     let formats_configured = s.video_format != "auto" || s.audio_format != "auto";
@@ -392,11 +400,11 @@ pub fn build_download_args(
             None
         };
 
-        let recode_or_remux = if s.always_reencode_video { "--recode-video" } else { "--remux-video" };
+        let recode_or_remux = if reencode { "--recode-video" } else { "--remux-video" };
         let format_to_use = format.unwrap_or(&s.video_format);
         match file_type {
             FileType::VideoAudio if s.video_format != "auto" || format.is_some() => {
-                let flag = if s.always_reencode_video { "--recode-video" } else { "--merge-output-format" };
+                let flag = if reencode { "--recode-video" } else { "--merge-output-format" };
                 push(&mut a, &[flag, format_to_use]);
             }
             FileType::Video if s.video_format != "auto" || format.is_some() => {
@@ -999,6 +1007,47 @@ mod tests {
         r.acodec = Some("none".into());
         assert!(has(&args(&s, &r), &["--remux-video", "mp4"]));
         s.always_reencode_video = true;
+        assert!(has(&args(&s, &r), &["--recode-video", "mp4"]));
+    }
+
+    #[test]
+    fn reencode_choice_is_recorded_in_the_plan() {
+        let mut s = plain();
+        s.video_format = "mkv".into();
+        assert!(!build_download_args(&s, &dl(), &ctx()).always_reencode_video);
+        s.always_reencode_video = true;
+        assert!(build_download_args(&s, &dl(), &ctx()).always_reencode_video);
+    }
+
+    #[test]
+    fn resume_keeps_the_reencode_choice_it_started_with() {
+        let mut s = plain();
+        s.video_format = "mkv".into();
+        let mut r = dl();
+
+        // Started with re-encoding, setting turned off since.
+        r.resume_state = Some(ResumeState { always_reencode_video: Some(true), ..Default::default() });
+        let plan = build_download_args(&s, &r, &ctx());
+        assert!(has(&plan.args, &["--recode-video", "mkv"]), "{:?}", plan.args);
+        assert!(plan.always_reencode_video);
+
+        // Started without re-encoding, setting turned on since.
+        s.always_reencode_video = true;
+        r.resume_state = Some(ResumeState { always_reencode_video: Some(false), ..Default::default() });
+        let plan = build_download_args(&s, &r, &ctx());
+        assert!(has(&plan.args, &["--merge-output-format", "mkv"]), "{:?}", plan.args);
+        assert!(!plan.always_reencode_video);
+    }
+
+    #[test]
+    fn resume_without_a_stored_reencode_choice_follows_the_setting() {
+        // Rows written before the choice was persisted have no value.
+        let mut s = plain();
+        s.video_format = "mp4".into();
+        s.always_reencode_video = true;
+        let mut r = dl();
+        r.acodec = Some("none".into());
+        r.resume_state = Some(ResumeState::default());
         assert!(has(&args(&s, &r), &["--recode-video", "mp4"]));
     }
 

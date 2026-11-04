@@ -74,4 +74,6 @@ pub struct ResumeState {
     pub use_aria2: bool,
     /// `"start,end"`
     pub trim_stamps: Option<String>,
+    /// `None` for downloads stored before this was recorded; the current setting applies then.
+    pub always_reencode_video: Option<bool>,
 }

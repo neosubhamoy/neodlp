@@ -149,6 +149,7 @@ pub fn resume_from_state(state: &DownloadState) -> ResumeState {
         sponsorblock_mark: r.sponsorblock_mark.clone(),
         use_aria2: r.use_aria2 != 0,
         trim_stamps: r.trim_stamps.clone(),
+        always_reencode_video: r.always_reencode_video.map(|v| v != 0),
     }
 }
 
@@ -327,11 +328,15 @@ mod tests {
                 sponsorblock_mark: None,
                 use_aria2: 1,
                 trim_stamps: Some("5,9".into()),
+                always_reencode_video: Some(1),
                 ..Default::default()
             },
             ..Default::default()
         };
         let r = resume_from_state(&state);
+        assert_eq!(r.always_reencode_video, Some(true));
+        let unknown = DownloadState::default();
+        assert_eq!(resume_from_state(&unknown).always_reencode_video, None, "legacy rows stay unknown");
         assert_eq!(r.download_id.as_deref(), Some("d1"));
         assert_eq!(r.video_id.as_deref(), Some("yt_abc"));
         assert_eq!(r.playlist_id.as_deref(), Some("yt_pl"));

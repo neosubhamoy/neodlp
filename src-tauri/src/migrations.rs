@@ -347,5 +347,15 @@ pub fn get_migrations() -> Vec<Migration> {
             CREATE INDEX IF NOT EXISTS idx_downloads_status_queue ON downloads(download_status, queue_index);
         ",
         kind: MigrationKind::Up,
+    },
+    Migration {
+        version: 6,
+        description: "add_always_reencode_video_column_to_downloads",
+        // Whether the download was started with re-encoding, so a resume keeps it even if the
+        // setting changed. NULL for rows written before this existed (resume follows the setting).
+        sql: "
+            ALTER TABLE downloads ADD COLUMN always_reencode_video INTEGER;
+        ",
+        kind: MigrationKind::Up,
     }]
 }

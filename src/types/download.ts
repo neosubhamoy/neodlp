@@ -55,6 +55,8 @@ export interface DownloadState {
 	error_message?: string | null;
 	started_at?: string | null;
 	completed_at?: string | null;
+	/** 1/0 once the download has started; null on rows from before it was recorded. */
+	always_reencode_video?: number | null;
 	created_at?: string;
 	updated_at?: string;
 }

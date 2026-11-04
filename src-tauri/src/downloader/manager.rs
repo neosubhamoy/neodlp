@@ -674,6 +674,7 @@ impl<R: Runner, E: Events> Manager<R, E> {
             record.use_aria2 = plan.use_aria2 as i64;
             record.custom_command = plan.custom_command.clone();
             record.trim_stamps = plan.trim_stamps.clone();
+            record.always_reencode_video = Some(plan.always_reencode_video as i64);
         } else {
             record.download_status = Status::Queued.as_str().into();
             record.queue_index = Some(queued_len as i64);
@@ -1532,6 +1533,29 @@ mod tests {
         assert!(args.iter().any(|x| x == "--embed-metadata"));
         assert!(arg_pair(args, "--download-sections", "*10-20"));
         assert!(arg_pair(args, "--sponsorblock-mark", "default"));
+    }
+
+    #[tokio::test]
+    async fn resuming_keeps_reencoding_after_the_setting_is_turned_off() {
+        let h = harness(2).await;
+        set_setting(&h.repo, "video_format", json!("mkv")).await;
+        set_setting(&h.repo, "always_reencode_video", json!(true)).await;
+        h.runner.add_metadata("https://x/a", video_json("a1", "a"));
+        let a = h.manager.start_download(params("https://x/a")).await.unwrap();
+        let pa = wait_spawn(&h, "https://x/a", 1).await;
+        assert!(arg_pair(&h.runner.download_spawns("https://x/a")[0].1, "--recode-video", "mkv"));
+        h.runner.say(pa, PROGRESS);
+        wait_status(&h, &a, "downloading").await;
+        h.manager.pause_download(&a).await.unwrap();
+        wait_status(&h, &a, "paused").await;
+        assert_eq!(row(&h, &a).await.record.always_reencode_video, Some(1));
+
+        set_setting(&h.repo, "always_reencode_video", json!(false)).await;
+        h.manager.resume_download(&a).await.unwrap();
+        wait_spawn(&h, "https://x/a", 2).await;
+        let args = &h.runner.download_spawns("https://x/a")[1].1;
+        assert!(arg_pair(args, "--recode-video", "mkv"), "{args:?}");
+        assert!(!args.iter().any(|x| x == "--merge-output-format"), "{args:?}");
     }
 
     #[tokio::test]

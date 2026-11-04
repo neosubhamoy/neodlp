@@ -73,6 +73,8 @@ pub struct DownloadRecord {
     pub error_message: Option<String>,
     pub started_at: Option<String>,
     pub completed_at: Option<String>,
+    /// NULL on rows written before migration 6.
+    pub always_reencode_video: Option<i64>,
 }
 
 /// A download joined with its video and (optional) playlist info: the shape the UI consumes.
@@ -206,11 +208,12 @@ impl Repo {
                 dynamic_range, status, item, progress, total, downloaded, speed, eta, filepath,
                 filetype, filesize, output_format, embed_metadata, embed_thumbnail,
                 square_crop_thumbnail, sponsorblock_remove, sponsorblock_mark, use_aria2,
-                custom_command, queue_config, trim_stamps, error_message, started_at, completed_at
+                custom_command, queue_config, trim_stamps, error_message, started_at, completed_at,
+                always_reencode_video
              ) VALUES (
                 ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19,
                 ?20, ?21, ?22, ?23, ?24, ?25, ?26, ?27, ?28, ?29, ?30, ?31, ?32, ?33, ?34, ?35, ?36,
-                ?37, ?38, ?39
+                ?37, ?38, ?39, ?40
              )
              ON CONFLICT(download_id) DO UPDATE SET
                 download_status = excluded.download_status,
@@ -250,7 +253,8 @@ impl Repo {
                 trim_stamps = excluded.trim_stamps,
                 error_message = excluded.error_message,
                 started_at = excluded.started_at,
-                completed_at = excluded.completed_at",
+                completed_at = excluded.completed_at,
+                always_reencode_video = excluded.always_reencode_video",
         )
         .bind(&d.download_id)
         .bind(&d.download_status)
@@ -291,6 +295,7 @@ impl Repo {
         .bind(&d.error_message)
         .bind(&d.started_at)
         .bind(&d.completed_at)
+        .bind(d.always_reencode_video)
         .execute(&self.pool)
         .await?;
         Ok(())
@@ -497,7 +502,7 @@ mod tests {
             .fetch_all(&pool)
             .await
             .unwrap();
-        for expected in ["trim_stamps", "error_message", "started_at", "completed_at"] {
+        for expected in ["trim_stamps", "error_message", "started_at", "completed_at", "always_reencode_video"] {
             assert!(cols.iter().any(|c| c == expected), "missing column {expected}");
         }
         let index: Option<String> = sqlx::query_scalar(
@@ -528,8 +533,10 @@ mod tests {
         .await
         .unwrap();
 
-        let v5 = get_migrations().into_iter().find(|m| m.version == 5).unwrap();
-        sqlx::raw_sql(v5.sql).execute(&pool).await.unwrap();
+        // Upgrade to the latest schema, since the current Repo reads every column.
+        for m in get_migrations().into_iter().filter(|m| m.version > 4) {
+            sqlx::raw_sql(m.sql).execute(&pool).await.unwrap();
+        }
 
         let state = Repo::new(pool).fetch_by_id("d1").await.unwrap().unwrap();
         assert_eq!(state.title, "Old 日本語 video");
@@ -542,6 +549,7 @@ mod tests {
         assert_eq!(state.playlist_title.as_deref(), Some("PL"));
         assert_eq!(state.playlist_n_entries, Some(3));
         assert!(state.record.error_message.is_none() && state.record.started_at.is_none());
+        assert_eq!(state.record.always_reencode_video, None, "old rows don't know their choice");
     }
 
     // ---------- save / fetch ----------
