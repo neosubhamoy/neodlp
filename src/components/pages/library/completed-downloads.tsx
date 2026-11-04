@@ -13,6 +13,7 @@ import {
 import {
 	formatBitrate,
 	formatCodec,
+	formatDuration,
 	formatDurationString,
 	formatFileSize,
 	paginate,
@@ -30,6 +31,7 @@ import {
 	ListVideo,
 	Music,
 	Play,
+	Scissors,
 	Search,
 	Trash2,
 	Video,
@@ -207,6 +209,10 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
 		isPlaylist &&
 		state.playlist_indices &&
 		state.playlist_indices.includes(",");
+	// Stored as "start,end" in seconds (e.g. "10,55.5"); null for full-length downloads.
+	const trimStamps = state.trim_stamps
+		? state.trim_stamps.split(",").map(Number)
+		: null;
 	const isMultipleAudioFormatSelected = state.format_id
 		? state.format_id.split("+").length > 2
 		: false;
@@ -363,6 +369,14 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
 									{state.playlist_indices} of {state.playlist_n_entries})
 								</span>
 							)}
+						{trimStamps && (
+							<span
+								className="border border-border py-1 px-2 rounded flex items-center cursor-pointer"
+								title={`TRIMMED (${formatDuration(trimStamps[0])} - ${formatDuration(trimStamps[1])})`}
+							>
+								<Scissors className="w-4 h-4 mr-2" /> TRIMMED
+							</span>
+						)}
 						{state.vcodec && !isMultiplePlaylistItems && (
 							<span className="border border-border py-1 px-2 rounded">
 								{formatCodec(state.vcodec)}

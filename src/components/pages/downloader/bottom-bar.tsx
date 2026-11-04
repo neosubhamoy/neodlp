@@ -71,6 +71,9 @@ function TrimmerDialog({ videoMetadata }: TrimmerDialogProps) {
 	const selectedCombinableAudioFormats = useDownloaderPageStatesStore(
 		(state) => state.selectedCombinableAudioFormats,
 	);
+	const selectedPlaylistVideos = useDownloaderPageStatesStore(
+		(state) => state.selectedPlaylistVideos,
+	);
 	const downloadConfiguration = useDownloaderPageStatesStore(
 		(state) => state.downloadConfiguration,
 	);
@@ -81,11 +84,17 @@ function TrimmerDialog({ videoMetadata }: TrimmerDialogProps) {
 
 	const isCombineableAudioSelected =
 		selectedCombinableAudioFormats && selectedCombinableAudioFormats.length > 0;
-	// Trimmer works with whole seconds only, so drop the decimal part of duration (e.g. 30.352 -> 30)
-	const duration = Math.floor(videoMetadata.duration);
+	// For a playlist, only a single selected item can be trimmed; trim that entry.
 	const isPlaylist = videoMetadata._type === "playlist";
-	const isTrimmable = !isPlaylist && !!duration;
-	const isYoutube = videoMetadata.webpage_url_domain === "youtube.com";
+	const media: RawVideoInfo | undefined = isPlaylist
+		? selectedPlaylistVideos.length === 1
+			? videoMetadata.entries[Number(selectedPlaylistVideos[0]) - 1]
+			: undefined
+		: videoMetadata;
+	// Trimmer works with whole seconds only, so drop the decimal part of duration (e.g. 30.352 -> 30)
+	const duration = Math.floor(media?.duration ?? 0);
+	const isTrimmable = !!media && !!duration;
+	const isYoutube = media?.webpage_url_domain === "youtube.com";
 
 	const trimStamps = downloadConfiguration.trim_stamps ?? [0, duration];
 	const trimStart = trimStamps[0];
@@ -142,10 +151,10 @@ function TrimmerDialog({ videoMetadata }: TrimmerDialogProps) {
 					</DialogDescription>
 				</DialogHeader>
 				<div className="flex flex-col gap-2 items-center">
-					{isYoutube ? (
+					{isYoutube && media ? (
 						<Player
-							src={`youtube/${videoMetadata.id}`}
-							thumbnail={videoMetadata.thumbnail}
+							src={`youtube/${media.id}`}
+							thumbnail={media.thumbnail}
 						/>
 					) : (
 						<div className="w-full bg-background aspect-video flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-primary/50">
