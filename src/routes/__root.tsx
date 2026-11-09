@@ -4,7 +4,6 @@ import { AppSidebar } from "@/components/sidebar";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { TanStackDevtools } from "@tanstack/react-devtools";
-import { PacerDevtoolsPanel } from "@tanstack/react-pacer-devtools";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { FormDevtoolsPanel } from "@tanstack/react-form-devtools";
@@ -45,10 +44,6 @@ function Root() {
 					{
 						name: "TanStack Form",
 						render: <FormDevtoolsPanel />,
-					},
-					{
-						name: "TanStack Pacer",
-						render: <PacerDevtoolsPanel />,
 					},
 				]}
 			/>

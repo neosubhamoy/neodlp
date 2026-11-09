@@ -2788,14 +2788,6 @@ function AppInfoSettings() {
 			licenseUrl: "https://github.com/TanStack/form/blob/main/LICENSE",
 		},
 		{
-			key: "tanstack-pacer",
-			name: "TanStack Pacer",
-			desc: "Framework agnostic debouncing, throttling, rate limiting, queuing, and batching utilities",
-			url: "https://tanstack.com/pacer/latest",
-			license: "MIT",
-			licenseUrl: "https://github.com/TanStack/pacer/blob/main/LICENSE",
-		},
-		{
 			key: "video-js",
 			name: "Video.js",
 			desc: "The open-source media player framework for the web",
