@@ -3,6 +3,7 @@ import FeaturesSection from "@/components/sections/features-section";
 import HeroSection from "@/components/sections/hero-section";
 import HighlightSection from "@/components/sections/highlight-section";
 import TestimonialSection from "@/components/sections/testimonial-section";
+import SponsorSection from "@/components/sections/sponsor-section";
 import Main from "@/layouts/main.astro";
 
 // Default fallback data in case fetch fails
@@ -117,4 +118,5 @@ try {
 	<HighlightSection client:load />
 	<FeaturesSection client:load />
 	<TestimonialSection client:load />
+	<SponsorSection client:load />
 </Main>

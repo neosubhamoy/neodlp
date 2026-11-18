@@ -193,6 +193,30 @@ Also, want to contribute to this project? Read the [contributing guidelines](htt
 - NeoDLP's 'Format Selection' options are inspired from the [Seal](https://github.com/JunkFood02/Seal) app by [@JunkFood02](https://github.com/JunkFood02)
 - Aria2 Linux x86_64 static binaries are built by [@asdo92](https://github.com/asdo92/aria2-static-builds) and Windows arm64 static binaries are built by [@minnyres](https://github.com/minnyres/aria2-windows-arm64)
 - NeoDLP's 'POT Server' is based on [@jim60105's Rust Implementation](https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs) of [Brainicism/bgutil-ytdlp-pot-provider](https://github.com/Brainicism/bgutil-ytdlp-pot-provider)
+- NeoDLP's Windows code signing certificates are sponsored by [SignPath Foundation](https://signpath.org)
+
+## Our Sponsors
+
+<table width="100%">
+  <tr>
+    <td width="50%">
+      <a href="https://signpath.io/?utm_source=neodlp.neosubhamoy.com">
+        <img src="./.github/images/sponsors/signpath.svg" alt="SignPath" width="230">
+      </a>
+      <br>
+      SignPath gives security and engineering leaders cryptographic proof that every release you’re accountable for is authentic, unmodified, and approved at every step by the right people. When an auditor asks, a customer demands evidence, or an incident happens, you can show exactly what shipped, how it was approved, and where it came from. 
+    </td>
+    <td width="50%">
+      <a href="https://proxy-seller.com/?partner=X1YG6981E2F84L">
+        <img src="./.github/images/sponsors/proxyseller.svg" alt="Proxy-Seller" width="300">
+      </a>
+      <br>
+      Proxy-Seller gives you reliable proxy infrastructure for any workflow: private residential, mobile (4G/5G/LTE), ISP, and datacenter IPv4/IPv6 proxies, all with HTTP(S) and SOCKS5 support. Tap into 47M+ residential IPs across 220+ locations, target exactly the country, city, or ISP you need, and count on 99.7% uptime backed by 24/7 support. Get 15% off with promo code: "NEODLP"
+    </td>
+  </tr>
+</table>
+
+Want to get featured here? Sponsor us on GitHub or contact us at [support@neodlp.neosubhamoy.com](mailto:support@neodlp.neosubhamoy.com) for more details.
 
 ## License and Usage
 

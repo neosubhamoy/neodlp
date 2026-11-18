@@ -34,7 +34,7 @@ export default function TestimonialSection() {
 	];
 
 	return (
-		<section className="flex flex-col w-full mb-16" id="testimonials">
+		<section className="flex flex-col w-full mb-4" id="testimonials">
 			<div className="flex flex-col items-center justify-center gap-2 pt-40 pb-16">
 				<h3 className="text-3xl lg:text-4xl font-bold">Testimonials</h3>
 				<p className="text-sm lg:text-lg font-semibold text-muted-foreground">

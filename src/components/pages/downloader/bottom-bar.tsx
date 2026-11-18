@@ -152,10 +152,7 @@ function TrimmerDialog({ videoMetadata }: TrimmerDialogProps) {
 				</DialogHeader>
 				<div className="flex flex-col gap-2 items-center">
 					{isYoutube && media ? (
-						<Player
-							src={`youtube/${media.id}`}
-							thumbnail={media.thumbnail}
-						/>
+						<Player src={`youtube/${media.id}`} thumbnail={media.thumbnail} />
 					) : (
 						<div className="w-full bg-background aspect-video flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-primary/50">
 							<EyeOff className="size-6 stroke-primary" />
